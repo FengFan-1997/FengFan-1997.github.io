@@ -3,11 +3,6 @@
     <!-- 3D Background (Fixed) -->
     <div id="scene-canvas" class="scene-background"></div>
 
-    <!-- Music Control (Fixed) -->
-    <div class="music-control" @click="toggleMusic">
-      <span class="icon">{{ isMusicPlaying ? '🎵' : '🔇' }}</span>
-    </div>
-
     <!-- Loading Overlay -->
     <div class="opening-overlay" :class="{ 'fade-out': isLoaded }">
       <div class="loading-text">Growing our garden...</div>
@@ -18,7 +13,7 @@
       
       <!-- Section 1: Hero (Title) -->
       <section class="section hero-section">
-        <div class="hero-content">
+        <div class="hero-content" ref="heroContentRef" style="opacity: 0; transform: scale(0.8);">
           <h1 class="main-title">FKF <span class="amp">&</span> XY</h1>
           <h2 class="sub-title">520 · 1314</h2>
           <p class="scroll-hint">Scroll to explore our love</p>
@@ -84,7 +79,7 @@
       </footer>
     </div>
 
-    <audio ref="audioRef" loop preload="auto" src="/music/wedding.mp3"></audio>
+    <audio ref="audioRef" loop preload="auto" src="/music/marry_me.mp3"></audio>
   </div>
 </template>
 
@@ -97,6 +92,7 @@ import LoveModules from '../components/secret/LoveModules.vue';
 const audioRef = ref<HTMLAudioElement | null>(null);
 const isMusicPlaying = ref(false);
 const isLoaded = ref(false);
+const heroContentRef = ref<HTMLElement | null>(null); // Ref for text animation
 
 // Three.js Variables
 let scene: THREE.Scene;
@@ -110,32 +106,37 @@ let grassMesh: THREE.InstancedMesh;
 let roseMesh: THREE.InstancedMesh;
 let petals: THREE.Points;
 let fireflies: THREE.Points;
+let hearts: THREE.InstancedMesh;
+let bigRoseParticles: THREE.Points;
 
 // Uniforms
 const windUniforms = {
   uTime: { value: 0 },
-  uWindStrength: { value: 0.3 }, // Stronger wind
-  uWindSpeed: { value: 1.2 }
+  uWindStrength: { value: 0.5 },
+  uWindSpeed: { value: 1.5 }
 };
 
 const bloomUniforms = {
   uTime: { value: 0 },
   uBloomProgress: { value: 0 },
-  uColor: { value: new THREE.Color(0xff0033) } // Deeper Red
+  uColor: { value: new THREE.Color(0xd81b60) } // Rich Pink/Red
 };
 
 // Config
-const GRASS_COUNT = 30000; // More grass
-const ROSE_COUNT = 500;   // More roses
-const PETAL_COUNT = 2000; // More petals
-const FIREFLY_COUNT = 500; // New fireflies
+const GRASS_COUNT = 15000; 
+const ROSE_COUNT = 2000;   // Massive sea of roses
+const PETAL_COUNT = 2000; 
+const FIREFLY_COUNT = 300; 
+const HEART_COUNT = 150;
 
 onMounted(async () => {
   initThree();
   createGrass();
   createRoses();
+  createBigParticleRose();
   createPetalRain();
   createFireflies();
+  createHearts();
   
   animate();
 
@@ -262,7 +263,7 @@ function createGrass() {
 
 // --- ROSE SYSTEM (Enhanced) ---
 function createRoses() {
-  const geometry = new THREE.SphereGeometry(0.35, 24, 24); // Smoother
+  const geometry = new THREE.SphereGeometry(0.3, 16, 16); 
   
   const material = new THREE.ShaderMaterial({
     vertexShader: `
@@ -276,39 +277,51 @@ function createRoses() {
         vNormal = normal;
         vec3 pos = position;
         
-        float angle = position.y * 4.0;
-        float unfold = smoothstep(0.0, 1.0, uBloomProgress);
+        // Bloom Animation
+        float bloom = smoothstep(0.0, 1.0, uBloomProgress);
         
-        // Spiral unfold
-        float swirl = sin(pos.y * 8.0 + uTime * 0.5) * 0.15 * unfold;
-        pos.x += swirl;
-        pos.z -= swirl;
+        // Spiral unfold effect
+        float angle = atan(pos.x, pos.z);
+        float height = pos.y;
         
-        float openFactor = pos.y > 0.0 ? (1.0 + unfold * 0.5) : 1.0;
-        pos.x *= openFactor;
-        pos.z *= openFactor;
-
-        vec4 mPos = instanceMatrix * vec4(pos, 1.0);
+        // Swirl vertices based on height and bloom
+        float swirl = height * 2.0 * (1.0 - bloom);
+        float c = cos(swirl);
+        float s = sin(swirl);
+        pos.x = pos.x * c - pos.z * s;
+        pos.z = pos.x * s + pos.z * c;
         
-        // Sway
-        float sway = sin(uTime + mPos.x);
-        mPos.x += sway * 0.1 * unfold;
+        // Scale from bud (small, tight) to full flower
+        float openFactor = 0.2 + 0.8 * bloom;
+        pos *= openFactor;
         
-        gl_Position = projectionMatrix * viewMatrix * mPos;
+        // Slight sway in wind
+        vec4 mPos = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        float wind = sin(uTime * 1.0 + mPos.x * 0.5) * 0.1 * bloom;
+        pos.x += wind;
+        
+        gl_Position = projectionMatrix * modelViewMatrix * (instanceMatrix * vec4(pos, 1.0));
       }
     `,
     fragmentShader: `
       varying vec3 vNormal;
       uniform vec3 uColor;
+      uniform float uBloomProgress;
       
       void main() {
-        vec3 light = normalize(vec3(1.0, 1.0, 1.0));
+        vec3 light = normalize(vec3(0.5, 1.0, 0.5));
         float diff = max(dot(vNormal, light), 0.0);
-        float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
-        rim = pow(rim, 2.0);
         
-        // Velvety Red
-        vec3 finalColor = uColor * (0.3 + diff * 0.7) + vec3(0.8, 0.2, 0.4) * rim * 0.5;
+        // Color gradient from center (darker) to tips (lighter)
+        vec3 darkRed = vec3(0.4, 0.0, 0.1);
+        vec3 brightRed = uColor;
+        
+        vec3 finalColor = mix(darkRed, brightRed, diff + uBloomProgress * 0.3);
+        
+        // Velvety sheen
+        float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
+        finalColor += vec3(0.5, 0.2, 0.3) * pow(rim, 3.0);
+        
         gl_FragColor = vec4(finalColor, 1.0);
       }
     `,
@@ -318,19 +331,161 @@ function createRoses() {
   roseMesh = new THREE.InstancedMesh(geometry, material, ROSE_COUNT);
   
   const dummy = new THREE.Object3D();
+
   for (let i = 0; i < ROSE_COUNT; i++) {
-    const x = (Math.random() - 0.5) * 50;
-    const z = (Math.random() - 0.5) * 35;
+    // Spiral Distribution for "Sea of Flowers"
+    const angle = i * 0.1 + Math.random() * 0.5;
+    const radius = 2 + Math.sqrt(i) * 1.2; // Expanding spiral
     
-    dummy.position.set(x, 0.6 + Math.random() * 0.4, z);
-    dummy.scale.setScalar(0.8 + Math.random() * 0.5);
-    dummy.rotation.set(Math.random()*0.2, Math.random()*Math.PI, Math.random()*0.2);
+    // Random offset
+    const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 2;
+    const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 2;
+    
+    // Height variation (terrain)
+    const y = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 1.0 + 0.5;
+    
+    dummy.position.set(x, y, z);
+    
+    // Random scale and rotation
+    const scale = 0.8 + Math.random() * 0.6;
+    dummy.scale.setScalar(scale);
+    dummy.rotation.set(Math.random() * 0.5, Math.random() * Math.PI * 2, Math.random() * 0.5);
+    
     dummy.updateMatrix();
     roseMesh.setMatrixAt(i, dummy.matrix);
   }
   
+  roseMesh.instanceMatrix.needsUpdate = true;
   roseMesh.castShadow = true;
+  roseMesh.receiveShadow = true;
   scene.add(roseMesh);
+}
+
+// --- BIG PARTICLE ROSE ---
+function createBigParticleRose() {
+  const geometry = new THREE.BufferGeometry();
+  const count = 15000;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const randoms = new Float32Array(count * 3);
+
+  for(let i=0; i<count; i++) {
+    positions[i*3] = (Math.random() - 0.5) * 10;
+    positions[i*3+1] = (Math.random() - 0.5) * 10;
+    positions[i*3+2] = (Math.random() - 0.5) * 10;
+    
+    const color = new THREE.Color();
+    color.setHSL(0.9 + Math.random() * 0.1, 0.9, 0.5 + Math.random() * 0.3);
+    colors[i*3] = color.r;
+    colors[i*3+1] = color.g;
+    colors[i*3+2] = color.b;
+
+    randoms[i*3] = Math.random();
+    randoms[i*3+1] = Math.random();
+    randoms[i*3+2] = Math.random();
+  }
+  
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      attribute vec3 color;
+      attribute vec3 aRandom;
+      varying vec3 vColor;
+      uniform float uTime;
+      uniform float uBloomProgress;
+
+      void main() {
+        vColor = color;
+        
+        // Sphere coordinate simulation
+        float u_s = aRandom.x * 2.0 * 3.14159; 
+        float v_s = aRandom.y * 3.14159; 
+        
+        vec3 sphereP = vec3(
+            sin(v_s) * cos(u_s),
+            cos(v_s),
+            sin(v_s) * sin(u_s)
+        );
+        
+        // Rose Twist Logic
+        vec3 roseP = sphereP;
+        float swirl = roseP.y * 2.0; 
+        float c = cos(swirl);
+        float s = sin(swirl);
+        roseP.x = sphereP.x * c - sphereP.z * s;
+        roseP.z = sphereP.x * s + sphereP.z * c;
+        roseP *= 3.0; // Size of the big rose
+        
+        // Animation from scattered to formed
+        vec3 startP = position * 3.0; 
+        vec3 finalPos = mix(startP, roseP, smoothstep(0.0, 1.0, uBloomProgress));
+        
+        // Rotate
+        float rot = uTime * 0.1;
+        float cr = cos(rot);
+        float sr = sin(rot);
+        vec3 rotatedPos = finalPos;
+        rotatedPos.x = finalPos.x * cr - finalPos.z * sr;
+        rotatedPos.z = finalPos.x * sr + finalPos.z * cr;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(rotatedPos, 1.0);
+        gl_PointSize = (3.0 * aRandom.z + 1.0) * (10.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vColor;
+      void main() {
+        if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;
+        gl_FragColor = vec4(vColor, 0.8);
+      }
+    `,
+    uniforms: bloomUniforms,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  bigRoseParticles = new THREE.Points(geometry, material);
+  bigRoseParticles.position.y = 2; 
+  scene.add(bigRoseParticles);
+}
+
+// --- HEART PARTICLES ---
+function createHearts() {
+  const shape = new THREE.Shape();
+  const x = 0, y = 0;
+  shape.moveTo(x + 0.25, y + 0.25);
+  shape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.20, y, x, y);
+  shape.bezierCurveTo(x - 0.30, y, x - 0.30, y + 0.35, x - 0.30, y + 0.35);
+  shape.bezierCurveTo(x - 0.30, y + 0.55, x - 0.10, y + 0.77, x + 0.25, y + 0.95);
+  shape.bezierCurveTo(x + 0.60, y + 0.77, x + 0.80, y + 0.55, x + 0.80, y + 0.35);
+  shape.bezierCurveTo(x + 0.80, y + 0.35, x + 0.80, y, x + 0.50, y);
+  shape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
+
+  const geometry = new THREE.ShapeGeometry(shape);
+  const material = new THREE.MeshBasicMaterial({ color: 0xff69b4, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+  
+  hearts = new THREE.InstancedMesh(geometry, material, HEART_COUNT);
+  
+  const dummy = new THREE.Object3D();
+  for(let i=0; i<HEART_COUNT; i++) {
+    dummy.position.set(
+      (Math.random() - 0.5) * 40,
+      Math.random() * 10 + 2,
+      (Math.random() - 0.5) * 30
+    );
+    dummy.scale.setScalar(0.2 + Math.random() * 0.3);
+    dummy.rotation.z = Math.PI; // Flip heart up
+    dummy.rotation.y = Math.random() * Math.PI;
+    dummy.updateMatrix();
+    hearts.setMatrixAt(i, dummy.matrix);
+  }
+  
+  scene.add(hearts);
 }
 
 // --- PARTICLE RAIN (Enhanced) ---
@@ -450,11 +605,23 @@ function createFireflies() {
 }
 
 function startBloomSequence() {
+  // 1. Bloom Roses
   gsap.to(bloomUniforms.uBloomProgress, {
     value: 1,
-    duration: 3,
+    duration: 4,
     ease: "power2.out"
   });
+  
+  // 2. Reveal Text (delayed slightly)
+  if (heroContentRef.value) {
+    gsap.to(heroContentRef.value, {
+      opacity: 1,
+      scale: 1,
+      duration: 3,
+      delay: 1.5,
+      ease: "elastic.out(1, 0.5)"
+    });
+  }
 }
 
 function animate() {
@@ -465,6 +632,24 @@ function animate() {
   bloomUniforms.uTime.value = elapsedTime;
   if(petals) (petals.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
   if(fireflies) (fireflies.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
+
+  // Animate Hearts (Float Up)
+  if (hearts) {
+    const dummy = new THREE.Object3D();
+    for (let i = 0; i < HEART_COUNT; i++) {
+       hearts.getMatrixAt(i, dummy.matrix);
+       dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+       
+       dummy.position.y += 0.02; // Float up
+       if (dummy.position.y > 20) dummy.position.y = 0;
+       
+       dummy.rotation.y += 0.01;
+       
+       dummy.updateMatrix();
+       hearts.setMatrixAt(i, dummy.matrix);
+    }
+    hearts.instanceMatrix.needsUpdate = true;
+  }
 
   renderer.render(scene, camera);
 }
@@ -495,6 +680,7 @@ function toggleMusic() {
 
 function playMusic() {
   if (audioRef.value) {
+    audioRef.value.volume = 0.5;
     audioRef.value.play().then(() => {
       isMusicPlaying.value = true;
     }).catch(() => {});
