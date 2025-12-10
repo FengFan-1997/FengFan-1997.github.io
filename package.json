@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"pnpm run --filter backend dev\" \"pnpm run --filter personal dev\""
+    "dev": "concurrently \"pnpm run --filter backend dev\" \"pnpm run --filter personal dev\"",
+    "build": "pnpm run --filter personal build"
   },
   "keywords": [],
   "author": "",

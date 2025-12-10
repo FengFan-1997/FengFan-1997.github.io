@@ -142,9 +142,11 @@ onMounted(async () => {
 
   setTimeout(() => {
     isLoaded.value = true;
-    playMusic();
     startBloomSequence();
   }, 1000);
+
+  // Auto-play immediately
+  playMusic();
 
   window.addEventListener('resize', onResize);
   window.addEventListener('mousemove', onMouseMove);
@@ -419,8 +421,8 @@ function createBigParticleRose() {
         roseP.z = sphereP.x * s + sphereP.z * c;
         roseP *= 3.0; // Size of the big rose
         
-        // Animation from scattered to formed
-        vec3 startP = position * 3.0; 
+        // Animation from bud to flower
+        vec3 startP = position * 0.1; // Tight bud state
         vec3 finalPos = mix(startP, roseP, smoothstep(0.0, 1.0, uBloomProgress));
         
         // Rotate
@@ -432,7 +434,8 @@ function createBigParticleRose() {
         rotatedPos.z = finalPos.x * sr + finalPos.z * cr;
         
         vec4 mvPosition = modelViewMatrix * vec4(rotatedPos, 1.0);
-        gl_PointSize = (3.0 * aRandom.z + 1.0) * (10.0 / -mvPosition.z);
+        // Larger particles for "High-end" feel
+        gl_PointSize = (8.0 * aRandom.z + 5.0) * (20.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
@@ -440,7 +443,8 @@ function createBigParticleRose() {
       varying vec3 vColor;
       void main() {
         if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;
-        gl_FragColor = vec4(vColor, 0.8);
+        // Brighter, more magical color
+        gl_FragColor = vec4(vColor * 1.5, 0.9);
       }
     `,
     uniforms: bloomUniforms,
@@ -683,7 +687,10 @@ function playMusic() {
     audioRef.value.volume = 0.5;
     audioRef.value.play().then(() => {
       isMusicPlaying.value = true;
-    }).catch(() => {});
+    }).catch((e) => {
+      console.log("Autoplay blocked, user interaction needed", e);
+      isMusicPlaying.value = false;
+    });
   }
 }
 
@@ -916,22 +923,7 @@ function onResize() {
 }
 
 /* --- UI CONTROLS --- */
-.music-control {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.8);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  font-size: 1.5rem;
-}
+/* Music control removed as per request */
 
 .opening-overlay {
   position: fixed;
