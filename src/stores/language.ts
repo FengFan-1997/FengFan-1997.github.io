@@ -35,18 +35,6 @@ export const useLanguageStore = defineStore('language', () => {
           awards: 'Awards',
         }
       },
-      about: {
-        title: '关于我',
-        bio: '3 年前端开发经验，专注 React/Vue 生态，擅长从 0 到 1 搭建前端架构，注重代码可维护性与用户体验。',
-        proficient: '熟练掌握',
-        familiar: '了解使用',
-        philosophy: '“以用户体验为核心，以代码质量为底线，做靠谱的前端解决方案”',
-        stats: {
-          years: '开发经验',
-          projects: '项目数量',
-          awards: '获奖经历',
-        }
-      },
       projects: {
         title: 'SELECTED WORKS',
         viewProject: 'View Project',

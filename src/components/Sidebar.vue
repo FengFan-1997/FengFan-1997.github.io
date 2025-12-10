@@ -29,9 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount} from 'vue';
 import { useLanguageStore } from '../stores/language';
-import { storeToRefs } from 'pinia';
 
 const languageStore = useLanguageStore();
 const { t } = languageStore;
