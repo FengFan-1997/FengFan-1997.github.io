@@ -47,7 +47,6 @@ let animationId: number;
 let particles: THREE.Points;
 let mouseX = 0;
 let mouseY = 0;
-let targetRotationX = 0;
 let targetRotationY = 0;
 
 const initScene = () => {

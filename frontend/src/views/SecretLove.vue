@@ -1,29 +1,90 @@
 <template>
-  <div class="secret-love-container" ref="container">
-    <div class="overlay-text" :class="{ 'visible': phase >= 2 }">
-      <h1 class="main-title">FKF <span class="heart">❤</span> XY</h1>
-      <div class="sub-text">
-        <span class="number">520</span>
-        <span class="divider">·</span>
-        <span class="number">1314</span>
-      </div>
-      <p class="romantic-quote">In the galaxy of my universe, you are the only rose.</p>
-    </div>
-    
-    <div class="instruction" v-if="phase === 0">
-      <p>Touch the stars to bloom...</p>
-    </div>
-    <div class="instruction" v-if="phase === 1">
-      <p>Touch again to reveal the truth...</p>
-    </div>
-    <div class="instruction" v-if="phase === 2">
-      <p>One last touch...</p>
+  <div class="garden-wrapper">
+    <!-- 3D Background (Fixed) -->
+    <div id="scene-canvas" class="scene-background"></div>
+
+    <!-- Music Control (Fixed) -->
+    <div class="music-control" @click="toggleMusic">
+      <span class="icon">{{ isMusicPlaying ? '🎵' : '🔇' }}</span>
     </div>
 
-    <LoveModules :show="phase >= 3" />
-    
-    <!-- Hidden element for interaction state -->
-    <div style="display: none;">{{ phase }}</div>
+    <!-- Loading Overlay -->
+    <div class="opening-overlay" :class="{ 'fade-out': isLoaded }">
+      <div class="loading-text">Growing our garden...</div>
+    </div>
+
+    <!-- Scrollable Content Layer -->
+    <div class="content-layer" @scroll="onScroll">
+      
+      <!-- Section 1: Hero (Title) -->
+      <section class="section hero-section">
+        <div class="hero-content">
+          <h1 class="main-title">FKF <span class="amp">&</span> XY</h1>
+          <h2 class="sub-title">520 · 1314</h2>
+          <p class="scroll-hint">Scroll to explore our love</p>
+          <div class="scroll-arrow">↓</div>
+        </div>
+      </section>
+
+      <!-- Section 2: Our Story -->
+      <section class="section story-section">
+        <div class="glass-card">
+          <h2>Our Story</h2>
+          <p>
+            It started with a simple "Hello World", but it became the most beautiful algorithm of my life.
+            Like a rose that blooms in the wild, our love grew naturally, fiercely, and beautifully.
+          </p>
+          <p>
+            Every day with you is a new commit to our repository of memories.
+            No bugs, just features.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3: Moments (Gallery) -->
+      <section class="section gallery-section">
+        <h2 class="section-title">Precious Moments</h2>
+        <div class="gallery-grid">
+          <div class="gallery-item" v-for="n in 6" :key="n">
+            <div class="photo-placeholder">
+              <span>Moment {{ n }}</span>
+              <div class="heart-icon">❤️</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Promises -->
+      <section class="section promise-section">
+        <div class="glass-card">
+          <h2>My Promises</h2>
+          <ul class="promise-list">
+            <li>To be your debugger when life throws errors.</li>
+            <li>To be your CSS when you need style.</li>
+            <li>To love you until the end of the loop.</li>
+            <li>To always bring you roses, virtual or real.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Interactive Modules Component -->
+      <div class="modules-wrapper">
+        <LoveModules 
+          :show="true" 
+          :is-playing="isMusicPlaying"
+          @toggle-music="toggleMusic"
+          theme="bright" 
+        />
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>Created with ❤️ for You</p>
+        <p class="date">Forever & Always</p>
+      </footer>
+    </div>
+
+    <audio ref="audioRef" loop preload="auto" src="/music/wedding.mp3"></audio>
   </div>
 </template>
 
@@ -33,600 +94,710 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import LoveModules from '../components/secret/LoveModules.vue';
 
-const container = ref<HTMLElement | null>(null);
-const phase = ref(0);
+const audioRef = ref<HTMLAudioElement | null>(null);
+const isMusicPlaying = ref(false);
+const isLoaded = ref(false);
 
+// Three.js Variables
 let scene: THREE.Scene;
 let camera: THREE.PerspectiveCamera;
 let renderer: THREE.WebGLRenderer;
 let animationId: number;
-let particles: THREE.Points;
-let heartParticles: THREE.Points;
-let roses: THREE.Points[] = [];
-let shootingStars: THREE.Mesh[] = [];
-let burstParticles: THREE.Points[] = []; // For click interaction bursts
+let clock: THREE.Clock;
 
-const mouse = new THREE.Vector2();
+// Objects
+let grassMesh: THREE.InstancedMesh;
+let roseMesh: THREE.InstancedMesh;
+let petals: THREE.Points;
+let fireflies: THREE.Points;
 
-// Configuration
-const PARTICLE_COUNT = 2000;
-const ROSE_COLOR = 0xff0055;
+// Uniforms
+const windUniforms = {
+  uTime: { value: 0 },
+  uWindStrength: { value: 0.3 }, // Stronger wind
+  uWindSpeed: { value: 1.2 }
+};
 
-onMounted(() => {
+const bloomUniforms = {
+  uTime: { value: 0 },
+  uBloomProgress: { value: 0 },
+  uColor: { value: new THREE.Color(0xff0033) } // Deeper Red
+};
+
+// Config
+const GRASS_COUNT = 30000; // More grass
+const ROSE_COUNT = 500;   // More roses
+const PETAL_COUNT = 2000; // More petals
+const FIREFLY_COUNT = 500; // New fireflies
+
+onMounted(async () => {
   initThree();
-  animate();
+  createGrass();
+  createRoses();
+  createPetalRain();
+  createFireflies();
   
+  animate();
+
+  setTimeout(() => {
+    isLoaded.value = true;
+    playMusic();
+    startBloomSequence();
+  }, 1000);
+
   window.addEventListener('resize', onResize);
   window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('click', onClick);
-  window.addEventListener('touchstart', onClick, { passive: false });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize);
   window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('click', onClick);
-  window.removeEventListener('touchstart', onClick);
-  
-  if (renderer) {
-    renderer.dispose();
-  }
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
+  if (animationId) cancelAnimationFrame(animationId);
+  if (renderer) renderer.dispose();
 });
 
 function initThree() {
-  if (!container.value) return;
+  const container = document.getElementById('scene-canvas');
+  if (!container) return;
 
-  // Scene
+  clock = new THREE.Clock();
+
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x050210, 0.002);
-  scene.background = new THREE.Color(0x050210);
+  // More realistic sky gradient using Fog and background color
+  scene.background = new THREE.Color(0x87CEEB); 
+  scene.fog = new THREE.FogExp2(0xe0f7fa, 0.02); // Soft fog
 
-  // Camera
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 50;
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 3, 12);
+  camera.lookAt(0, 1, 0);
 
-  // Renderer
+  // Improved Lighting
+  const ambientLight = new THREE.HemisphereLight(0xffffff, 0x228822, 0.6); // Sky/Ground
+  scene.add(ambientLight);
+
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.5); // Warm sun
+  sunLight.position.set(50, 100, 50);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 2048;
+  sunLight.shadow.mapSize.height = 2048;
+  sunLight.shadow.bias = -0.0001;
+  scene.add(sunLight);
+
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  container.value.appendChild(renderer.domElement);
-
-  // Create Particles
-  createAmbientParticles();
-  createHeartGalaxy();
-  createShootingStars();
-  // Roses will be created on interaction
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  container.appendChild(renderer.domElement);
 }
 
-function createRoseTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 32;
-  canvas.height = 32;
-  const context = canvas.getContext('2d');
-  if (context) {
-    const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(0.2, 'rgba(255, 0, 85, 1)');
-    gradient.addColorStop(0.5, 'rgba(100, 0, 30, 0.8)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, 32, 32);
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
+// --- GRASS SYSTEM (Enhanced) ---
+function createGrass() {
+  const geometry = new THREE.PlaneGeometry(0.15, 1.2, 1, 4);
+  geometry.translate(0, 0.6, 0);
 
-function createAmbientParticles() {
-  const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(PARTICLE_COUNT * 3);
-  const colors = new Float32Array(PARTICLE_COUNT * 3);
-  const sizes = new Float32Array(PARTICLE_COUNT);
-
-  const color = new THREE.Color(ROSE_COLOR);
-
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const i3 = i * 3;
-    positions[i3] = (Math.random() - 0.5) * 100;
-    positions[i3 + 1] = (Math.random() - 0.5) * 100;
-    positions[i3 + 2] = (Math.random() - 0.5) * 100;
-
-    colors[i3] = color.r;
-    colors[i3 + 1] = color.g + (Math.random() * 0.2);
-    colors[i3 + 2] = color.b;
-    
-    sizes[i] = Math.random() * 0.5;
-  }
-
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-  const material = new THREE.PointsMaterial({
-    size: 0.5,
-    vertexColors: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    transparent: true,
-    opacity: 0.8
-  });
-
-  particles = new THREE.Points(geometry, material);
-  scene.add(particles);
-}
-
-// Parametric Heart Shape Function
-function getHeartPosition(t: number, scale: number = 1) {
-  const x = 16 * Math.pow(Math.sin(t), 3);
-  const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-  const z = 0; // Flat heart
-  return new THREE.Vector3(x * scale, y * scale, z * scale);
-}
-
-function createHeartGalaxy() {
-  const geometry = new THREE.BufferGeometry();
-  const count = 3000;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  
-  const centerColor = new THREE.Color(0xff0033);
-  const outerColor = new THREE.Color(0xffaec9);
-
-  for (let i = 0; i < count; i++) {
-    const i3 = i * 3;
-    
-    // Mix of Heart and Rose shapes
-    let pos;
-    if (Math.random() > 0.5) {
-        // Heart
-        const t = Math.random() * Math.PI * 2;
-        pos = getHeartPosition(t, 0.5 + Math.random() * 0.2);
-        // Spread it out in Z to make it 3D
-        pos.z += (Math.random() - 0.5) * 5;
-    } else {
-        // Rose-ish cloud
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        const r = 10 * Math.random();
-        pos = new THREE.Vector3(
-            r * Math.sin(phi) * Math.cos(theta),
-            r * Math.sin(phi) * Math.sin(theta),
-            r * Math.cos(phi)
-        );
-    }
-
-    positions[i3] = pos.x;
-    positions[i3+1] = pos.y;
-    positions[i3+2] = pos.z;
-
-    const mixedColor = centerColor.clone().lerp(outerColor, Math.random());
-    colors[i3] = mixedColor.r;
-    colors[i3+1] = mixedColor.g;
-    colors[i3+2] = mixedColor.b;
-  }
-
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-  const material = new THREE.PointsMaterial({
-    size: 0.2,
-    vertexColors: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    transparent: true,
-    opacity: 0.6
-  });
-
-  heartParticles = new THREE.Points(geometry, material);
-  scene.add(heartParticles);
-
-  // Initial Bloom Animation
-  if (heartParticles) {
-    heartParticles.scale.set(0, 0, 0);
-    gsap.to(heartParticles.scale, {
-      x: 1,
-      y: 1,
-      z: 1,
-      duration: 4,
-      ease: "elastic.out(1, 0.3)",
-      delay: 0.5
-    });
-    gsap.to(heartParticles.rotation, {
-      y: Math.PI * 2,
-      duration: 5,
-      ease: "power2.out"
-    });
-  }
-}
-
-function createBloomingRoses() {
-  const roseCount = 50; // Optimized count for mobile
-  roses = [];
-  
-  const roseTexture = createRoseTexture();
-
-  for (let i = 0; i < roseCount; i++) {
-    const geometry = new THREE.BufferGeometry();
-    const particleCount = 400; // Increased density
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    
-    // Random position for each rose
-    const rosePos = new THREE.Vector3(
-      (Math.random() - 0.5) * 80,
-      (Math.random() - 0.5) * 50,
-      (Math.random() - 0.5) * 60
-    );
-
-    const color = new THREE.Color();
-    color.setHSL(Math.random() * 0.1 + 0.9, 0.9, 0.5); // Red/Pink hues
-
-    for (let j = 0; j < particleCount; j++) {
-      // Rhodonea Curve (Rose) - more detailed
-      const k = 4; // 4 petals
-      const theta = Math.random() * Math.PI * 2;
-      // Add some randomness to r to fill the volume
-      const r = Math.cos(k * theta) * (0.8 + Math.random() * 0.4); 
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec2 vUv;
+      varying float vHeight;
+      uniform float uTime;
       
-      const x = r * Math.cos(theta);
-      const y = r * Math.sin(theta);
-      // More depth
-      const z = (Math.random() - 0.5) * 1.0;
+      void main() {
+        vUv = uv;
+        vHeight = position.y;
+        
+        vec3 pos = position;
+        
+        // Complex wind
+        float noise = sin(0.1 * instanceMatrix[3][0] + uTime * 0.5);
+        float wave = sin(uTime * 1.5 + instanceMatrix[3][0] * 0.3 + instanceMatrix[3][2] * 0.3);
+        float bend = pow(position.y, 1.5) * (0.5 + noise * 0.2);
+        
+        pos.x += wave * bend;
+        pos.z += wave * bend * 0.3;
+        
+        vec4 mPos = instanceMatrix * vec4(pos, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * mPos;
+      }
+    `,
+    fragmentShader: `
+      varying vec2 vUv;
+      varying float vHeight;
+      
+      void main() {
+        // More realistic green gradients
+        vec3 bottomColor = vec3(0.05, 0.2, 0.05); // Deep green
+        vec3 topColor = vec3(0.4, 0.7, 0.2);     // Lush green
+        
+        vec3 color = mix(bottomColor, topColor, vHeight);
+        // Add slight shadow at bottom
+        color *= 0.8 + 0.2 * vHeight;
+        
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `,
+    uniforms: windUniforms,
+    side: THREE.DoubleSide
+  });
 
-      positions[j * 3] = x;
-      positions[j * 3 + 1] = y;
-      positions[j * 3 + 2] = z;
-
-      colors[j * 3] = color.r;
-      colors[j * 3 + 1] = color.g;
-      colors[j * 3 + 2] = color.b;
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const material = new THREE.PointsMaterial({
-      size: 0.5, // Larger size because of texture
-      map: roseTexture,
-      vertexColors: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      transparent: true,
-      opacity: 0
-    });
-
-    const rose = new THREE.Points(geometry, material);
-    rose.position.copy(rosePos);
-    rose.scale.set(0, 0, 0); // Start invisible
-    scene.add(rose);
-    roses.push(rose);
-
-    // Staggered bloom animation
-    gsap.to(rose.scale, {
-      x: 3 + Math.random() * 2,
-      y: 3 + Math.random() * 2,
-      z: 3 + Math.random() * 2,
-      duration: 3 + Math.random() * 2,
-      delay: Math.random() * 2,
-      ease: "back.out(1.7)"
-    });
-    
-    gsap.to(material, {
-      opacity: 0.9,
-      duration: 2,
-      delay: Math.random() * 2
-    });
-    
-    // Constant rotation
-    gsap.to(rose.rotation, {
-      z: Math.PI * 2,
-      duration: 10 + Math.random() * 10,
-      repeat: -1,
-      ease: "none"
-    });
-  }
-}
-
-function createShootingStars() {
-  const geometry = new THREE.ConeGeometry(0.1, 3, 8);
-  const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+  grassMesh = new THREE.InstancedMesh(geometry, material, GRASS_COUNT);
   
-  for(let i=0; i<5; i++) {
-    const star = new THREE.Mesh(geometry, material);
-    resetShootingStar(star);
-    scene.add(star);
-    shootingStars.push(star);
-  }
-}
-
-function resetShootingStar(star: THREE.Mesh) {
-  star.position.x = (Math.random() - 0.5) * 100;
-  star.position.y = (Math.random() - 0.5) * 100 + 50;
-  star.position.z = (Math.random() - 0.5) * 50;
-  star.rotation.z = -Math.PI / 4;
-  (star as any).speed = 0.5 + Math.random();
-}
-
-function animateShootingStars() {
-  shootingStars.forEach(star => {
-    star.position.x -= (star as any).speed;
-    star.position.y -= (star as any).speed;
+  const dummy = new THREE.Object3D();
+  for (let i = 0; i < GRASS_COUNT; i++) {
+    const x = (Math.random() - 0.5) * 60;
+    const z = (Math.random() - 0.5) * 40 - 5;
     
-    if(star.position.y < -50) {
-      resetShootingStar(star);
-    }
+    dummy.position.set(x, 0, z);
+    dummy.scale.setScalar(0.7 + Math.random() * 0.6);
+    dummy.rotation.y = Math.random() * Math.PI;
+    dummy.updateMatrix();
+    grassMesh.setMatrixAt(i, dummy.matrix);
+  }
+  
+  grassMesh.receiveShadow = true;
+  scene.add(grassMesh);
+}
+
+// --- ROSE SYSTEM (Enhanced) ---
+function createRoses() {
+  const geometry = new THREE.SphereGeometry(0.35, 24, 24); // Smoother
+  
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      uniform float uTime;
+      uniform float uBloomProgress;
+      
+      void main() {
+        vUv = uv;
+        vNormal = normal;
+        vec3 pos = position;
+        
+        float angle = position.y * 4.0;
+        float unfold = smoothstep(0.0, 1.0, uBloomProgress);
+        
+        // Spiral unfold
+        float swirl = sin(pos.y * 8.0 + uTime * 0.5) * 0.15 * unfold;
+        pos.x += swirl;
+        pos.z -= swirl;
+        
+        float openFactor = pos.y > 0.0 ? (1.0 + unfold * 0.5) : 1.0;
+        pos.x *= openFactor;
+        pos.z *= openFactor;
+
+        vec4 mPos = instanceMatrix * vec4(pos, 1.0);
+        
+        // Sway
+        float sway = sin(uTime + mPos.x);
+        mPos.x += sway * 0.1 * unfold;
+        
+        gl_Position = projectionMatrix * viewMatrix * mPos;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal;
+      uniform vec3 uColor;
+      
+      void main() {
+        vec3 light = normalize(vec3(1.0, 1.0, 1.0));
+        float diff = max(dot(vNormal, light), 0.0);
+        float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
+        rim = pow(rim, 2.0);
+        
+        // Velvety Red
+        vec3 finalColor = uColor * (0.3 + diff * 0.7) + vec3(0.8, 0.2, 0.4) * rim * 0.5;
+        gl_FragColor = vec4(finalColor, 1.0);
+      }
+    `,
+    uniforms: bloomUniforms
+  });
+
+  roseMesh = new THREE.InstancedMesh(geometry, material, ROSE_COUNT);
+  
+  const dummy = new THREE.Object3D();
+  for (let i = 0; i < ROSE_COUNT; i++) {
+    const x = (Math.random() - 0.5) * 50;
+    const z = (Math.random() - 0.5) * 35;
+    
+    dummy.position.set(x, 0.6 + Math.random() * 0.4, z);
+    dummy.scale.setScalar(0.8 + Math.random() * 0.5);
+    dummy.rotation.set(Math.random()*0.2, Math.random()*Math.PI, Math.random()*0.2);
+    dummy.updateMatrix();
+    roseMesh.setMatrixAt(i, dummy.matrix);
+  }
+  
+  roseMesh.castShadow = true;
+  scene.add(roseMesh);
+}
+
+// --- PARTICLE RAIN (Enhanced) ---
+function createPetalRain() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(PETAL_COUNT * 3);
+  const randoms = new Float32Array(PETAL_COUNT * 3);
+  
+  for(let i=0; i<PETAL_COUNT; i++) {
+    positions[i*3] = (Math.random() - 0.5) * 60;
+    positions[i*3+1] = Math.random() * 30 + 5;
+    positions[i*3+2] = (Math.random() - 0.5) * 40;
+    
+    randoms[i*3] = Math.random();
+    randoms[i*3+1] = Math.random();
+    randoms[i*3+2] = Math.random();
+  }
+  
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+  
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      attribute vec3 aRandom;
+      uniform float uTime;
+      varying float vAlpha;
+      
+      void main() {
+        vec3 pos = position;
+        
+        // Fall + Wind
+        float speed = 1.5 + aRandom.y;
+        float yOffset = mod(uTime * speed, 30.0);
+        pos.y -= yOffset;
+        if (pos.y < 0.0) pos.y += 30.0;
+        
+        pos.x += sin(uTime + aRandom.x * 10.0) * 1.0; // Stronger drift
+        pos.z += cos(uTime + aRandom.z * 10.0) * 0.5;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = (15.0 * aRandom.x + 8.0) * (10.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+        vAlpha = 0.9;
+      }
+    `,
+    fragmentShader: `
+      varying float vAlpha;
+      void main() {
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        if(length(coord) > 0.5) discard;
+        gl_FragColor = vec4(1.0, 0.6, 0.7, vAlpha);
+      }
+    `,
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false
+  });
+  
+  petals = new THREE.Points(geometry, material);
+  scene.add(petals);
+}
+
+// --- FIREFLIES (New) ---
+function createFireflies() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(FIREFLY_COUNT * 3);
+  const randoms = new Float32Array(FIREFLY_COUNT);
+
+  for(let i=0; i<FIREFLY_COUNT; i++) {
+    positions[i*3] = (Math.random() - 0.5) * 50;
+    positions[i*3+1] = Math.random() * 5 + 0.5;
+    positions[i*3+2] = (Math.random() - 0.5) * 30;
+    randoms[i] = Math.random();
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: `
+      attribute float aRandom;
+      uniform float uTime;
+      varying float vAlpha;
+      
+      void main() {
+        vec3 pos = position;
+        
+        // Gentle float
+        pos.y += sin(uTime * 2.0 + aRandom * 100.0) * 0.2;
+        pos.x += cos(uTime * 1.0 + aRandom * 50.0) * 0.2;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = (4.0 * aRandom + 2.0) * (10.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+        
+        // Blink
+        vAlpha = 0.5 + 0.5 * sin(uTime * 3.0 + aRandom * 10.0);
+      }
+    `,
+    fragmentShader: `
+      varying float vAlpha;
+      void main() {
+        vec2 coord = gl_PointCoord - vec2(0.5);
+        if(length(coord) > 0.5) discard;
+        // Warm gold/yellow
+        gl_FragColor = vec4(1.0, 0.9, 0.4, vAlpha);
+      }
+    `,
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  fireflies = new THREE.Points(geometry, material);
+  scene.add(fireflies);
+}
+
+function startBloomSequence() {
+  gsap.to(bloomUniforms.uBloomProgress, {
+    value: 1,
+    duration: 3,
+    ease: "power2.out"
   });
 }
 
 function animate() {
   animationId = requestAnimationFrame(animate);
-
-  const time = Date.now() * 0.001;
-
-  // Rotate ambient particles
-  if (particles) {
-    particles.rotation.y = time * 0.05;
-    particles.rotation.x = time * 0.02;
-  }
-
-  // Pulse heart particles
-  if (heartParticles) {
-    heartParticles.rotation.y = -time * 0.1;
-    const scale = 1 + Math.sin(time * 2) * 0.05;
-    heartParticles.scale.set(scale, scale, scale);
-  }
+  const elapsedTime = clock.getElapsedTime();
   
-  animateShootingStars();
-  animateBursts();
-
-  // Gentle camera movement based on mouse
-  camera.position.x += (mouse.x * 10 - camera.position.x) * 0.05;
-  camera.position.y += (-mouse.y * 10 - camera.position.y) * 0.05;
-  camera.lookAt(scene.position);
+  windUniforms.uTime.value = elapsedTime;
+  bloomUniforms.uTime.value = elapsedTime;
+  if(petals) (petals.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
+  if(fireflies) (fireflies.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
 
   renderer.render(scene, camera);
 }
 
+// --- SCROLL INTERACTION ---
+function onScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  const scrollY = target.scrollTop;
+
+  // Camera moves up/down or zooms out based on scroll
+  // Initial position (0, 3, 12)
+  
+  // As we scroll down, camera lifts up to see the garden from above
+  camera.position.y = 3 + scrollY * 0.01;
+  camera.position.z = 12 - scrollY * 0.005;
+  camera.lookAt(0, 1 + scrollY * 0.005, 0);
+}
+
+function toggleMusic() {
+  if (!audioRef.value) return;
+  if (audioRef.value.paused) {
+    playMusic();
+  } else {
+    audioRef.value.pause();
+    isMusicPlaying.value = false;
+  }
+}
+
+function playMusic() {
+  if (audioRef.value) {
+    audioRef.value.play().then(() => {
+      isMusicPlaying.value = true;
+    }).catch(() => {});
+  }
+}
+
+function onMouseMove(event: MouseEvent) {
+  const x = (event.clientX / window.innerWidth) * 2 - 1;
+  const y = -(event.clientY / window.innerHeight) * 2 + 1;
+  // Subtle parallax
+  camera.position.x += (x - camera.position.x) * 0.05;
+  camera.position.y += (y * 0.5 + 3 - camera.position.y) * 0.05;
+  camera.lookAt(0, 1, 0);
+}
+
 function onResize() {
-  if (!container.value) return;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
-function onMouseMove(event: MouseEvent) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
-
-function onClick(event: MouseEvent | TouchEvent) {
-  // Phase progression logic
-  if (phase.value < 3) {
-    phase.value++;
-    
-    if (phase.value === 1) {
-      createBloomingRoses();
-    }
-  }
-  
-  // Always do the burst effect
-  let clientX, clientY;
-  if (event instanceof TouchEvent) {
-    clientX = event.touches[0].clientX;
-    clientY = event.touches[0].clientY;
-  } else {
-    clientX = event.clientX;
-    clientY = event.clientY;
-  }
-  shootHeartBurst(clientX, clientY);
-}
-
-function shootHeartBurst(clientX: number, clientY: number) {
-  const x = (clientX / window.innerWidth) * 2 - 1;
-  const y = -(clientY / window.innerHeight) * 2 + 1;
-
-  const vector = new THREE.Vector3(x, y, 0.5);
-  vector.unproject(camera);
-  const dir = vector.sub(camera.position).normalize();
-  const spawnPos = camera.position.clone().add(dir.multiplyScalar(40));
-
-  createBurst(spawnPos);
-}
-
-function createBurst(position: THREE.Vector3) {
-  const geometry = new THREE.BufferGeometry();
-  const count = 100;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  const velocities = [];
-
-  const color = new THREE.Color().setHSL(Math.random(), 1, 0.6);
-
-  for(let i=0; i<count; i++) {
-    positions[i*3] = position.x;
-    positions[i*3+1] = position.y;
-    positions[i*3+2] = position.z;
-
-    const t = Math.random() * Math.PI * 2;
-    const hx = 16 * Math.pow(Math.sin(t), 3);
-    const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-    
-    velocities.push({
-      x: hx * 0.05 * Math.random(),
-      y: hy * 0.05 * Math.random(),
-      z: (Math.random() - 0.5) * 0.5
-    });
-
-    colors[i*3] = color.r;
-    colors[i*3+1] = color.g;
-    colors[i*3+2] = color.b;
-  }
-
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-  const material = new THREE.PointsMaterial({
-    size: 0.5,
-    vertexColors: true,
-    blending: THREE.AdditiveBlending,
-    transparent: true,
-    opacity: 1
-  });
-
-  const burst = new THREE.Points(geometry, material);
-  (burst as any).velocities = velocities;
-  (burst as any).life = 1.0;
-  
-  scene.add(burst);
-  burstParticles.push(burst);
-}
-
-function animateBursts() {
-  for(let i = burstParticles.length - 1; i >= 0; i--) {
-    const burst = burstParticles[i];
-    const velocities = (burst as any).velocities;
-    const positions = burst.geometry.attributes.position.array as Float32Array;
-    
-    (burst as any).life -= 0.02;
-    (burst.material as THREE.PointsMaterial).opacity = (burst as any).life;
-
-    if((burst as any).life <= 0) {
-      scene.remove(burst);
-      burstParticles.splice(i, 1);
-      continue;
-    }
-
-    for(let j=0; j<velocities.length; j++) {
-      positions[j*3] += velocities[j].x;
-      positions[j*3+1] += velocities[j].y;
-      positions[j*3+2] += velocities[j].z;
-    }
-    burst.geometry.attributes.position.needsUpdate = true;
-  }
-}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:ital,wght@1,700&display=swap');
+/* High Quality Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
 
-.secret-love-container {
+.garden-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.scene-background {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #050210;
-  overflow: hidden;
-  z-index: 9999;
-  cursor: pointer;
-  touch-action: none;
-}
-
-.overlay-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: #fff;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 2s ease-in-out;
-  z-index: 10;
   width: 100%;
-  text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+  height: 100%;
+  z-index: -1; /* Behind content */
+  background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
 }
 
-.overlay-text.visible {
-  opacity: 1;
+.content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; /* Scrollable */
+  scroll-behavior: smooth;
+  z-index: 10;
+}
+
+/* --- HERO SECTION --- */
+.hero-section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.hero-content {
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  animation: fadeIn 2s ease-out;
 }
 
 .main-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 5rem;
+  font-family: 'Great Vibes', cursive; /* Handwritten Style */
+  font-size: 8rem;
   margin: 0;
-  background: linear-gradient(135deg, #ff0055 0%, #ff99aa 50%, #fff 100%);
+  color: #fff;
+  background: linear-gradient(to right, #fff, #ffebee);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 15px rgba(255, 0, 85, 0.6));
-  animation: floatTitle 6s ease-in-out infinite;
+
+  filter: drop-shadow(0 0 10px rgba(255,105,180,0.5));
 }
 
-.heart {
-  color: #ff0055;
-  -webkit-text-fill-color: #ff0055;
-  animation: beat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+.amp {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 4rem;
+  vertical-align: middle;
+  color: #ffeb3b;
+}
+
+.sub-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  margin: 10px 0;
+  font-weight: normal;
+  letter-spacing: 5px;
+  color: #fff;
+}
+
+.scroll-hint {
+  margin-top: 50px;
+  font-size: 1rem;
+  opacity: 0.8;
+  letter-spacing: 2px;
+}
+
+.scroll-arrow {
+  font-size: 2rem;
+  animation: bounce 2s infinite;
+  margin-top: 10px;
+}
+
+/* --- SECTIONS --- */
+.section {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.section-title {
+  font-family: 'Great Vibes', cursive;
+  font-size: 4rem;
+  color: #d81b60;
+  margin-bottom: 40px;
+  text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  padding: 60px;
+  border-radius: 30px;
+  max-width: 800px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255,255,255,0.8);
+  margin: 20px;
+}
+
+.glass-card h2 {
+  font-family: 'Great Vibes', cursive;
+  font-size: 3.5rem;
+  color: #c2185b;
+  margin-bottom: 20px;
+}
+
+.glass-card p {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+/* --- GALLERY --- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.gallery-item {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover {
+  transform: translateY(-10px);
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #ffebee;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #d81b60;
+  font-family: 'Playfair Display', serif;
+}
+
+.heart-icon {
+  font-size: 2rem;
+  margin-top: 10px;
+}
+
+/* --- PROMISES --- */
+.promise-list {
+  list-style: none;
+  padding: 0;
+  text-align: left;
   display: inline-block;
 }
 
-.sub-text {
-  font-family: 'Dancing Script', cursive;
-  font-size: 3.5rem;
-  margin-top: 1rem;
-  color: #ffaec9;
-  text-shadow: 0 0 15px rgba(255, 174, 201, 0.8);
-  letter-spacing: 2px;
-}
-
-.divider {
-  margin: 0 20px;
-  font-size: 2rem;
-  vertical-align: middle;
-  color: #ff0055;
-}
-
-.romantic-quote {
-  font-family: 'Dancing Script', cursive;
-  font-size: 1.8rem;
-  margin-top: 3rem;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 1px;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-}
-
-.instruction {
-  position: absolute;
-  bottom: 80px;
-  width: 100%;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.5);
-  font-family: 'Playfair Display', serif;
+.promise-list li {
   font-size: 1.2rem;
-  letter-spacing: 2px;
-  animation: fadePulse 3s infinite;
+  margin-bottom: 15px;
+  padding-left: 30px;
+  position: relative;
+}
+
+.promise-list li::before {
+  content: '🌹';
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+
+/* --- FOOTER --- */
+.footer {
+  padding: 50px;
+  text-align: center;
+  color: #555;
+  background: linear-gradient(to top, rgba(255,255,255,0.9), transparent);
+}
+
+.footer .date {
+  font-family: 'Great Vibes', cursive;
+  font-size: 2rem;
+  color: #d81b60;
+}
+
+/* --- UI CONTROLS --- */
+.music-control {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.8);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-size: 1.5rem;
+}
+
+.opening-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 1.5s ease-out;
   pointer-events: none;
 }
 
-@keyframes beat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.3); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.3); }
-  70% { transform: scale(1); }
+.opening-overlay.fade-out {
+  opacity: 0;
 }
 
-@keyframes fadePulse {
-  0%, 100% { opacity: 0.3; transform: translateY(0); }
-  50% { opacity: 0.8; transform: translateY(-5px); }
+.loading-text {
+  font-family: 'Great Vibes', cursive;
+  font-size: 3rem;
+  color: #d81b60;
+  animation: pulse 1s infinite;
 }
 
-@keyframes floatTitle {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(1deg); }
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
 
-@media (max-width: 768px) {
-  .main-title {
-    font-size: 3.5rem;
-  }
-  .sub-text {
-    font-size: 2.5rem;
-  }
-  .romantic-quote {
-    font-size: 1.4rem;
-    padding: 0 20px;
-  }
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hide scrollbar for clean look but allow scroll */
+.content-layer::-webkit-scrollbar {
+  width: 8px;
+}
+.content-layer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content-layer::-webkit-scrollbar-thumb {
+  background: rgba(255, 105, 180, 0.5);
+  border-radius: 4px;
 }
 </style>
