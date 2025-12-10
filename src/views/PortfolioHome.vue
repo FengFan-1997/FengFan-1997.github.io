@@ -15,6 +15,13 @@
     <!-- Config Panel -->
     <ConfigPanel v-model="config.mode" />
 
+    <!-- Language Switcher -->
+    <div class="lang-switch" @click="toggleLanguage">
+      <span :class="{ active: currentLang === 'en' }">EN</span>
+      <span class="divider">/</span>
+      <span :class="{ active: currentLang === 'zh' }">CN</span>
+    </div>
+
     <!-- Sidebar Navigation -->
     <Sidebar />
 
@@ -52,6 +59,8 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import gsap from 'gsap';
+import { useLanguageStore } from '../stores/language';
+import { storeToRefs } from 'pinia';
 
 // Components
 import UniverseBackground from '../components/UniverseBackground.vue';
@@ -70,6 +79,9 @@ import FooterSection from '../components/FooterSection.vue';
 
 const router = useRouter();
 const universeRef = ref<InstanceType<typeof UniverseBackground> | null>(null);
+const languageStore = useLanguageStore();
+const { currentLang } = storeToRefs(languageStore);
+const { toggleLanguage } = languageStore;
 
 const config = reactive({
   mode: '0' // 0: Ripple, 1: Kaleidoscope, 2: Starburst

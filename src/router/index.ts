@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/Home.vue';
 import Ingredient from '../Ingredient/index.vue';
 import ChristmasTree from '../ChristmasTree/index.vue';
 import PortfolioHome from '../views/PortfolioHome.vue';
@@ -13,7 +12,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: PortfolioHome
     },
     {
       path: '/portfolio-home',

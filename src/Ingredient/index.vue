@@ -541,14 +541,14 @@ watch(typeIndex, (nv) => {
 
 <style lang="less" scoped>
 /* Variables */
-@primary-color: #4a90e2;
-@secondary-color: #6c757d;
-@accent-color: #00d2ff;
-@text-main: #333;
-@text-secondary: #666;
-@glass-bg: rgba(255, 255, 255, 0.65);
-@glass-border: rgba(255, 255, 255, 0.5);
-@glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+@primary-color: #1d4ed8; /* deeper blue */
+@secondary-color: #334155;
+@accent-color: #0ea5e9; /* cyan stronger */
+@text-main: #0f172a; /* darker text */
+@text-secondary: #334155;
+@glass-bg: rgba(255, 255, 255, 0.80);
+@glass-border: rgba(255, 255, 255, 0.8);
+@glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.25);
 
 /* Animations */
 @keyframes float {
@@ -567,8 +567,8 @@ watch(typeIndex, (nv) => {
   justify-content: center;
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  overflow-y: auto;
+  background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 100%);
   font-family: 'Inter', sans-serif;
   color: @text-main;
 }
@@ -587,27 +587,27 @@ watch(typeIndex, (nv) => {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.6;
+  opacity: 0.8;
   transition: transform 0.1s linear;
 
   &.orb-1 {
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+    background: radial-gradient(circle, #fb7185 0%, #fca5a5 100%);
     top: -50px;
     left: -100px;
   }
   &.orb-2 {
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, #a18cd1 0%, #fbc2eb 100%);
+    background: radial-gradient(circle, #7c3aed 0%, #a78bfa 100%);
     bottom: -100px;
     right: -100px;
   }
   &.orb-3 {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, #84fab0 0%, #8fd3f4 100%);
+    background: radial-gradient(circle, #22c55e 0%, #38bdf8 100%);
     top: 40%;
     left: 40%;
   }
@@ -936,8 +936,8 @@ watch(typeIndex, (nv) => {
     height: auto;
     padding: 30px 20px;
     width: 95%;
-    margin-top: 60px; /* Add margin to avoid top truncation */
-    margin-bottom: 40px; /* Add margin to avoid bottom truncation */
+    margin-top: 16px;
+    margin-bottom: 24px;
   }
   
   .main-title {
@@ -954,7 +954,7 @@ watch(typeIndex, (nv) => {
   }
   
   .preview-inner {
-    min-height: 350px;
+    min-height: 380px;
   }
   
   .operation-buttons {
@@ -967,7 +967,7 @@ watch(typeIndex, (nv) => {
   }
 
   .bg-orb {
-    transform: scale(0.6);
+    transform: scale(0.7);
   }
 }
 </style>

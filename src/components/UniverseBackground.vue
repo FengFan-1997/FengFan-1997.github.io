@@ -189,9 +189,9 @@ const vertexShader = `
     
     // Make particles brighter during gather/explode
     vColor += vec3(uGather * 0.2);
-    vColor += vec3(uExplode * 0.4);
+    vColor += vec3(uExplode * 0.3);
     
-    vAlpha = smoothstep(200.0, 0.0, abs(mvPosition.z)) * (0.18 + twinkle * 0.10);
+    vAlpha = smoothstep(200.0, 0.0, abs(mvPosition.z)) * (0.15 + twinkle * 0.10);
     vAlpha += uGather * 0.2;
   }
 `;
@@ -330,7 +330,7 @@ const animate = () => {
     if (isHolding.value) {
       state = 'GATHERING';
       // Gather: Slowly increase to 0.95 (limit convergence)
-      gatherStrength += 0.0009; 
+      gatherStrength += 0.00096; 
       if (gatherStrength > 0.95) gatherStrength = 0.95;
       
       // Reset explode if we start gathering again

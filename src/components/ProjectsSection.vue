@@ -2,7 +2,7 @@
   <section class="section projects-section" id="projects">
     <div class="content-wrapper">
       <div class="section-header">
-        <h2 class="section-title">SELECTED WORKS</h2>
+        <h2 class="section-title">{{ t('projects.title') }}</h2>
         <div class="project-filter">
           <button 
             v-for="filter in filters" 
@@ -11,7 +11,7 @@
             :class="{ active: activeFilter === filter }"
             @click="setFilter(filter)"
           >
-            {{ filter }}
+            {{ filter === 'All' ? t('projects.filters.all') : filter }}
           </button>
         </div>
       </div>
@@ -19,7 +19,7 @@
       <div class="projects-list">
         <div 
           v-for="(item, index) in filteredProjects" 
-          :key="item.title"
+          :key="item.id"
           class="project-card"
           :class="{ 'reversed': index % 2 !== 0 }"
           ref="projectCardsRef"
@@ -27,20 +27,8 @@
           @mouseleave="onLeave(index)"
           @click="onCardClick(item.route)"
         >
-          <div class="card-visual-container">
-            <!-- Chromatic Aberration Layers -->
-            <div class="chromatic-layers" :style="getCardStyle(index)">
-              <div class="layer layer-r" :style="{ backgroundImage: `url(${item.image})` }"></div>
-              <div class="layer layer-g" :style="{ backgroundImage: `url(${item.image})` }"></div>
-              <div class="layer layer-b" :style="{ backgroundImage: `url(${item.image})` }"></div>
-            </div>
-            
-            <!-- Original Overlay Content -->
-            <div class="visual-content">
-              <span class="visual-icon">{{ item.icon }}</span>
-            </div>
-            <div class="visual-glow"></div>
-            <div class="visual-overlay"></div>
+          <div class="card-visual-container" :style="getCardStyle(index)">
+            <div class="plain-image" :style="{ backgroundImage: `url(${item.image})` }"></div>
           </div>
           
           <div class="card-content">
@@ -53,7 +41,7 @@
             <h2 class="card-title">{{ item.title }}</h2>
             <p class="card-desc">{{ item.desc }}</p>
             <div class="card-action">
-              <span>View Project</span>
+              <span>{{ t('projects.viewProject') }}</span>
               <span class="arrow-icon">→</span>
             </div>
           </div>
@@ -66,6 +54,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import gsap from 'gsap';
+import { useLanguageStore } from '../stores/language';
+
+const languageStore = useLanguageStore();
+const { t } = languageStore;
 
 const emit = defineEmits<{
   (e: 'hover-start'): void;
@@ -78,70 +70,77 @@ const activeFilter = ref('All');
 const filters = ['All', 'Vue 3', 'Three.js', 'WebGL', 'AI', 'SaaS', 'DeFi'];
 const cardProgress = ref<number[]>([]); // Store scroll progress for each card
 
-const navItems = [
+const navItems = computed(() => [
   { 
-    title: 'AI INGREDIENTS', 
-    desc: 'Intelligent Label Generation powered by Gemini. Transform simple text into FDA-compliant nutrition facts and ingredient lists with one click.', 
+    id: 'ingredients',
+    title: t('projects.items.ingredients.title'), 
+    desc: t('projects.items.ingredients.desc'), 
     route: '/ingredient',
     icon: '🧬',
-    image: 'https://images.unsplash.com/photo-1615486511484-92e0043be555?q=80&w=800&auto=format&fit=crop', // Abstract DNA/Science
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop', // Food/Ingredients (replaced)
     tags: ['Vue 3', 'AI', 'Automation']
   },
   { 
-    title: 'GEMINI CHAT', 
-    desc: 'Advanced conversational interface powered by Gemini 2.5 Flash. Features real-time streaming responses and context-aware interactions.', 
+    id: 'gemini',
+    title: t('projects.items.gemini.title'), 
+    desc: t('projects.items.gemini.desc'), 
     route: '/gemini-chat',
     icon: '💬',
     image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop', // AI/Tech
     tags: ['Vue 3', 'AI', 'NLP']
   },
   { 
-    title: 'AI POLYGLOT', 
-    desc: 'Smart translation and text polishing tool. Supports multiple languages and tone adjustments (Professional, Casual, Creative).', 
+    id: 'polyglot',
+    title: t('projects.items.polyglot.title'), 
+    desc: t('projects.items.polyglot.desc'), 
     route: '/translator',
     icon: '🌐',
     image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', // Globe/Network
     tags: ['Vue 3', 'AI', 'Tools']
   },
   { 
-    title: 'STORYTELLER', 
-    desc: 'Interactive AI story generator. Create immersive narratives based on genre, theme, and character inputs.', 
+    id: 'storyteller',
+    title: t('projects.items.storyteller.title'), 
+    desc: t('projects.items.storyteller.desc'), 
     route: '/storyteller',
     icon: '📖',
     image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop', // Book/Fantasy
     tags: ['Vue 3', 'AI', 'Creative']
   },
   { 
-    title: 'CHRISTMAS MAGIC', 
-    desc: 'An immersive 3D experience controlled by hand gestures. Uses MediaPipe for tracking and Three.js for rendering a magical interactive scene.', 
+    id: 'christmas',
+    title: t('projects.items.christmas.title'), 
+    desc: t('projects.items.christmas.desc'), 
     route: '/christmas-tree',
     icon: '🎄',
     image: 'https://images.unsplash.com/photo-1544084944-152696a63f72?q=80&w=800&auto=format&fit=crop', // Christmas/Lights
     tags: ['Three.js', 'Computer Vision', 'Interactive']
   },
   {
-    title: 'NEXUS DASHBOARD',
-    desc: 'Next-gen analytics platform for high-frequency trading. Features real-time WebGL charting, sub-millisecond data updates, and customizable workspaces.',
+    id: 'nexus',
+    title: t('projects.items.nexus.title'),
+    desc: t('projects.items.nexus.desc'),
     route: '#',
     icon: '📊',
     image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=800&auto=format&fit=crop', // Chart/Data
     tags: ['Vue 3', 'WebGL', 'FinTech']
   },
   {
-    title: 'AETHER MARKET',
-    desc: 'Decentralized NFT marketplace with 3D immersive gallery mode. Built on Ethereum with IPFS integration and custom smart contracts.',
+    id: 'market',
+    title: t('projects.items.market.title'),
+    desc: t('projects.items.market.desc'),
     route: '#',
     icon: '💎',
-    image: 'https://images.unsplash.com/photo-1620321023374-d1a68fddadb3?q=80&w=800&auto=format&fit=crop', // Blockchain/Crystal
+    image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=800&auto=format&fit=crop', // NFT/Blockchain (replaced)
     tags: ['Web3', 'Three.js', 'DeFi']
   }
-];
+]);
 
 const filteredProjects = computed(() => {
   if (activeFilter.value === 'All') {
-    return navItems;
+    return navItems.value;
   }
-  return navItems.filter(item => item.tags.includes(activeFilter.value));
+  return navItems.value.filter(item => item.tags.includes(activeFilter.value));
 });
 
 const setFilter = (filter: string) => {
@@ -182,27 +181,18 @@ const updateScrollEffect = () => {
 const getCardStyle = (index: number) => {
   const progress = cardProgress.value[index] || 0;
   
-  // Chromatic Aberration
-  const shift = progress * 10; 
+  const enter = Math.max(0, progress);
   
-  // Lift Up Effect
-  // When at bottom (progress > 0), rotateX is positive (tilted back)
-  // When at center (progress 0), rotateX is 0
-  // When at top (progress < 0), keep 0 or slight negative?
-  // User wants "lifted from below", so mainly entering effect.
-  
-  const rotation = Math.max(0, progress * 60); // 0 to 60 degrees
-  const opacity = 1 - Math.max(0, progress * 0.5); // Fade in as it lifts
-  const scale = 0.8 + (1 - Math.max(0, progress)) * 0.2; // Scale up from 0.8 to 1
-  const maskBottom = `${Math.max(0, progress * 35)}%`; // Reveal from bottom on enter
+  const rotation = enter * 25;
+  const opacity = 1 - enter * 0.4;
+  const scale = 0.9 + (1 - enter) * 0.1;
+  const maskTop = `${enter * 35}%`;
 
   return {
-    '--shift-r': `${-shift}px`,
-    '--shift-b': `${shift}px`,
     '--card-rotation': `${rotation}deg`,
     '--card-opacity': opacity,
     '--card-scale': scale,
-    '--mask-bottom': maskBottom
+    '--mask-top': maskTop
   };
 };
 
@@ -216,28 +206,12 @@ watch(activeFilter, () => {
   });
 });
 
-const onHover = (index: number) => {
+const onHover = (_index: number) => {
   emit('hover-start');
-  
-  // Specific card glow effect
-  if (projectCardsRef.value[index]) {
-    const glow = projectCardsRef.value[index].querySelector('.visual-glow');
-    if (glow) {
-      gsap.to(glow, { opacity: 0.8, duration: 0.3 });
-    }
-  }
 };
 
-const onLeave = (index: number) => {
+const onLeave = (_index: number) => {
   emit('hover-end');
-  
-  // Reset specific card glow effect
-  if (projectCardsRef.value[index]) {
-    const glow = projectCardsRef.value[index].querySelector('.visual-glow');
-    if (glow) {
-      gsap.to(glow, { opacity: 0.5, duration: 0.3 });
-    }
-  }
 };
 
 const onCardClick = (route: string) => {
@@ -328,31 +302,31 @@ onBeforeUnmount(() => {
   padding: 8px 20px;
   border-radius: 100px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: inherit;
   font-size: 0.9rem;
+  transition: all 0.3s;
 }
 
 .filter-btn:hover, .filter-btn.active {
-  background: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
-  border-color: rgba(56, 189, 248, 0.3);
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 120px;
 }
 
 .project-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
   align-items: center;
-  gap: 80px;
-  width: 100%;
   opacity: 0;
-  transform: translateY(60px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(50px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
   cursor: pointer;
-  margin-bottom: 120px;
-}
-
-.project-card:last-child {
-  margin-bottom: 0;
 }
 
 .project-card.is-visible {
@@ -361,129 +335,79 @@ onBeforeUnmount(() => {
 }
 
 .project-card.reversed {
-  flex-direction: row-reverse;
+  grid-template-columns: 0.8fr 1.2fr;
+  direction: rtl; /* Use direction to swap columns visually or just swap in grid */
+}
+/* Better reversed handling without RTL which messes up text */
+.project-card.reversed .card-content {
+  order: 2; /* Content right */
+  text-align: right;
+  align-items: flex-end;
+}
+.project-card.reversed .card-visual-container {
+  order: 1; /* Visual left */
+}
+
+/* Wait, default is visual left, content right? 
+   Original code:
+   <div visual></div>
+   <div content></div>
+   So default: Visual (1), Content (2).
+   
+   If I want reversed: Content (1), Visual (2).
+*/
+.project-card.reversed {
+  grid-template-columns: 0.8fr 1.2fr;
+  direction: ltr; /* Reset */
+}
+.project-card.reversed .card-visual-container {
+  order: 2;
+}
+.project-card.reversed .card-content {
+  order: 1;
+  text-align: right;
+  align-items: flex-end;
 }
 
 .card-visual-container {
-  flex: 1;
-  height: 400px;
-  background: #000;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  border-radius: 24px;
   position: relative;
-  overflow: hidden;
-  transition: transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  
-  clip-path: inset(0% 0% var(--mask-bottom, 0%) 0% round 24px);
-  transform: perspective(1000px) rotateX(var(--card-rotation, 0deg)) scale(var(--card-scale, 1));
-  opacity: var(--card-opacity, 1);
-  transform-origin: 50% 100%; /* Pivot from bottom center */
-  will-change: transform, opacity;
-}
-
-.chromatic-layers {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  z-index: 1;
+  aspect-ratio: 16/10;
+  border-radius: 20px;
+  overflow: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
 }
 
-.layer {
-  position: absolute;
-  top: 0;
-  left: 0;
+.plain-image {
   width: 100%;
   height: 100%;
   background-size: cover;
   background-position: center;
-  mix-blend-mode: screen;
-  will-change: transform;
-}
-
-.layer-r {
-  background-color: #ff0000;
-  background-blend-mode: multiply;
-  transform: translateX(var(--shift-r, 0px));
-}
-
-.layer-g {
-  background-color: #00ff00;
-  background-blend-mode: multiply;
-}
-
-.layer-b {
-  background-color: #0000ff;
-  background-blend-mode: multiply;
-  transform: translateX(var(--shift-b, 0px));
-}
-
-.visual-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)); /* Darker overlay to make text pop */
-  pointer-events: none;
-  z-index: 2;
-}
-
-.project-card:hover .card-visual-container {
-  transform: scale(1.02);
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
-}
-
-.visual-content {
-  position: relative;
-  z-index: 3;
-  font-size: 4rem;
-  opacity: 0.8;
-  transform: scale(0.8);
-  transition: all 0.5s ease;
-}
-
-.project-card:hover .visual-content {
-  opacity: 1;
-  transform: scale(1);
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-}
-
-.visual-glow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
-  transition: opacity 0.3s;
-  opacity: 0.3;
-}
-
-.project-card:hover .visual-glow {
-  opacity: 0.8;
+  transform: scale(var(--card-scale, 1));
+  opacity: var(--card-opacity, 1);
+  transition: transform 0.1s linear, opacity 0.1s linear;
 }
 
 .card-content {
-  flex: 0.8;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 24px;
+}
+.project-card.reversed .card-header {
+  flex-direction: row-reverse;
 }
 
 .card-number {
-  font-family: monospace;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.2rem;
   color: #38bdf8;
-  font-size: 1.1rem;
   opacity: 0.8;
 }
 
@@ -495,16 +419,15 @@ onBeforeUnmount(() => {
 
 .mini-tag {
   font-size: 0.75rem;
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 100px;
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 .card-title {
-  font-size: 3rem;
-  margin: 0 0 24px 0;
+  font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.1;
   color: #f1f5f9;
@@ -512,40 +435,33 @@ onBeforeUnmount(() => {
 
 .card-desc {
   font-size: 1.1rem;
-  line-height: 1.7;
   color: #94a3b8;
-  margin-bottom: 40px;
+  line-height: 1.6;
   max-width: 500px;
 }
 
 .card-action {
+  margin-top: 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: #38bdf8;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.9rem;
-  transition: gap 0.3s ease;
+  cursor: pointer;
+  transition: gap 0.3s;
+}
+.project-card.reversed .card-action {
+  flex-direction: row-reverse;
 }
 
-.project-card:hover .card-action {
-  gap: 20px;
-}
-
-.arrow-icon {
-  transition: transform 0.3s;
-}
-
-.project-card:hover .arrow-icon {
-  transform: translateX(5px);
+.card-action:hover {
+  gap: 15px;
 }
 
 /* Mobile Adaptation */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .section {
-    padding: 80px 20px 40px;
+    padding: 80px 16px 60px;
   }
   
   .section-title {
@@ -553,29 +469,50 @@ onBeforeUnmount(() => {
     margin-bottom: 40px;
   }
   
-  .project-card {
-    flex-direction: column !important; /* Force column layout */
-    gap: 40px;
-    margin-bottom: 80px;
+  .projects-list {
+    gap: 60px;
   }
   
-  .card-visual-container {
-    width: 100%;
-    height: 250px;
+  .project-card, .project-card.reversed {
+    grid-template-columns: 1fr;
+    gap: 30px;
   }
   
-  .card-content {
-    width: 100%;
-    padding: 0;
+  .card-visual-container, .project-card.reversed .card-visual-container {
+    order: 1; /* Always image first on mobile */
+    aspect-ratio: 16/9;
+  }
+  
+  .card-content, .project-card.reversed .card-content {
+    order: 2; /* Always content second */
     text-align: left;
+    align-items: flex-start;
+  }
+  
+  .card-header, .project-card.reversed .card-header {
+    flex-direction: row;
+  }
+  
+  .card-action, .project-card.reversed .card-action {
+    flex-direction: row;
   }
   
   .card-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   
   .card-desc {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-filter {
+    gap: 8px;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
   }
 }
 </style>

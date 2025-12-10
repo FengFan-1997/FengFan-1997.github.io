@@ -1,46 +1,51 @@
 <template>
-  <section class="section about-section">
+  <section class="section about-section" id="about">
     <div class="content-wrapper">
-      <h2 class="section-title">ABOUT ME</h2>
+      <h2 class="section-title">{{ t('about.title') }}</h2>
       <div class="about-content">
         <div class="about-text">
           <p class="bio">
-            3 年前端开发经验，专注 React/Vue 生态，擅长从 0 到 1 搭建前端架构，注重代码可维护性与用户体验。
+            {{ t('about.bio') }}
           </p>
           
           <div class="tech-stack">
             <div class="stack-category">
-              <h3>熟练掌握</h3>
+              <h3>{{ t('about.proficient') }}</h3>
               <p>HTML5 / CSS3 / JS (ES6+), React / Vue3, Webpack / Vite, 性能优化</p>
             </div>
             <div class="stack-category">
-              <h3>了解使用</h3>
+              <h3>{{ t('about.familiar') }}</h3>
               <p>TypeScript, UniApp, Node.js 基础</p>
             </div>
           </div>
 
           <div class="philosophy">
-            <p>“以用户体验为核心，以代码质量为底线，做靠谱的前端解决方案”</p>
+            <p>{{ t('about.philosophy') }}</p>
           </div>
         </div>
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-number">3+</span>
-            <span class="stat-label">Years Exp.</span>
+            <span class="stat-label">{{ t('about.stats.years') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">30+</span>
-            <span class="stat-label">Projects</span>
+            <span class="stat-label">{{ t('about.stats.projects') }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">10+</span>
-            <span class="stat-label">Awards</span>
+            <span class="stat-label">{{ t('about.stats.awards') }}</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+import { useLanguageStore } from '../stores/language';
+const { t } = useLanguageStore();
+</script>
 
 <style scoped>
 .section {
@@ -99,93 +104,82 @@
 .stack-category h3 {
   font-size: 1.1rem;
   color: #38bdf8;
-  margin-bottom: 16px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  margin-bottom: 12px;
 }
 
 .stack-category p {
-  color: #cbd5e1;
+  color: #94a3b8;
   line-height: 1.6;
-  font-size: 1.1rem;
 }
 
 .philosophy {
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+  background: rgba(30, 41, 59, 0.3);
   border-left: 4px solid #38bdf8;
-  border-radius: 0 12px 12px 0;
+  border-radius: 4px;
 }
 
 .philosophy p {
-  font-size: 1.2rem;
+  color: #cbd5e1;
   font-style: italic;
-  color: #f1f5f9;
-  margin: 0;
+  font-size: 1.1rem;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
 }
 
 .stat-item {
-  text-align: center;
-  padding: 30px 20px;
   background: rgba(30, 41, 59, 0.3);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  border-radius: 16px;
-  transition: transform 0.3s ease;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: transform 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stat-item:hover {
   transform: translateY(-5px);
-  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(30, 41, 59, 0.5);
 }
 
 .stat-number {
   display: block;
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: 800;
   color: #38bdf8;
   margin-bottom: 8px;
+  font-family: 'Space Mono', monospace;
 }
 
 .stat-label {
-  font-size: 0.9rem;
   color: #94a3b8;
+  font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
-@media (max-width: 768px) {
-  .section {
-    padding: 80px 20px 40px;
-  }
-
-  .section-title {
-    font-size: 2rem;
-    margin-bottom: 40px;
-  }
-
+@media (max-width: 900px) {
   .about-content {
     grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  .stat-item {
-    padding: 15px 5px;
+    gap: 60px;
   }
   
-  .stat-number {
-    font-size: 1.5rem;
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .tech-stack {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
