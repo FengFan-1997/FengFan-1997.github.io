@@ -26,21 +26,25 @@ const typeOptions = [
   { label: 'Food', value: 0, gtm: 'ga-click-demo-food' },
   { label: 'Drug', value: 1, gtm: 'ga-click-demo-drug' },
   { label: 'Cosmetic', value: 2, gtm: 'ga-click-demo-cosmetic' },
-  { label: 'Dietary Supplement', value: 3, gtm: 'ga-click-demo-dietary-supplement' },
+  { label: 'Dietary Supplement', value: 3, gtm: 'ga-click-demo-dietary-supplement' }
 ];
 const productTypeMap: Record<number, 'Food' | 'Drug' | 'Cosmetic' | 'Dietary Supplement'> = {
   0: 'Food',
   1: 'Drug',
   2: 'Cosmetic',
-  3: 'Dietary Supplement',
+  3: 'Dietary Supplement'
 };
 const typeIndex = ref(0);
 
 const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300" font-family="Arial, sans-serif"><rect width="500" height="300" fill="#fff"/><rect x="0.75" y="0.75" width="498.5" height="298.5" fill="none" stroke="#000" stroke-width="1.5"/></svg>`;
 const placeholderUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(placeholderSvg);
 const imgSrc = ref<string>(placeholderUrl);
-const lastLayoutType = ref<'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts' | null>(null);
-const pendingLayoutType = ref<'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts' | null>(null);
+const lastLayoutType = ref<
+  'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts' | null
+>(null);
+const pendingLayoutType = ref<
+  'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts' | null
+>(null);
 const errorMsg = ref('');
 const canDownload = ref(false);
 
@@ -51,16 +55,17 @@ const PLACEHOLDERS: Record<string, string> = {
     'Provide cosmetic raw materials (e.g., "water, vitamin E", "rose cream"). Add "pure/only" for single pure ingredients (e.g., "pure aloe vera", "only squalane"). Enter core materials only for regular cosmetics (e.g., "hyaluronic acid + mica").',
   'Dietary Supplement':
     'Enter main ingredients (e.g., "Vitamin C, Zinc"), specs (e.g., "60 capsules/bottle"). System expands to full commercial formula, generating FDA-compliant %DV, other ingredients, usage (e.g., "1 capsule daily with meals") and standard warnings (e.g., "Keep out of reach of children").',
-  default: 'Ingredients (comma or newline separated)',
+  default: 'Ingredients (comma or newline separated)'
 };
 const placeholderText = computed(() => PLACEHOLDERS[productType.value] ?? PLACEHOLDERS.default);
 
 const DEFAULT_DEMO_IMAGES: Record<'Food' | 'Drug' | 'Cosmetic' | 'Dietary Supplement', string> = {
   Food: 'https://cdn.packify.ai/image-resize/800xauto_outside/image/a71233c8-731a-4a42-a4bb-0c01d53bc289.png',
   Drug: 'https://cdn.packify.ai/image-resize/800xauto_outside/image/8ec56657-ed79-4328-b4dd-3442a7c45f03.png',
-  Cosmetic: 'https://cdn.packify.ai/image-resize/800xauto_outside/image/b09f6f23-3afd-4069-9d2f-d9a6f37f047f.png',
+  Cosmetic:
+    'https://cdn.packify.ai/image-resize/800xauto_outside/image/b09f6f23-3afd-4069-9d2f-d9a6f37f047f.png',
   'Dietary Supplement':
-    'https://cdn.packify.ai/image-resize/800xauto_outside/image/f054e841-e2c6-4569-8356-47a3f48332ed.png',
+    'https://cdn.packify.ai/image-resize/800xauto_outside/image/f054e841-e2c6-4569-8356-47a3f48332ed.png'
 };
 const DEFAULT_LAYOUT_BY_TYPE: Record<
   'Food' | 'Drug' | 'Cosmetic' | 'Dietary Supplement',
@@ -69,7 +74,7 @@ const DEFAULT_LAYOUT_BY_TYPE: Record<
   Food: 'nutrition_facts',
   Drug: 'drug_facts',
   Cosmetic: 'standard',
-  'Dietary Supplement': 'supplement_facts',
+  'Dietary Supplement': 'supplement_facts'
 };
 const isDemoImage = computed(() => {
   const vals = Object.values(DEFAULT_DEMO_IMAGES);
@@ -167,7 +172,11 @@ const onGenerate = async () => {
   errorMsg.value = '';
   startProgress();
   try {
-    const { url, layoutType } = await generateImageWithAI('', ingredientsInput.value, productType.value);
+    const { url, layoutType } = await generateImageWithAI(
+      '',
+      ingredientsInput.value,
+      productType.value
+    );
     imgSrc.value = url || placeholderUrl;
     pendingLayoutType.value = layoutType || null;
   } catch {
@@ -217,7 +226,9 @@ const downLoadImg = async () => {
 
 const downLoadSvg = () => {
   if (!imgSrc.value || imgSrc.value === placeholderUrl) return;
-  const svgContent = decodeURIComponent(imgSrc.value.replace('data:image/svg+xml;charset=utf-8,', ''));
+  const svgContent = decodeURIComponent(
+    imgSrc.value.replace('data:image/svg+xml;charset=utf-8,', '')
+  );
   const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent);
   const a = document.createElement('a');
   a.href = svgDataUrl;
@@ -229,7 +240,9 @@ const downLoadSvg = () => {
 
 const onExportPdf = () => {
   if (!imgSrc.value || imgSrc.value === placeholderUrl) return;
-  const svgContent = decodeURIComponent(imgSrc.value.replace('data:image/svg+xml;charset=utf-8,', ''));
+  const svgContent = decodeURIComponent(
+    imgSrc.value.replace('data:image/svg+xml;charset=utf-8,', '')
+  );
   exportPdf(svgContent, 0);
 };
 
@@ -240,12 +253,14 @@ const openDownload = async () => {
     isDownloadPopoverOpen.value = !isDownloadPopoverOpen.value;
     if (isDownloadPopoverOpen.value) {
       await nextTick();
-      gsap.fromTo('.download-popover', 
-        { y: 10, opacity: 0 }, 
+      gsap.fromTo(
+        '.download-popover',
+        { y: 10, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
       );
-      gsap.fromTo('.download-option', 
-        { x: -10, opacity: 0 }, 
+      gsap.fromTo(
+        '.download-option',
+        { x: -10, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.3, stagger: 0.05, delay: 0.1 }
       );
     }
@@ -262,9 +277,21 @@ const handleDownload = (type: 'png' | 'svg' | 'pdf') => {
   isDownloadPopoverOpen.value = false;
 };
 const downloadOptions = [
-  { type: 'png' as const, label: 'PNG', icon: 'https://cdn.packify.ai/image/9285df4e-a3b7-4d4c-8e40-537dea15ae08.svg' },
-  { type: 'svg' as const, label: 'SVG', icon: 'https://cdn.packify.ai/image/4243bd45-7dd6-44e5-9176-9887062b197c.svg' },
-  { type: 'pdf' as const, label: 'PDF', icon: 'https://cdn.packify.ai/image/1263cda7-1751-4833-9064-8b1f12ade129.svg' },
+  {
+    type: 'png' as const,
+    label: 'PNG',
+    icon: 'https://cdn.packify.ai/image/9285df4e-a3b7-4d4c-8e40-537dea15ae08.svg'
+  },
+  {
+    type: 'svg' as const,
+    label: 'SVG',
+    icon: 'https://cdn.packify.ai/image/4243bd45-7dd6-44e5-9176-9887062b197c.svg'
+  },
+  {
+    type: 'pdf' as const,
+    label: 'PDF',
+    icon: 'https://cdn.packify.ai/image/1263cda7-1751-4833-9064-8b1f12ade129.svg'
+  }
 ];
 
 const handleClickOutside = (e: Event) => {
@@ -287,7 +314,7 @@ onMounted(() => {
   window.addEventListener('resize', onWindowResize);
   document.addEventListener('click', handleClickOutside);
   updateWatermark();
-  
+
   // Entrance Animations
   gsap.from('.tools-main-frame', {
     y: 60,
@@ -296,7 +323,7 @@ onMounted(() => {
     ease: 'power3.out',
     delay: 0.2
   });
-  
+
   gsap.from('.bg-orb', {
     scale: 0,
     opacity: 0,
@@ -354,7 +381,10 @@ watch(typeIndex, (nv) => {
       <div class="bg-orb orb-3" data-speed="0.02"></div>
     </div>
 
-    <div class="glass-container tools-main-frame" :class="{ 'is-drug': lastLayoutType === 'drug_facts' }">
+    <div
+      class="glass-container tools-main-frame"
+      :class="{ 'is-drug': lastLayoutType === 'drug_facts' }"
+    >
       <div class="left-panel">
         <h1 class="main-title">AI Ingredients</h1>
         <div class="section-title">Product type</div>
@@ -370,9 +400,17 @@ watch(typeIndex, (nv) => {
         <div class="section-title title-product">Ingredients</div>
         <div class="textarea-container product-describe">
           <div class="textarea-content">
-            <textarea v-model="ingredientsInput" class="product-textarea" :placeholder="placeholderText"></textarea>
+            <textarea
+              v-model="ingredientsInput"
+              class="product-textarea"
+              :placeholder="placeholderText"
+            ></textarea>
           </div>
-          <button class="generate-button hover-effect" :disabled="!ingredientsInput || isLoading" @click="onGenerate">
+          <button
+            class="generate-button hover-effect"
+            :disabled="!ingredientsInput || isLoading"
+            @click="onGenerate"
+          >
             <span v-if="!isLoading" class="iconfont icon-ai1"></span>
             <img
               v-else
@@ -389,7 +427,10 @@ watch(typeIndex, (nv) => {
 
       <div class="right-panel-container">
         <div class="right-panel" :class="{ 'is-drug': lastLayoutType === 'drug_facts' }">
-          <div class="preview-inner floating-anim" :class="{ 'is-drug': lastLayoutType === 'drug_facts' }">
+          <div
+            class="preview-inner floating-anim"
+            :class="{ 'is-drug': lastLayoutType === 'drug_facts' }"
+          >
             <div ref="editorWrapRef" class="editor-wrap">
               <div
                 id="editorBoxRef"
@@ -441,7 +482,13 @@ watch(typeIndex, (nv) => {
                   @click="handleDownload(option.type)"
                 >
                   <div class="file-icon-wrapper">
-                    <img class="modal-icon" :src="option.icon" width="24" height="24" :alt="option.label" />
+                    <img
+                      class="modal-icon"
+                      :src="option.icon"
+                      width="24"
+                      height="24"
+                      :alt="option.label"
+                    />
                   </div>
                   <span class="opt-text">{{ option.label }}</span>
                 </button>
@@ -476,7 +523,11 @@ watch(typeIndex, (nv) => {
       </div>
     </div>
     <teleport to="body">
-      <div v-if="isDownloadModalOpen" class="modal-mask glass-mask" @click.self="closeDownloadModal">
+      <div
+        v-if="isDownloadModalOpen"
+        class="modal-mask glass-mask"
+        @click.self="closeDownloadModal"
+      >
         <div class="bottom-modal download-modal glass-modal">
           <div class="modal-header">
             <div class="modal-title">Download</div>
@@ -496,7 +547,13 @@ watch(typeIndex, (nv) => {
               class="modal-option"
               @click="handleDownload(option.type)"
             >
-              <img class="modal-icon" :src="option.icon" width="24" height="24" :alt="option.label" />
+              <img
+                class="modal-icon"
+                :src="option.icon"
+                width="24"
+                height="24"
+                :alt="option.label"
+              />
               <span class="opt-text">{{ option.label }}</span>
             </button>
           </div>
@@ -504,7 +561,11 @@ watch(typeIndex, (nv) => {
       </div>
     </teleport>
     <teleport to="body">
-      <div v-if="isLabelTypeModalOpen && isMobile" class="modal-mask glass-mask" @click.self="isLabelTypeModalOpen = false">
+      <div
+        v-if="isLabelTypeModalOpen && isMobile"
+        class="modal-mask glass-mask"
+        @click.self="isLabelTypeModalOpen = false"
+      >
         <div class="bottom-modal labeltype-modal glass-modal">
           <div class="modal-header">
             <div class="modal-title">Product type</div>
@@ -546,15 +607,21 @@ watch(typeIndex, (nv) => {
 @accent-color: #0ea5e9; /* cyan stronger */
 @text-main: #0f172a; /* darker text */
 @text-secondary: #334155;
-@glass-bg: rgba(255, 255, 255, 0.80);
+@glass-bg: rgba(255, 255, 255, 0.8);
 @glass-border: rgba(255, 255, 255, 0.8);
 @glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.25);
 
 /* Animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .floating-anim {
@@ -634,7 +701,7 @@ watch(typeIndex, (nv) => {
   gap: 40px;
   box-sizing: border-box;
   transition: all 0.5s ease;
-  
+
   &.is-drug {
     /* Specific styles for drug layout if needed */
   }
@@ -670,7 +737,7 @@ watch(typeIndex, (nv) => {
       background: rgba(255, 255, 255, 0.5);
       border: 1px solid rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(4px);
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05);
+      box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.05);
       &:hover {
         border-color: @primary-color;
       }
@@ -699,7 +766,7 @@ watch(typeIndex, (nv) => {
 }
 
 .product-describe {
-  height:275px
+  height: 275px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -710,10 +777,12 @@ watch(typeIndex, (nv) => {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.05), inset -2px -2px 6px rgba(255,255,255,0.8);
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.8);
   padding: 16px;
   transition: all 0.3s ease;
-  
+
   &:focus-within {
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
     background: rgba(255, 255, 255, 0.8);
@@ -730,7 +799,7 @@ watch(typeIndex, (nv) => {
   line-height: 1.6;
   color: @text-main;
   outline: none;
-  
+
   &::placeholder {
     color: #999;
   }
@@ -751,16 +820,16 @@ watch(typeIndex, (nv) => {
   gap: 12px;
   box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(74, 144, 226, 0.5);
   }
-  
+
   &:active:not(:disabled) {
     transform: translateY(0);
   }
-  
+
   &:disabled {
     background: #ccc;
     cursor: not-allowed;
@@ -769,7 +838,9 @@ watch(typeIndex, (nv) => {
 }
 
 .hover-effect {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   &:hover {
     transform: translateY(-2px);
   }
@@ -793,7 +864,7 @@ watch(typeIndex, (nv) => {
   background: #fff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -814,7 +885,7 @@ watch(typeIndex, (nv) => {
   max-width: 100%;
   max-height: 100%;
   transition: filter 0.3s ease;
-  
+
   &.is-loading {
     filter: blur(4px);
   }
@@ -829,7 +900,7 @@ watch(typeIndex, (nv) => {
   bottom: 0;
   left: 0;
   height: 4px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   overflow: hidden;
   width: 100%;
@@ -845,7 +916,7 @@ watch(typeIndex, (nv) => {
   display: flex;
   gap: 16px;
   margin-top: auto;
-  
+
   &.stack-mobile {
     flex-direction: column;
   }
@@ -864,23 +935,23 @@ watch(typeIndex, (nv) => {
   gap: 10px;
   border: none;
   transition: all 0.3s ease;
-  
+
   &.btn-secondary {
     background: rgba(255, 255, 255, 0.8);
     color: @text-main;
-    border: 1px solid rgba(0,0,0,0.1);
-    
+    border: 1px solid rgba(0, 0, 0, 0.1);
+
     &:hover {
       background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
   }
-  
+
   &.btn-primary {
     background: @primary-color;
     color: #fff;
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-    
+
     &:hover {
       background: darken(@primary-color, 5%);
       box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
@@ -899,7 +970,7 @@ watch(typeIndex, (nv) => {
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -917,11 +988,11 @@ watch(typeIndex, (nv) => {
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.2s;
-  
+
   &:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
   }
-  
+
   .opt-text {
     font-size: 14px;
     font-weight: 500;
@@ -957,8 +1028,12 @@ watch(typeIndex, (nv) => {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -981,7 +1056,7 @@ watch(typeIndex, (nv) => {
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 1;
   }
@@ -999,11 +1074,11 @@ watch(typeIndex, (nv) => {
   gap: 16px;
   padding: 16px;
   background: #f8fafc;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f1f5f9;
     transform: translateX(4px);
@@ -1014,13 +1089,13 @@ watch(typeIndex, (nv) => {
     height: 24px;
     object-fit: contain;
   }
-  
+
   .opt-text {
     font-size: 16px;
     font-weight: 500;
     color: @text-main;
   }
-  
+
   &.is-selected {
     background: rgba(74, 144, 226, 0.1);
     border-color: @primary-color;
@@ -1041,28 +1116,29 @@ watch(typeIndex, (nv) => {
     margin-top: 16px;
     margin-bottom: 100px;
   }
-  
+
   .main-title {
     font-size: 32px;
     text-align: center;
   }
-  
+
   .section-title {
     font-size: 20px;
   }
-  
-  .left-panel, .right-panel-container {
+
+  .left-panel,
+  .right-panel-container {
     width: 100%;
   }
-  
+
   .preview-inner {
     min-height: 380px;
   }
-  
+
   .operation-buttons {
     flex-direction: column;
     width: 100%;
-    
+
     .btn {
       width: 100%;
     }

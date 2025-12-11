@@ -1,25 +1,25 @@
 <template>
-  <div 
-    class="agent-container" 
+  <div
+    class="agent-container"
     :style="containerStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
     @click="handleClick"
   >
-    <AgentCharacter 
+    <AgentCharacter
       :is-moving="isMoving"
       :is-hovered="isHovered"
       :is-dizzy="isDizzy"
-      :is-thinking="isLoading"
+      :is-thinking="isLoading || plan?.status === 'running'"
       :is-happy="isHappy"
       :is-confused="isConfused"
       :message="message"
       :eye-offset="eyeOffset"
     />
-    
+
     <transition name="pop">
-      <ChatWindow 
-        v-if="chatOpen" 
+      <ChatWindow
+        v-if="chatOpen"
         :messages="messages"
         :is-loading="isLoading"
         :placement="chatPlacement"
@@ -29,10 +29,10 @@
       />
     </transition>
 
-    <TaskDisplay :plan="plan" />
+    <TaskDisplay :plan="plan" :placement="taskPlacement" />
 
-    <GuideOverlay 
-      :visible="!!guideTarget" 
+    <GuideOverlay
+      :visible="!!guideTarget"
       :target-rect="guideTargetRect"
       :label="guideLabel"
       :agent-position="{ x, y }"
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 import AgentCharacter from './AgentCharacter.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
@@ -50,6 +51,8 @@ import { useTaskExecutor } from '../composables/useTaskExecutor';
 import { lerp, getRandomPosition } from '../utils/math';
 import { sendMessageToAI, getUserProfile, updateUserProfile } from '../services/aiService';
 import type { Position, ChatMessage } from '../types';
+
+const router = useRouter();
 
 // --- State ---
 const x = ref(window.innerWidth - 100);
@@ -66,9 +69,7 @@ const message = ref('Hi! I am your AI Agent.');
 
 // Chat State
 const chatOpen = ref(false);
-const messages = ref<ChatMessage[]>([
-  { role: 'agent', text: 'Hello! How can I help you today?' }
-]);
+const messages = ref<ChatMessage[]>([{ role: 'agent', text: 'Hello! How can I help you today?' }]);
 const isLoading = ref(false);
 
 // Task Executor
@@ -78,6 +79,11 @@ const { plan, setPlan } = useTaskExecutor();
 const chatPlacement = computed(() => {
   // If agent is in the top 400px of the screen, show chat below
   return y.value < 400 ? 'bottom' : 'top';
+});
+
+const taskPlacement = computed(() => {
+  // If agent is on the right half, show task on left
+  return x.value > window.innerWidth / 2 ? 'left' : 'right';
 });
 
 // Eye Tracking State
@@ -91,7 +97,7 @@ const guideTargetRect = ref<DOMRect | null>(null);
 const guideLabel = ref('');
 
 // Dizziness Logic State
-const mouseHistory: { x: number, y: number, time: number }[] = [];
+const mouseHistory: { x: number; y: number; time: number }[] = [];
 let dizzyTimeout: number | null = null;
 
 // --- Config ---
@@ -117,7 +123,7 @@ const containerStyle = computed(() => ({
 const toggleChat = () => {
   chatOpen.value = !chatOpen.value;
   if (chatOpen.value) {
-    message.value = ""; // Clear bubble when chat opens
+    message.value = ''; // Clear bubble when chat opens
   }
 };
 
@@ -125,14 +131,14 @@ const handleSendMessage = async (text: string) => {
   // Add user message
   messages.value.push({ role: 'user', text });
   isLoading.value = true;
-  message.value = "Hmm..."; // Thinking text
-  
+  message.value = 'Hmm...'; // Thinking text
+
   // Call AI Service
   const response = await sendMessageToAI(text, messages.value);
-  
+
   isLoading.value = false;
-  message.value = ""; // Clear thinking text
-  
+  message.value = ''; // Clear thinking text
+
   // Clean response for display (remove hidden commands)
   const displayResponse = response
     .replace(/highlight:\s*[^\s\n]+/g, '')
@@ -146,20 +152,20 @@ const handleSendMessage = async (text: string) => {
   } else {
     messages.value.push({ role: 'agent', text: "I'm on it!" });
   }
-  
+
   // Check for Task Plan
   const planMatch = response.match(/plan:\s*(\[[\s\S]*?\])/);
   if (planMatch) {
     try {
       const planJson = JSON.parse(planMatch[1]);
       if (Array.isArray(planJson)) {
-        console.log("Executing Plan:", planJson);
+        console.log('Executing Plan:', planJson);
         setPlan(planJson);
         // If we have a plan, maybe close the chat to show the action?
-        // toggleChat(); 
+        // toggleChat();
       }
     } catch (e) {
-      console.error("Failed to parse task plan:", e);
+      console.error('Failed to parse task plan:', e);
     }
   }
 
@@ -172,8 +178,8 @@ const handleSendMessage = async (text: string) => {
     if (el) {
       guideTarget.value = el;
       guideTargetRect.value = el.getBoundingClientRect();
-      guideLabel.value = "Click here!";
-      
+      guideLabel.value = 'Click here!';
+
       // Auto clear after 5s
       setTimeout(() => {
         guideTarget.value = null;
@@ -186,8 +192,8 @@ const handleSendMessage = async (text: string) => {
   const navMatch = response.match(/navigate:\s*([^\s\n]+)/);
   if (navMatch) {
     const path = navMatch[1];
-    console.log("Navigating to:", path);
-    window.location.href = path; // Warning: this will reload the page!
+    console.log('Navigating to:', path);
+    router.push(path);
   }
 
   // 3. Click: click: .selector
@@ -196,16 +202,16 @@ const handleSendMessage = async (text: string) => {
     const selector = clickMatch[1];
     const el = document.querySelector(selector) as HTMLElement;
     if (el) {
-      console.log("Agent clicking:", selector);
-      
+      console.log('Agent clicking:', selector);
+
       guideTarget.value = el;
       guideTargetRect.value = el.getBoundingClientRect();
-      guideLabel.value = "Clicking this!";
-      
+      guideLabel.value = 'Clicking this!';
+
       setTimeout(() => {
         el.click();
         el.focus(); // Ensure focus
-        
+
         // Reset guide after short delay
         setTimeout(() => {
           guideTarget.value = null;
@@ -215,7 +221,6 @@ const handleSendMessage = async (text: string) => {
     }
   }
 };
-
 
 // --- Logic: Movement & Animation Loop ---
 let animationFrameId: number;
@@ -230,12 +235,12 @@ const updateEyeTracking = () => {
     const agentCenterY = y.value + AGENT_SIZE / 2;
     const targetCenterX = guideTargetRect.value.left + guideTargetRect.value.width / 2;
     const targetCenterY = guideTargetRect.value.top + guideTargetRect.value.height / 2;
-    
+
     const dx = targetCenterX - agentCenterX;
     const dy = targetCenterY - agentCenterY;
     const angle = Math.atan2(dy, dx);
     const distance = 4; // Max look distance
-    
+
     eyeOffset.value = {
       x: Math.cos(angle) * distance,
       y: Math.sin(angle) * distance
@@ -250,10 +255,10 @@ const updateEyeTracking = () => {
   const dx = mouseX.value - agentCenterX;
   const dy = mouseY.value - agentCenterY;
   const angle = Math.atan2(dy, dx);
-  
+
   // Limit eye movement radius
   const distance = Math.min(3, Math.sqrt(dx * dx + dy * dy) / 20);
-  
+
   eyeOffset.value = {
     x: Math.cos(angle) * distance,
     y: Math.sin(angle) * distance
@@ -264,17 +269,17 @@ const startLoop = () => {
   const loop = () => {
     if (isDizzy.value) {
       // If dizzy, maybe drift slightly?
-    } else if (isHovered.value && !chatOpen.value) { 
+    } else if (isHovered.value && !chatOpen.value) {
       // Only follow mouse if chat is closed (to avoid moving away while typing)
-      
+
       // --- Mouse Follow Mode (Lerp) ---
       targetX.value = mouseX.value - MOUSE_FOLLOW_OFFSET.x;
       targetY.value = mouseY.value - MOUSE_FOLLOW_OFFSET.y;
-      
+
       x.value = lerp(x.value, targetX.value, LERP_FACTOR);
       y.value = lerp(y.value, targetY.value, LERP_FACTOR);
-    } 
-    
+    }
+
     updateEyeTracking();
     animationFrameId = requestAnimationFrame(loop);
   };
@@ -309,7 +314,7 @@ const checkDizziness = (newX: number, newY: number) => {
 
   const now = Date.now();
   mouseHistory.push({ x: newX, y: newY, time: now });
-  
+
   // Keep only recent history (last 500ms)
   while (mouseHistory.length > 0 && now - mouseHistory[0].time > 500) {
     mouseHistory.shift();
@@ -319,24 +324,24 @@ const checkDizziness = (newX: number, newY: number) => {
 
   const agentCenterX = x.value + AGENT_SIZE / 2;
   const agentCenterY = y.value + AGENT_SIZE / 2;
-  
+
   let totalAngleChange = 0;
   for (let i = 1; i < mouseHistory.length; i++) {
-    const p1 = mouseHistory[i-1];
+    const p1 = mouseHistory[i - 1];
     const p2 = mouseHistory[i];
-    
+
     const a1 = Math.atan2(p1.y - agentCenterY, p1.x - agentCenterX);
     const a2 = Math.atan2(p2.y - agentCenterY, p2.x - agentCenterX);
-    
+
     let diff = a2 - a1;
     // Normalize to -PI to PI
     while (diff <= -Math.PI) diff += 2 * Math.PI;
     while (diff > Math.PI) diff -= 2 * Math.PI;
-    
+
     totalAngleChange += diff;
   }
-  
-  if (Math.abs(totalAngleChange) > (270 * Math.PI / 180)) {
+
+  if (Math.abs(totalAngleChange) > (270 * Math.PI) / 180) {
     triggerDizzy();
   }
 };
@@ -345,22 +350,21 @@ const triggerDizzy = () => {
   if (isDizzy.value) return;
   isDizzy.value = true;
   message.value = "Whoa! I'm dizzy...";
-  
+
   if (dizzyTimeout) clearTimeout(dizzyTimeout);
-  
+
   dizzyTimeout = window.setTimeout(() => {
     isDizzy.value = false;
-    
+
     // Recovery Phase: Confused for a moment
     isConfused.value = true;
-    message.value = "Ugh... where am I?";
-    
+    message.value = 'Ugh... where am I?';
+
     setTimeout(() => {
-        isConfused.value = false;
-        message.value = "I'm okay now.";
-        setTimeout(() => message.value = "", 2000);
+      isConfused.value = false;
+      message.value = "I'm okay now.";
+      setTimeout(() => (message.value = ''), 2000);
     }, 2000);
-    
   }, 3000);
 };
 
@@ -369,20 +373,20 @@ const handleMouseEnter = () => {
   isHovered.value = true;
   isMoving.value = false; // Stop random movement animation
   if (!chatOpen.value) {
-    message.value = "Hello!";
+    message.value = 'Hello!';
   }
 };
 
 const handleMouseLeave = () => {
   isHovered.value = false;
   if (!chatOpen.value) {
-    message.value = "";
+    message.value = '';
   }
 };
 
 const handleClick = () => {
   if (isDizzy.value) return;
-  
+
   // Happy reaction!
   isHappy.value = true;
   setTimeout(() => {
@@ -394,7 +398,7 @@ const handleClick = () => {
 const handleFocusIn = (e: FocusEvent) => {
   const target = e.target as HTMLElement;
   if (!target) return;
-  
+
   // Ignore if focus is inside the agent itself (e.g. chat window input)
   if ((e.target as HTMLElement).closest('.agent-container')) return;
 
@@ -412,7 +416,7 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
   };
 
   // Simple AABB Collision Detection
-  const isOverlapping = 
+  const isOverlapping =
     agentRect.left < obstacleRect.right &&
     agentRect.right > obstacleRect.left &&
     agentRect.top < obstacleRect.bottom &&
@@ -422,10 +426,10 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
     // Determine direction to move
     // Default: Move to the opposite side of the screen horizontally
     const moveLeft = x.value > window.innerWidth / 2;
-    
+
     const newX = moveLeft ? 50 : window.innerWidth - agentSize - 50;
     let newY = y.value; // Keep Y if possible
-    
+
     // If Y is also overlapping significantly?
     // Let's just default to a safe corner to be sure.
     // If obstacle is top-heavy, go bottom.
@@ -434,18 +438,18 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
 
     targetX.value = newX;
     targetY.value = newY;
-    
+
     // Animate move
     isMoving.value = true;
     x.value = newX; // Snap or Lerp? Snap for quick avoidance
     y.value = newY;
-    
-    message.value = "Oops, excuse me!";
-    
+
+    message.value = 'Oops, excuse me!';
+
     // Resume normal behavior after a delay
     setTimeout(() => {
-        isMoving.value = false;
-        if (!chatOpen.value) message.value = "";
+      isMoving.value = false;
+      if (!chatOpen.value) message.value = '';
     }, 1500);
   }
 };
@@ -453,7 +457,7 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
 const handleGlobalMouseMove = (e: MouseEvent) => {
   mouseX.value = e.clientX;
   mouseY.value = e.clientY;
-  
+
   if (isHovered.value) {
     checkDizziness(e.clientX, e.clientY);
   }
@@ -462,30 +466,37 @@ const handleGlobalMouseMove = (e: MouseEvent) => {
 // --- Lifecycle ---
 onMounted(async () => {
   // Check user history for personalization
-  
+
   try {
     const profile = await getUserProfile();
-    
+
     if (profile && profile.visits > 0) {
-      message.value = "Welcome back! Missed me?";
-      messages.value = [{ 
-        role: 'agent', 
-        text: `Welcome back${profile.name && profile.name !== 'Friend' ? ', ' + profile.name : ''}! Need any help continuing where we left off?` 
-      }];
-      
+      message.value = 'Welcome back! Missed me?';
+      messages.value = [
+        {
+          role: 'agent',
+          text: `Welcome back${profile.name && profile.name !== 'Friend' ? ', ' + profile.name : ''}! Need any help continuing where we left off?`
+        }
+      ];
+
       // Update visit count
       await updateUserProfile({ visits: (profile.visits || 0) + 1 });
     } else {
       message.value = "Hi! I'm new here.";
-      messages.value = [{ role: 'agent', text: 'Hello! I am your personal AI Agent. I can help you navigate this website. Try asking me anything!' }];
-      
+      messages.value = [
+        {
+          role: 'agent',
+          text: 'Hello! I am your personal AI Agent. I can help you navigate this website. Try asking me anything!'
+        }
+      ];
+
       // Create new profile
       await updateUserProfile({ visits: 1, name: 'Friend' });
     }
   } catch (e) {
-    console.error("Failed to load profile", e);
+    console.error('Failed to load profile', e);
     // Fallback
-    message.value = "Hello!";
+    message.value = 'Hello!';
   }
 
   window.addEventListener('mousemove', handleGlobalMouseMove);
@@ -507,10 +518,12 @@ onBeforeUnmount(() => {
 /* Container styles are handled in computed property for positioning */
 
 /* Pop Animation for Chat Window */
-.pop-enter-active, .pop-leave-active {
+.pop-enter-active,
+.pop-leave-active {
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.pop-enter-from, .pop-leave-to {
+.pop-enter-from,
+.pop-leave-to {
   opacity: 0;
   transform: scale(0.8) translateY(20px);
 }
