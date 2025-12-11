@@ -90,6 +90,30 @@ class Particle {
   }
 }
 
+const handleResize = () => {
+  if (!canvas.value) return;
+  canvas.value.width = window.innerWidth;
+  canvas.value.height = window.innerHeight;
+  // We might want to re-init particles here, but for now simple resize is ok
+};
+
+const handleMouseMove = (e: MouseEvent) => {
+  mouse.x = e.x;
+  mouse.y = e.y;
+};
+
+const handleTouchMove = (e: TouchEvent) => {
+  if (e.touches.length > 0) {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+  }
+};
+
+const handleTouchEnd = () => {
+  mouse.x = -1000;
+  mouse.y = -1000;
+};
+
 onMounted(() => {
   if (!canvas.value) return;
   const ctx = canvas.value.getContext('2d');
@@ -139,30 +163,6 @@ onMounted(() => {
 
   animate();
 
-  const handleResize = () => {
-    if (!canvas.value) return;
-    canvas.value.width = window.innerWidth;
-    canvas.value.height = window.innerHeight;
-    // We might want to re-init particles here, but for now simple resize is ok
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (e.touches.length > 0) {
-      mouse.x = e.touches[0].clientX;
-      mouse.y = e.touches[0].clientY;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    mouse.x = -1000;
-    mouse.y = -1000;
-  };
-
   window.addEventListener('resize', handleResize);
   window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('touchmove', handleTouchMove);
@@ -171,10 +171,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (animationId) cancelAnimationFrame(animationId);
-  window.removeEventListener('resize', () => {});
+  window.removeEventListener('resize', handleResize);
   window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('touchmove', handleTouchMove);
-  window.removeEventListener('touchend', () => {});
+  window.removeEventListener('touchend', handleTouchEnd);
 });
 </script>
 
@@ -185,6 +185,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: radial-gradient(circle, #0d1b2a, #000000);
+  touch-action: none; /* Prevent scroll on mobile */
 }
 
 .quantum-canvas {

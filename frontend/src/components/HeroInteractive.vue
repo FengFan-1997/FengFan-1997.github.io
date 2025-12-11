@@ -1,10 +1,11 @@
 <template>
-  <div ref="container" class="hero-interactive"></div>
+  <div ref="container" class="hero-interactive" @click="handleClick"></div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import * as THREE from 'three';
+import gsap from 'gsap';
 
 const container = ref<HTMLElement | null>(null);
 let scene: THREE.Scene;
@@ -21,6 +22,31 @@ const handleMouseMove = (event: MouseEvent) => {
   // Normalize mouse coordinates to -1 to 1
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+};
+
+const handleClick = () => {
+  if (!core) return;
+  
+  // Burst effect
+  gsap.to(core.scale, {
+    x: 1.5,
+    y: 1.5,
+    z: 1.5,
+    duration: 0.1,
+    yoyo: true,
+    repeat: 1,
+    ease: "power2.out"
+  });
+
+  // Rapid spin
+  gsap.to(core.rotation, {
+    y: core.rotation.y + Math.PI * 2,
+    duration: 1,
+    ease: "elastic.out(1, 0.3)"
+  });
+
+  // Color flash (requires accessing material)
+  // For now, just the physical motion is good feedback
 };
 
 const init = () => {

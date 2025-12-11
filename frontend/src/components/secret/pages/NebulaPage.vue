@@ -199,6 +199,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: #000;
+  touch-action: none; /* Prevent scroll on mobile for better interaction */
 }
 
 .canvas-container {

@@ -145,6 +145,34 @@ class Firework {
   }
 }
 
+const fireworks: Firework[] = [];
+
+const handleResize = () => {
+  if (!canvas.value) return;
+  canvas.value.width = window.innerWidth;
+  canvas.value.height = window.innerHeight;
+};
+
+const handleInteraction = (x: number, y: number) => {
+  if (!canvas.value) return;
+  // Launch firework to that position
+  // Start from bottom center-ish
+  const startX = x + (Math.random() - 0.5) * 100;
+  const f = new Firework(canvas.value.height, canvas.value.width, x, y);
+  f.x = startX; // Override start X
+  fireworks.push(f);
+};
+
+const onMouseDown = (e: MouseEvent) => {
+  handleInteraction(e.clientX, e.clientY);
+};
+
+const onTouchStart = (e: TouchEvent) => {
+  if (e.touches.length > 0) {
+    handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+  }
+};
+
 onMounted(() => {
   if (!canvas.value) return;
   const ctx = canvas.value.getContext('2d');
@@ -152,8 +180,6 @@ onMounted(() => {
 
   canvas.value.width = window.innerWidth;
   canvas.value.height = window.innerHeight;
-
-  const fireworks: Firework[] = [];
 
   const animate = () => {
     if (!ctx || !canvas.value) return;
@@ -180,32 +206,6 @@ onMounted(() => {
 
   animate();
 
-  const handleResize = () => {
-    if (!canvas.value) return;
-    canvas.value.width = window.innerWidth;
-    canvas.value.height = window.innerHeight;
-  };
-
-  const handleInteraction = (x: number, y: number) => {
-    if (!canvas.value) return;
-    // Launch firework to that position
-    // Start from bottom center-ish
-    const startX = x + (Math.random() - 0.5) * 100;
-    const f = new Firework(canvas.value.height, canvas.value.width, x, y);
-    f.x = startX; // Override start X
-    fireworks.push(f);
-  };
-
-  const onMouseDown = (e: MouseEvent) => {
-    handleInteraction(e.clientX, e.clientY);
-  };
-
-  const onTouchStart = (e: TouchEvent) => {
-    if (e.touches.length > 0) {
-      handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  };
-
   window.addEventListener('resize', handleResize);
   window.addEventListener('mousedown', onMouseDown);
   window.addEventListener('touchstart', onTouchStart);
@@ -213,9 +213,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (animationId) cancelAnimationFrame(animationId);
-  window.removeEventListener('resize', () => {});
-  window.removeEventListener('mousedown', () => {});
-  window.removeEventListener('touchstart', () => {});
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('mousedown', onMouseDown);
+  window.removeEventListener('touchstart', onTouchStart);
 });
 </script>
 
@@ -226,6 +226,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: #000; /* Night sky */
+  touch-action: none; /* Prevent scroll on mobile */
 }
 
 .fireworks-canvas {

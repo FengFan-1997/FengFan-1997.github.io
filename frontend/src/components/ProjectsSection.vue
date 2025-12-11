@@ -28,7 +28,7 @@
           @click="onCardClick(item.route)"
         >
           <div class="card-visual-container" :style="getCardStyle(index)">
-            <div class="plain-image" :style="{ backgroundImage: `url(${item.image})` }"></div>
+            <img :src="item.image" class="plain-image" loading="lazy" :alt="item.title" />
           </div>
           
           <div class="card-content">
@@ -411,24 +411,30 @@ onBeforeUnmount(() => {
   aspect-ratio: 16/10;
   border-radius: 20px;
   overflow: hidden;
+  transform: translateZ(0); /* Force GPU acceleration and fix overflow clipping */
   perspective: 1000px;
   transform-style: preserve-3d;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black); /* Fix for Safari border-radius overflow */
 }
 
 .plain-image {
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
+  object-fit: cover;
   transform: scale(var(--card-scale, 1));
   opacity: var(--card-opacity, 1);
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+  display: block;
+  will-change: transform;
 }
 
-.project-card:hover .plain-image {
+/* Remove conflicting hover effect since we use JS-driven scale */
+/* .project-card:hover .plain-image {
   transform: scale(1.1);
-}
+} */
 
 .card-content {
   display: flex;

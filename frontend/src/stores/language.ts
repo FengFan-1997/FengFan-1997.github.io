@@ -16,6 +16,8 @@ export const useLanguageStore = defineStore('language', () => {
       },
       hero: {
         greeting: 'Hello, I am',
+        welcome: 'Welcome to my ',
+        workshop: 'AI Creative Workshop',
         role: 'Creative Developer',
         description: 'Building immersive web experiences with Vue 3, Three.js, and AI.',
         subtitle: 'Creating digital experiences where intelligence meets immersion',
@@ -194,6 +196,8 @@ export const useLanguageStore = defineStore('language', () => {
       },
       hero: {
         greeting: '你好，我是',
+        welcome: '欢迎来到我的',
+        workshop: 'AI创意工坊',
         role: '创意开发工程师',
         description: '使用 Vue 3, Three.js 和 AI 构建沉浸式网络体验。',
         subtitle: '打造智能与沉浸并存的数字体验',

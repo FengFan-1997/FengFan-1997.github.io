@@ -260,6 +260,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: #000;
+  touch-action: none;
 }
 
 .canvas-container {

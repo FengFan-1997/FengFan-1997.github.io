@@ -28,8 +28,6 @@ let accretionDisk: THREE.Points;
 // Interaction
 let mouseX = 0;
 let mouseY = 0;
-let targetRotationX = 0;
-let targetRotationY = 0;
 
 const goBack = () => {
   router.push('/secret-garden');
@@ -200,6 +198,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: #000;
+  touch-action: none; /* Prevent scroll on mobile */
 }
 
 .canvas-container {

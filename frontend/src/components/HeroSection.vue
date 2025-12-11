@@ -1,7 +1,7 @@
 <template>
   <section class="section hero-section">
     <div class="hero-content">
-      <h1 class="logo-text" ref="logoRef">NEBULA<span class="highlight">.DESIGN</span></h1>
+      <h1 class="logo-text" ref="logoRef">{{ t('hero.welcome') }}<span class="highlight">{{ t('hero.workshop') }}</span></h1>
       <p class="subtitle" ref="subtitleRef">{{ t('hero.subtitle') }}</p>
       <p class="value-prop">{{ t('hero.valueProp') }}</p>
       <div class="hero-tags">

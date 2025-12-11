@@ -44,6 +44,12 @@ const onTouchMove = (event: TouchEvent) => {
   }
 };
 
+const handleResize = () => {
+  if (!canvas.value) return;
+  canvas.value.width = window.innerWidth;
+  canvas.value.height = window.innerHeight;
+};
+
 onMounted(() => {
   if (!canvas.value) return;
   const ctx = canvas.value.getContext('2d');
@@ -103,12 +109,6 @@ onMounted(() => {
 
   draw();
 
-  const handleResize = () => {
-    if (!canvas.value) return;
-    canvas.value.width = window.innerWidth;
-    canvas.value.height = window.innerHeight;
-  };
-
   window.addEventListener('resize', handleResize);
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('touchmove', onTouchMove);
@@ -116,7 +116,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (animationId) cancelAnimationFrame(animationId);
-  window.removeEventListener('resize', () => {});
+  window.removeEventListener('resize', handleResize);
   window.removeEventListener('mousemove', onMouseMove);
   window.removeEventListener('touchmove', onTouchMove);
 });
@@ -129,6 +129,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow: hidden;
   background: #000;
+  touch-action: none; /* Prevent scroll on mobile */
 }
 
 .matrix-canvas {
