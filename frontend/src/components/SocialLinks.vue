@@ -23,6 +23,9 @@
   align-items: center;
   gap: 20px;
   z-index: 10;
+  @media screen and (min-width: 980px) and (max-width: 1279px) {
+      left: 0px;
+  }
 }
 
 .social-item {
@@ -45,7 +48,7 @@
   opacity: 0.5;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .social-links {
     display: none;
   }

@@ -13,7 +13,7 @@
     <SocialLinks />
 
     <!-- Config Panel -->
-    <ConfigPanel v-model="config.mode" />
+    <ConfigPanel v-model="config.mode" class="desktop-config-panel" />
 
     <!-- Language Switcher -->
     <div class="lang-switch">
@@ -23,7 +23,11 @@
     </div>
 
     <!-- Sidebar Navigation -->
-    <Sidebar />
+    <Sidebar>
+      <template #mobile-header-extra>
+        <ConfigPanel v-model="config.mode" :embedded="true" />
+      </template>
+    </Sidebar>
 
     <main class="content-flow">
       <!-- Hero Section -->
@@ -183,12 +187,16 @@ const handleNavigation = (route: string) => {
   color: #38bdf8;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .lang-switch {
     top: 16px;
     right: 16px;
     padding: 6px 10px;
     gap: 6px;
+  }
+  
+  .desktop-config-panel {
+    display: none;
   }
 }
 </style>

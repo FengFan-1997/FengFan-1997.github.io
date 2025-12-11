@@ -929,6 +929,108 @@ watch(typeIndex, (nv) => {
   }
 }
 
+/* Mobile Modal Styles */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bottom-modal {
+  width: 100%;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px; /* tablet safeguard */
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: @text-main;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+  }
+
+  .modal-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+  
+  .opt-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: @text-main;
+  }
+  
+  &.is-selected {
+    background: rgba(74, 144, 226, 0.1);
+    border-color: @primary-color;
+    .opt-text {
+      color: @primary-color;
+      font-weight: 600;
+    }
+  }
+}
+
 /* Mobile Adaptation */
 @media (max-width: 979px) {
   .tools-main-frame {
@@ -937,7 +1039,7 @@ watch(typeIndex, (nv) => {
     padding: 30px 20px;
     width: 95%;
     margin-top: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 100px;
   }
   
   .main-title {

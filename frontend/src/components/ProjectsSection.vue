@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
 
 .project-card.reversed .card-number {
   left: auto;
-  right: -20px;
+  right: 0px;
 }
 
 .card-tags {
@@ -584,6 +584,10 @@ onBeforeUnmount(() => {
   .filter-btn {
     padding: 6px 14px;
     font-size: 0.8rem;
+  }
+  
+  .section {
+    padding: 80px 16px 60px;
   }
 }
 </style>

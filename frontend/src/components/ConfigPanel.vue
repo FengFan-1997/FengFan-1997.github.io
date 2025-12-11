@@ -1,5 +1,5 @@
 <template>
-  <div class="config-panel">
+  <div class="config-panel" :class="{ embedded }">
     <div class="config-item">
       <label>Mode:</label>
       <div class="custom-select" ref="selectRef" @click="toggleDropdown">
@@ -30,6 +30,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 defineProps<{
   modelValue: string;
+  embedded?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -74,14 +75,14 @@ onBeforeUnmount(() => {
   display: block; /* Ensure it is visible */
   position: absolute;
   top: 40px;
-  left: 100px;
+  left: 70px;
   z-index: 2000; /* Higher z-index to stay on top */
   background: rgba(15, 23, 42, 0.9);
-  padding: 12px 20px;
+  padding: 8px 15px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .config-item {
@@ -177,17 +178,39 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(-10px);
 }
-@media (max-width: 768px) {
-  .config-panel {
-    top: 60px; /* Lower it slightly to avoid header conflict */
-    right: 10px;
-    padding: 8px 12px;
-    transform: scale(0.8);
+@media (max-width: 980px) {
+  .config-panel:not(.embedded) {
+    top: 16px;
+    right: 80px;
+    left: auto;
+    padding: 6px 10px;
+    transform: scale(0.9);
     transform-origin: top right;
+  }
+
+  .config-panel.embedded {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-right: 15px;
+    backdrop-filter: none;
+  }
+  
+  .config-panel.embedded .config-item label {
+    display: none; /* Save space on mobile nav */
+  }
+
+  .config-panel.embedded .custom-select {
+    width: 110px;
   }
   
   .custom-select {
-    width: 120px;
+    width: 100px;
   }
 }
 </style>

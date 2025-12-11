@@ -22,7 +22,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background-color: #0f172a;
-  overflow: hidden; /* Prevent body scrollbar, let view handle it */
+  overflow-x: hidden; /* Only hide horizontal scroll */
 }
 
 

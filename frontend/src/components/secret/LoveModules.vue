@@ -1,5 +1,6 @@
 <template>
   <div class="love-modules-container" :class="{ visible: show }">
+    <!-- Classic Modules -->
     <div class="modules-grid">
       <!-- Module 1: Music Player -->
       <div class="module-card music-card">
@@ -53,6 +54,94 @@
       </div>
     </div>
 
+    <!-- Universe Portals -->
+    <div class="universe-section">
+      <h2 class="universe-title">Infinite Dimensions</h2>
+      <div class="modules-grid universes-grid">
+        
+        <div class="module-card universe-card" @click="router.push('/secret/galaxy')">
+          <div class="card-content">
+            <div class="icon-wrapper">🌌</div>
+            <h3>Galaxy</h3>
+            <p>Cosmic Love</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/sea')">
+          <div class="card-content">
+            <div class="icon-wrapper">🌊</div>
+            <h3>Sea of Stars</h3>
+            <p>Eternal Flow</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/crystal')">
+          <div class="card-content">
+            <div class="icon-wrapper">💎</div>
+            <h3>Crystal World</h3>
+            <p>Pure & Bright</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/fireworks')">
+          <div class="card-content">
+            <div class="icon-wrapper">🎆</div>
+            <h3>Celebration</h3>
+            <p>Festive Joy</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/matrix')">
+          <div class="card-content">
+            <div class="icon-wrapper">💻</div>
+            <h3>Digital Rain</h3>
+            <p>Code of Love</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/quantum')">
+          <div class="card-content">
+            <div class="icon-wrapper">⚛️</div>
+            <h3>Quantum Field</h3>
+            <p>Entanglement</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/blackhole')">
+          <div class="card-content">
+            <div class="icon-wrapper">🕳️</div>
+            <h3>Event Horizon</h3>
+            <p>Infinite Gravity</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/tunnel')">
+          <div class="card-content">
+            <div class="icon-wrapper">🌀</div>
+            <h3>Time Tunnel</h3>
+            <p>Warp to Future</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/nebula')">
+          <div class="card-content">
+            <div class="icon-wrapper">☁️</div>
+            <h3>Nebula</h3>
+            <p>Star Birth</p>
+          </div>
+        </div>
+
+        <div class="module-card universe-card" @click="router.push('/secret/sakura')">
+          <div class="card-content">
+            <div class="icon-wrapper">🌸</div>
+            <h3>Sakura</h3>
+            <p>Falling Blossoms</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Modals -->
     <Teleport to="body">
       <Transition name="fade">
@@ -96,6 +185,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 defineProps<{
   show: boolean;
@@ -297,6 +389,32 @@ const generateWhisper = () => {
   line-height: 1.5;
 }
 
+.universe-section {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.universe-title {
+  font-family: 'Great Vibes', cursive;
+  font-size: 2.5rem;
+  color: #ff1493;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.universes-grid {
+  /* Inherits from modules-grid but we can add specific overrides if needed */
+}
+
+.universe-card .icon-wrapper {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  transition: transform 0.3s;
+}
+
+.universe-card:hover .icon-wrapper {
+  transform: scale(1.2) rotate(5deg);
+}
 .click-hint {
   color: #888;
   font-size: 0.9rem;
@@ -453,42 +571,73 @@ const generateWhisper = () => {
   font-family: 'Playfair Display', serif;
 }
 
-/* Mobile Adaptation */
-@media (max-width: 768px) {
-  .modules-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
-  }
+  /* Mobile Adaptation */
+  @media (max-width: 768px) {
+    .modules-grid {
+      grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+      gap: 15px;
+    }
 
-  .letter-modal h2 {
-    font-size: 3rem;
-  }
-  
-  .letter-modal p {
-    font-size: 1.1rem;
-  }
+    .module-card {
+      min-height: 120px;
+      padding: 15px;
+    }
 
-  .timeline-modal h2 {
-    font-size: 3rem;
-  }
+    .icon-wrapper {
+      font-size: 2rem;
+    }
 
-  .timeline-item .content {
-    font-size: 1.2rem;
+    .module-card h3 {
+      font-size: 0.9rem;
+    }
+
+    .module-card p {
+      font-size: 0.75rem;
+    }
+
+    .letter-modal h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .letter-modal p {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .timeline-modal h2 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+
+    .timeline-item .content {
+      font-size: 1.1rem;
+    }
+    
+    .close-btn {
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      background: rgba(255, 255, 255, 0.8); /* More visible on mobile */
+    }
+    
+    .letter-modal .paper {
+      padding: 25px;
+      width: 90%;
+      margin-top: 60px;
+    }
+
+    .timeline {
+      margin-left: 10px;
+      padding-left: 30px;
+    }
+
+    .timeline-item::before {
+      left: -39px; /* Adjusted for new padding */
+    }
   }
-  
-  .close-btn {
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    font-size: 1.5rem;
-  }
-  
-  .letter-modal .paper {
-    padding: 30px;
-    width: 85%;
-    margin-top: 60px;
-  }
-}
 
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.8); }

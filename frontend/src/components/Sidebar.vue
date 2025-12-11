@@ -7,6 +7,9 @@
       <span class="bar"></span>
     </div>
     <div class="mobile-title">Menu</div>
+    <div style="margin-left: auto;">
+      <slot name="mobile-header-extra"></slot>
+    </div>
   </div>
 
   <!-- Mobile Overlay -->
@@ -299,7 +302,7 @@ onBeforeUnmount(() => {
 }
 
 /* Mobile Adaptation */
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .mobile-header {
     display: flex;
   }
@@ -323,7 +326,7 @@ onBeforeUnmount(() => {
   }
 
   .glass-panel {
-    height: 100%;
+    height: 100vh;
     width: 250px; /* Drawer width */
     border-radius: 0 24px 24px 0;
     background: rgba(15, 23, 42, 0.95);
@@ -371,6 +374,19 @@ onBeforeUnmount(() => {
   .mobile-overlay.active {
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+/* Tablet Adaptation (980px - 1280px) */
+@media (min-width: 980px) and (max-width: 1280px) {
+  .sidebar-wrapper {
+    left: 0;
+  }
+  
+  .glass-panel {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
   }
 }
 </style>

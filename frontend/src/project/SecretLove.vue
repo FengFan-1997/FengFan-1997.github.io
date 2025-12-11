@@ -123,11 +123,12 @@ const bloomUniforms = {
 };
 
 // Config
-const GRASS_COUNT = 15000; 
-const ROSE_COUNT = 2000;   // Massive sea of roses
-const PETAL_COUNT = 2000; 
-const FIREFLY_COUNT = 300; 
-const HEART_COUNT = 150;
+const isMobile = window.innerWidth < 768;
+const GRASS_COUNT = isMobile ? 5000 : 15000; 
+const ROSE_COUNT = isMobile ? 800 : 2000;   // Massive sea of roses
+const PETAL_COUNT = isMobile ? 800 : 2000; 
+const FIREFLY_COUNT = isMobile ? 100 : 300; 
+const HEART_COUNT = isMobile ? 50 : 150;
 
 onMounted(async () => {
   initThree();
@@ -150,11 +151,13 @@ onMounted(async () => {
 
   window.addEventListener('resize', onResize);
   window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('touchmove', onTouchMove, { passive: false });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize);
   window.removeEventListener('mousemove', onMouseMove);
+  window.removeEventListener('touchmove', onTouchMove);
   if (animationId) cancelAnimationFrame(animationId);
   if (renderer) renderer.dispose();
 });
@@ -703,6 +706,17 @@ function onMouseMove(event: MouseEvent) {
   camera.lookAt(0, 1, 0);
 }
 
+function onTouchMove(event: TouchEvent) {
+  if (event.touches.length > 0) {
+    const x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+    const y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    // Subtle parallax for touch
+    camera.position.x += (x - camera.position.x) * 0.05;
+    camera.position.y += (y * 0.5 + 3 - camera.position.y) * 0.05;
+    camera.lookAt(0, 1, 0);
+  }
+}
+
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -977,5 +991,52 @@ function onResize() {
 .content-layer::-webkit-scrollbar-thumb {
   background: rgba(255, 105, 180, 0.5);
   border-radius: 4px;
+}
+
+/* Mobile Adaptation */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 4rem;
+  }
+  
+  .amp {
+    font-size: 2.5rem;
+  }
+  
+  .sub-title {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+  
+  .section-title {
+    font-size: 2.5rem;
+  }
+  
+  .glass-card {
+    padding: 30px;
+    margin: 10px;
+  }
+  
+  .glass-card h2 {
+    font-size: 2.5rem;
+  }
+  
+  .glass-card p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .loading-text {
+    font-size: 2rem;
+  }
+
+  .promise-list li {
+    font-size: 1rem;
+  }
 }
 </style>
