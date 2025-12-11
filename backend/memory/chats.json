@@ -1,0 +1,14 @@
+{
+  "test_user_123": [
+    {
+      "role": "user",
+      "text": "What is RAG?",
+      "timestamp": 1765444181880
+    },
+    {
+      "role": "agent",
+      "text": "I'm having trouble reaching my brain (Google API) right now. 🧠\n\nBut I can still remember our chat! (Offline Mode)\n\nI found this in the docs though:\nHere is some relevant information from the website knowledge base:\n- # Module 3: Intelligence & RAG - Implementation Log\n\n**Date:** 2025-12-11\n**Module:** III. Intelligence & RAG\n**Status:** In Progre...",
+      "timestamp": 1765444181880
+    }
+  ]
+}

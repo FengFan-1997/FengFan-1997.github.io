@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import Agent from './agent/components/Agent.vue';
 </script>
 
 <template>
   <router-view></router-view>
+  <Agent />
 </template>
 
 <style>

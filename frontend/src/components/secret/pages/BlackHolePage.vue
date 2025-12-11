@@ -84,7 +84,7 @@ const initThree = () => {
   blackHole.add(glow); // Add to black hole so it moves with it? Actually better separate or billboard
 
   // Accretion Disk (Particles)
-  const particlesCount = 80000;
+  const particlesCount = window.innerWidth < 768 ? 40000 : 80000;
   const posArray = new Float32Array(particlesCount * 3);
   const colorsArray = new Float32Array(particlesCount * 3);
 

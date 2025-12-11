@@ -103,6 +103,10 @@ export const useLanguageStore = defineStore('language', () => {
           travel: {
             title: 'WANDERLUST AI',
             desc: 'Personalized travel itinerary planner. Generates day-by-day schedules based on your interests, budget, and travel style.',
+          },
+          aippt: {
+            title: 'AI PPT GEN',
+            desc: 'Automated presentation generator. Transform topics into structured slide decks with AI-driven content expansion.',
           }
         }
       },
@@ -283,6 +287,10 @@ export const useLanguageStore = defineStore('language', () => {
           travel: {
             title: '漫游 AI',
             desc: '个性化旅行行程规划师。根据您的兴趣、预算和旅行风格生成每日详细行程。',
+          },
+          aippt: {
+            title: 'AI PPT 生成器',
+            desc: '自动化演示文稿生成器。通过 AI 内容扩展将主题转换为结构化的幻灯片。',
           }
         }
       },

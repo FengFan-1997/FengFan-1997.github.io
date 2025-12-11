@@ -10,6 +10,7 @@ import CodeGuardian from '../project/CodeGuardian.vue';
 import TravelPlanner from '../project/TravelPlanner.vue';
 import NexusDashboard from '../project/NexusDashboard.vue';
 import AetherMarket from '../project/AetherMarket.vue';
+import AiPptGen from '../project/AiPptGen.vue';
 import SecretLove from '../project/SecretLove.vue';
 import GalaxyPage from '../components/secret/pages/GalaxyPage.vue';
 import SeaOfStarsPage from '../components/secret/pages/SeaOfStarsPage.vue';
@@ -25,6 +26,11 @@ import SakuraPage from '../components/secret/pages/SakuraPage.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/ai-ppt',
+      name: 'ai-ppt',
+      component: AiPptGen
+    },
     {
       path: '/secret-garden',
       name: 'secret-garden',

@@ -18,6 +18,10 @@ const router = useRouter();
 const canvas = ref<HTMLCanvasElement | null>(null);
 let animationId: number;
 
+// State
+const fontSize = 16;
+let drops: number[] = [];
+
 // Interaction
 let mouseX = 0;
 let mouseY = 0;
@@ -48,6 +52,13 @@ const handleResize = () => {
   if (!canvas.value) return;
   canvas.value.width = window.innerWidth;
   canvas.value.height = window.innerHeight;
+  
+  const columns = Math.ceil(canvas.value.width / fontSize);
+  if (drops.length < columns) {
+    for (let i = drops.length; i < columns; i++) {
+      drops[i] = Math.floor(Math.random() * -20);
+    }
+  }
 };
 
 onMounted(() => {
@@ -55,17 +66,9 @@ onMounted(() => {
   const ctx = canvas.value.getContext('2d');
   if (!ctx) return;
 
-  canvas.value.width = window.innerWidth;
-  canvas.value.height = window.innerHeight;
+  handleResize();
 
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%LOVE❤️';
-  const fontSize = 16;
-  const columns = canvas.value.width / fontSize;
-
-  const drops: number[] = [];
-  for (let x = 0; x < columns; x++) {
-    drops[x] = 1;
-  }
 
   const draw = () => {
     if (!ctx || !canvas.value) return;

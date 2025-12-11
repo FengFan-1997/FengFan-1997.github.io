@@ -28,7 +28,15 @@
           @click="onCardClick(item.route)"
         >
           <div class="card-visual-container" :style="getCardStyle(index)">
-            <img :src="item.image" class="plain-image" loading="lazy" :alt="item.title" />
+            <img 
+              :src="item.image" 
+              :srcset="getSrcSet(item.image)"
+              sizes="(max-width: 768px) 400px, (max-width: 1200px) 800px, 1200px"
+              class="plain-image" 
+              loading="lazy" 
+              decoding="async"
+              :alt="item.title" 
+            />
           </div>
           
           <div class="card-content">
@@ -161,6 +169,15 @@ const navItems = computed(() => [
     icon: '✈️',
     image: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
     tags: ['GenAI', 'Personalization', 'Travel']
+  },
+  {
+    id: 'aippt',
+    title: t('projects.items.aippt.title'),
+    desc: t('projects.items.aippt.desc'),
+    route: '/ai-ppt',
+    icon: '📽️',
+    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800&auto=format&fit=crop',
+    tags: ['AI', 'Vue 3', 'Productivity']
   }
 ]);
 
@@ -204,6 +221,12 @@ const updateScrollEffect = () => {
 
   cardProgress.value = newProgress;
   animationFrameId = requestAnimationFrame(updateScrollEffect);
+};
+
+const getSrcSet = (url: string) => {
+  // Remove existing width param if present to avoid conflicts
+  const base = url.replace(/&w=\d+/, '');
+  return `${base}&w=400 400w, ${base}&w=800 800w, ${base}&w=1200 1200w`;
 };
 
 const getCardStyle = (index: number) => {
@@ -412,8 +435,6 @@ onBeforeUnmount(() => {
   border-radius: 20px;
   overflow: hidden;
   transform: translateZ(0); /* Force GPU acceleration and fix overflow clipping */
-  perspective: 1000px;
-  transform-style: preserve-3d;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   will-change: transform;
   backface-visibility: hidden;

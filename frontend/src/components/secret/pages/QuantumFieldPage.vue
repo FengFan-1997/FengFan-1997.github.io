@@ -52,13 +52,13 @@ class Particle {
     this.density = (Math.random() * 30) + 1;
   }
 
-  update() {
+  update(width: number, height: number) {
     this.x += this.vx;
     this.y += this.vy;
 
     // Boundary check (bounce)
-    if (this.x < 0 || this.x > this.canvasWidth) this.vx = -this.vx;
-    if (this.y < 0 || this.y > this.canvasHeight) this.vy = -this.vy;
+    if (this.x < 0 || this.x > width) this.vx = -this.vx;
+    if (this.y < 0 || this.y > height) this.vy = -this.vy;
 
     // Mouse interaction (Repel)
     const dx = mouse.x - this.x;
@@ -154,7 +154,7 @@ onMounted(() => {
     ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
     
     for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
+      particles[i].update(canvas.value.width, canvas.value.height);
       particles[i].draw(ctx);
     }
     connect();
