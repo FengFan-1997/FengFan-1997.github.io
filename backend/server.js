@@ -376,6 +376,20 @@ app.post('/api/generate', async (req, res) => {
    res.status(404).json({ error: 'Deprecated. Use /api/chat' });
 });
 
+// 4. Get Chat History
+app.get('/api/chat/history/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allChats = readJson(CHATS_FILE, {});
+    const history = allChats[userId] || [];
+    // Only return last 20 messages to keep payload light
+    res.json({ history: history.slice(-20) });
+  } catch (error) {
+    console.error('Error in GET /api/chat/history:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

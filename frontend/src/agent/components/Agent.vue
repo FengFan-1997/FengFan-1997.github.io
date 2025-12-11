@@ -41,18 +41,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import AgentCharacter from './AgentCharacter.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
 import TaskDisplay from './TaskDisplay.vue';
 import { useTaskExecutor } from '../composables/useTaskExecutor';
+import { useAuth } from '../composables/useAuth';
 import { lerp, getRandomPosition } from '../utils/math';
-import { sendMessageToAI, getUserProfile, updateUserProfile } from '../services/aiService';
+import { sendMessageToAI, getChatHistory } from '../services/aiService';
 import type { Position, ChatMessage } from '../types';
 
 const router = useRouter();
+const { initAuth, isAuthenticated, currentUser } = useAuth();
 
 // --- State ---
 const x = ref(window.innerWidth - 100);
@@ -465,44 +467,54 @@ const handleGlobalMouseMove = (e: MouseEvent) => {
 
 // --- Lifecycle ---
 onMounted(async () => {
-  // Check user history for personalization
-
-  try {
-    const profile = await getUserProfile();
-
-    if (profile && profile.visits > 0) {
-      message.value = 'Welcome back! Missed me?';
-      messages.value = [
-        {
-          role: 'agent',
-          text: `Welcome back${profile.name && profile.name !== 'Friend' ? ', ' + profile.name : ''}! Need any help continuing where we left off?`
-        }
-      ];
-
-      // Update visit count
-      await updateUserProfile({ visits: (profile.visits || 0) + 1 });
-    } else {
-      message.value = "Hi! I'm new here.";
-      messages.value = [
-        {
-          role: 'agent',
-          text: 'Hello! I am your personal AI Agent. I can help you navigate this website. Try asking me anything!'
-        }
-      ];
-
-      // Create new profile
-      await updateUserProfile({ visits: 1, name: 'Friend' });
-    }
-  } catch (e) {
-    console.error('Failed to load profile', e);
-    // Fallback
-    message.value = 'Hello!';
-  }
-
   window.addEventListener('mousemove', handleGlobalMouseMove);
   window.addEventListener('focusin', handleFocusIn);
   startLoop();
   startRoaming();
+
+  // Initialize Auth
+  await initAuth();
+});
+
+// Watch for User Login/Logout
+watch(currentUser, async (user) => {
+  if (user) {
+    // User Logged In
+    const name = user.name || user.username || 'Friend';
+    const visits = user.visits || 0;
+
+    if (visits > 1) {
+      message.value = `Welcome back, ${name}!`;
+      isHappy.value = true;
+      setTimeout(() => (isHappy.value = false), 2000);
+    } else {
+      message.value = `Nice to meet you, ${name}!`;
+    }
+
+    // Load History
+    try {
+      const history = await getChatHistory(user.userId || user.id);
+      if (history && history.length > 0) {
+        messages.value = history.map((msg: any) => ({
+          role: msg.role === 'model' ? 'agent' : 'user',
+          text: msg.parts?.[0]?.text || msg.text || ''
+        }));
+        // Append a "welcome back" message
+        messages.value.push({
+          role: 'agent',
+          text: `I've restored our previous chat history. What's on your mind?`
+        });
+      } else {
+        messages.value = [{ role: 'agent', text: `Hello ${name}! How can I help you today?` }];
+      }
+    } catch (e) {
+      console.error('Failed to load history', e);
+    }
+  } else {
+    // User Logged Out
+    message.value = 'See you later!';
+    messages.value = [{ role: 'agent', text: 'Hello! Please login to save our chats.' }];
+  }
 });
 
 onBeforeUnmount(() => {
