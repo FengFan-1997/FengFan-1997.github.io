@@ -1,5 +1,11 @@
 <template>
-  <div class="chat-window">
+  <div 
+    class="chat-window" 
+    :class="placement"
+    @mousemove="refreshActivity"
+    @click="refreshActivity"
+    @keydown="refreshActivity"
+  >
     <div class="chat-header">
       <span class="title">AI Assistant</span>
       <button class="close-btn" @click="$emit('close')">×</button>
@@ -41,13 +47,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
+import { ref, nextTick, watch, onMounted, onBeforeUnmount } from 'vue';
 import { marked } from 'marked';
 import type { ChatMessage } from '../types';
 
 const props = defineProps<{
   messages: ChatMessage[];
   isLoading: boolean;
+  placement?: 'top' | 'bottom';
 }>();
 
 const emit = defineEmits<{
@@ -57,11 +64,13 @@ const emit = defineEmits<{
 
 const inputMessage = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
+const lastActivityTime = ref(Date.now());
+let activityTimer: number | null = null;
 
 const renderMessage = (text: string) => {
   try {
     return marked.parse(text);
-  } catch (e) {
+  } catch {
     return text;
   }
 };
@@ -70,10 +79,36 @@ const handleSend = () => {
   if (!inputMessage.value.trim() || props.isLoading) return;
   emit('send', inputMessage.value);
   inputMessage.value = '';
+  refreshActivity();
 };
+
+const refreshActivity = () => {
+  lastActivityTime.value = Date.now();
+};
+
+const checkInactivity = () => {
+  // Do not close if loading or if user has typed something
+  if (props.isLoading || inputMessage.value.length > 0) {
+    refreshActivity();
+    return;
+  }
+  
+  if (Date.now() - lastActivityTime.value > 5000) {
+    emit('close');
+  }
+};
+
+onMounted(() => {
+  activityTimer = window.setInterval(checkInactivity, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (activityTimer) clearInterval(activityTimer);
+});
 
 // Auto-scroll to bottom when messages change
 watch(() => props.messages.length, () => {
+  refreshActivity(); // New message = activity
   nextTick(() => {
     if (messagesContainer.value) {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
@@ -85,7 +120,7 @@ watch(() => props.messages.length, () => {
 <style scoped>
 .chat-window {
   position: absolute;
-  bottom: 100px; /* Position above the agent */
+  /* bottom: 100px;  Removed default, handled by classes */
   right: 0;
   width: 300px;
   height: 400px;
@@ -100,6 +135,16 @@ watch(() => props.messages.length, () => {
   /* Ensure it doesn't get cut off if agent is near edge */
   transform: translateX(-50%);
   left: 50%;
+}
+
+.chat-window.top {
+  bottom: 100px;
+  top: auto;
+}
+
+.chat-window.bottom {
+  top: 100px;
+  bottom: auto;
 }
 
 .chat-header {

@@ -20,7 +20,7 @@ let scene: THREE.Scene;
 let camera: THREE.PerspectiveCamera;
 let renderer: THREE.WebGLRenderer;
 let animationId: number;
-let cloudParticles: THREE.Mesh[] = [];
+const cloudParticles: THREE.Mesh[] = [];
 let starField: THREE.Points;
 let nebulaGroup: THREE.Group;
 

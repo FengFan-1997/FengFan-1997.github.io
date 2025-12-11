@@ -170,7 +170,7 @@ const onGenerate = async () => {
     const { url, layoutType } = await generateImageWithAI('', ingredientsInput.value, productType.value);
     imgSrc.value = url || placeholderUrl;
     pendingLayoutType.value = layoutType || null;
-  } catch (error) {
+  } catch {
     errorMsg.value = 'Generation failed, please try again later';
     message.error('Generation failed, please try again later');
     pendingLayoutType.value = null;
@@ -567,7 +567,7 @@ watch(typeIndex, (nv) => {
   justify-content: center;
   min-height: 100vh;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
   background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 100%);
   font-family: 'Inter', sans-serif;
   color: @text-main;
@@ -699,7 +699,7 @@ watch(typeIndex, (nv) => {
 }
 
 .product-describe {
-  flex: 1;
+  height:275px
   display: flex;
   flex-direction: column;
   gap: 16px;

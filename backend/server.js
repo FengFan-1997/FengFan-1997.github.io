@@ -98,7 +98,80 @@ app.post('/api/embed', async (req, res) => {
   }
 });
 
-// 2. User Profile Management
+// 2. User Profile Management & Authentication
+
+// Helper to generate simple token (mock)
+const generateToken = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { username, password, name } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    const users = readJson(USERS_FILE, {});
+    
+    // Check if username already exists
+    const existingUser = Object.values(users).find(u => u.username === username);
+    if (existingUser) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    const userId = 'user_' + Date.now();
+    const newUser = {
+      id: userId,
+      username,
+      password, // In a real app, HASH this!
+      name: name || username,
+      visits: 0,
+      preferences: {},
+      createdAt: Date.now()
+    };
+
+    users[userId] = newUser;
+    writeJson(USERS_FILE, users);
+
+    res.json({ 
+      userId: newUser.id, 
+      name: newUser.name,
+      token: generateToken() 
+    });
+
+  } catch (error) {
+    console.error('Error in /api/auth/register:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    const users = readJson(USERS_FILE, {});
+    
+    // Find user by username
+    const user = Object.values(users).find(u => u.username === username);
+    
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    res.json({ 
+      userId: user.id, 
+      name: user.name,
+      token: generateToken() 
+    });
+
+  } catch (error) {
+    console.error('Error in /api/auth/login:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('/api/user/:userId', (req, res) => {
   try {
     const { userId } = req.params;
@@ -220,6 +293,21 @@ app.post('/api/chat', async (req, res) => {
          Examples:
          - "Go home" -> "On my way! \n navigate: /"
          - "Take me to pricing" -> "Let's check the prices. \n navigate: /pricing"
+
+      3. **Click Element:**
+         If the user asks to click something or perform an action, use:
+         \`click: <css_selector>\`
+         
+         Examples:
+         - "Click the login button" -> "Clicking it now! \n click: #login-btn"
+         - "Select the first option" -> "Done. \n click: .option:first-child"
+
+      4. **Task Plan (Multi-step):**
+         If the user asks for a complex task (e.g., "Help me login", "Go to settings and change name"), return a JSON plan on a new line.
+         Format:
+         plan: [{"type": "navigate", "target": "/path"}, {"type": "highlight", "target": ".selector"}, {"type": "click", "target": ".selector"}, {"type": "input", "target": ".selector", "value": "text"}]
+
+         Valid types: "navigate", "highlight", "click", "input", "wait".
 
       (Note: Use standard CSS selectors like #id, .class. Guess if unsure.)
 

@@ -134,7 +134,7 @@ class Firework {
       ctx.beginPath();
       if (this.trail.length > 0) {
         ctx.moveTo(this.trail[0].x, this.trail[0].y);
-        for(let t of this.trail) ctx.lineTo(t.x, t.y);
+        for(const t of this.trail) ctx.lineTo(t.x, t.y);
       }
       ctx.strokeStyle = `rgba(255,255,255,0.3)`;
       ctx.stroke();

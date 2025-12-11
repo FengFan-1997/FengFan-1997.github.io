@@ -5,7 +5,9 @@
       'is-moving': isMoving, 
       'is-hovered': isHovered,
       'is-dizzy': isDizzy,
-      'is-thinking': isThinking
+      'is-thinking': isThinking,
+      'is-happy': isHappy,
+      'is-confused': isConfused
     }"
   >
     <div class="agent-head">
@@ -16,6 +18,11 @@
       <!-- Dizzy Effect (Stars/Swirls) -->
       <div v-if="isDizzy" class="dizzy-stars">
         <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+
+      <!-- Confused Effect -->
+      <div v-if="isConfused" class="confused-marks">
+        <span>?</span>
       </div>
 
       <div class="agent-antenna">
@@ -42,13 +49,26 @@ const props = defineProps<{
   isHovered: boolean;
   isDizzy: boolean;
   isThinking?: boolean;
+  isHappy?: boolean;
+  isConfused?: boolean;
   message: string;
   eyeOffset: Position;
 }>();
 
-const { isMoving, isHovered, isDizzy, isThinking, message } = toRefs(props);
+const { isMoving, isHovered, isDizzy, isThinking, isHappy, isConfused, message } = toRefs(props);
 
 const eyeStyle = computed(() => {
+  if (props.isDizzy) {
+     return { transform: 'scaleY(0.1)' }; // Squint hard
+  }
+  if (props.isHappy) {
+    // Happy eyes (inverted arch or just move up)
+    return { transform: 'translateY(-2px) scaleY(1.2)' };
+  }
+  if (props.isConfused) {
+    // One up, one down (asymmetry handled in CSS ideally, but here we can just shift)
+    return { transform: 'translate(2px, 0)' };
+  }
   if (props.isThinking) {
     // Thinking pose: Look up-right
     return {
@@ -86,6 +106,14 @@ const eyeStyle = computed(() => {
 .agent-body.is-hovered {
   transform: scale(1.1);
   box-shadow: 0 15px 30px rgba(64, 158, 255, 0.3);
+}
+
+.agent-body.is-happy {
+  animation: bounce 0.5s infinite alternate;
+}
+
+.agent-body.is-confused {
+  animation: tilt 2s infinite ease-in-out;
 }
 
 .agent-body.is-dizzy {
@@ -208,6 +236,32 @@ const eyeStyle = computed(() => {
   25% { transform: rotate(5deg); }
   75% { transform: rotate(-5deg); }
   100% { transform: rotate(0deg); }
+}
+
+.confused-marks {
+  position: absolute;
+  top: -25px;
+  right: -10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #faad14;
+  animation: float-up 1s infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes tilt {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
 }
 
 @keyframes spin {

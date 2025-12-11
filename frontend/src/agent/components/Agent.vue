@@ -11,6 +11,8 @@
       :is-hovered="isHovered"
       :is-dizzy="isDizzy"
       :is-thinking="isLoading"
+      :is-happy="isHappy"
+      :is-confused="isConfused"
       :message="message"
       :eye-offset="eyeOffset"
     />
@@ -20,31 +22,36 @@
         v-if="chatOpen" 
         :messages="messages"
         :is-loading="isLoading"
+        :placement="chatPlacement"
         @close="toggleChat"
         @send="handleSendMessage"
         @click.stop
       />
     </transition>
 
+    <TaskDisplay :plan="plan" />
+
     <GuideOverlay 
       :visible="!!guideTarget" 
       :target-rect="guideTargetRect"
       :label="guideLabel"
+      :agent-position="{ x, y }"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import AgentCharacter from './AgentCharacter.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
-import { lerp, getRandomPosition, calculateDistance } from '../utils/math';
+import TaskDisplay from './TaskDisplay.vue';
+import { useTaskExecutor } from '../composables/useTaskExecutor';
+import { lerp, getRandomPosition } from '../utils/math';
 import { sendMessageToAI, getUserProfile, updateUserProfile } from '../services/aiService';
-import { getUserId } from '../utils/user';
 import type { Position, ChatMessage } from '../types';
 
-// ... State ---
+// --- State ---
 const x = ref(window.innerWidth - 100);
 const y = ref(window.innerHeight - 100);
 const targetX = ref(x.value);
@@ -53,6 +60,8 @@ const targetY = ref(y.value);
 const isMoving = ref(false);
 const isHovered = ref(false);
 const isDizzy = ref(false);
+const isHappy = ref(false);
+const isConfused = ref(false);
 const message = ref('Hi! I am your AI Agent.');
 
 // Chat State
@@ -61,6 +70,15 @@ const messages = ref<ChatMessage[]>([
   { role: 'agent', text: 'Hello! How can I help you today?' }
 ]);
 const isLoading = ref(false);
+
+// Task Executor
+const { plan, setPlan } = useTaskExecutor();
+
+// Chat Placement Logic
+const chatPlacement = computed(() => {
+  // If agent is in the top 400px of the screen, show chat below
+  return y.value < 400 ? 'bottom' : 'top';
+});
 
 // Eye Tracking State
 const mouseX = ref(0);
@@ -73,7 +91,6 @@ const guideTargetRect = ref<DOMRect | null>(null);
 const guideLabel = ref('');
 
 // Dizziness Logic State
-const MOUSE_HISTORY_LIMIT = 20;
 const mouseHistory: { x: number, y: number, time: number }[] = [];
 let dizzyTimeout: number | null = null;
 
@@ -108,14 +125,45 @@ const handleSendMessage = async (text: string) => {
   // Add user message
   messages.value.push({ role: 'user', text });
   isLoading.value = true;
+  message.value = "Hmm..."; // Thinking text
   
   // Call AI Service
   const response = await sendMessageToAI(text, messages.value);
   
   isLoading.value = false;
-  messages.value.push({ role: 'agent', text: response });
+  message.value = ""; // Clear thinking text
   
-  // Check for Guide Commands
+  // Clean response for display (remove hidden commands)
+  const displayResponse = response
+    .replace(/highlight:\s*[^\s\n]+/g, '')
+    .replace(/navigate:\s*[^\s\n]+/g, '')
+    .replace(/click:\s*[^\s\n]+/g, '')
+    .replace(/plan:\s*\[[\s\S]*?\]/g, '') // Hide JSON plan
+    .trim();
+
+  if (displayResponse) {
+    messages.value.push({ role: 'agent', text: displayResponse });
+  } else {
+    messages.value.push({ role: 'agent', text: "I'm on it!" });
+  }
+  
+  // Check for Task Plan
+  const planMatch = response.match(/plan:\s*(\[[\s\S]*?\])/);
+  if (planMatch) {
+    try {
+      const planJson = JSON.parse(planMatch[1]);
+      if (Array.isArray(planJson)) {
+        console.log("Executing Plan:", planJson);
+        setPlan(planJson);
+        // If we have a plan, maybe close the chat to show the action?
+        // toggleChat(); 
+      }
+    } catch (e) {
+      console.error("Failed to parse task plan:", e);
+    }
+  }
+
+  // Check for Guide Commands (Single commands)
   // 1. Highlight: highlight: .selector
   const guideMatch = response.match(/highlight:\s*([^\s\n]+)/);
   if (guideMatch) {
@@ -138,13 +186,36 @@ const handleSendMessage = async (text: string) => {
   const navMatch = response.match(/navigate:\s*([^\s\n]+)/);
   if (navMatch) {
     const path = navMatch[1];
-    // In a real router app: router.push(path)
-    // For now, we'll just log it or simulate it if we had a router.
-    // Since this is likely a single page demo or simple HTML, we can try:
     console.log("Navigating to:", path);
     window.location.href = path; // Warning: this will reload the page!
   }
+
+  // 3. Click: click: .selector
+  const clickMatch = response.match(/click:\s*([^\s\n]+)/);
+  if (clickMatch) {
+    const selector = clickMatch[1];
+    const el = document.querySelector(selector) as HTMLElement;
+    if (el) {
+      console.log("Agent clicking:", selector);
+      
+      guideTarget.value = el;
+      guideTargetRect.value = el.getBoundingClientRect();
+      guideLabel.value = "Clicking this!";
+      
+      setTimeout(() => {
+        el.click();
+        el.focus(); // Ensure focus
+        
+        // Reset guide after short delay
+        setTimeout(() => {
+          guideTarget.value = null;
+          guideTargetRect.value = null;
+        }, 1000);
+      }, 500); // Small delay to show the "Clicking this!" label
+    }
+  }
 };
+
 
 // --- Logic: Movement & Animation Loop ---
 let animationFrameId: number;
@@ -153,6 +224,26 @@ let roamTimer: number | null = null;
 const updateEyeTracking = () => {
   if (isDizzy.value) return;
 
+  // Priority 1: Look at Guide Target if active
+  if (guideTargetRect.value) {
+    const agentCenterX = x.value + AGENT_SIZE / 2;
+    const agentCenterY = y.value + AGENT_SIZE / 2;
+    const targetCenterX = guideTargetRect.value.left + guideTargetRect.value.width / 2;
+    const targetCenterY = guideTargetRect.value.top + guideTargetRect.value.height / 2;
+    
+    const dx = targetCenterX - agentCenterX;
+    const dy = targetCenterY - agentCenterY;
+    const angle = Math.atan2(dy, dx);
+    const distance = 4; // Max look distance
+    
+    eyeOffset.value = {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance
+    };
+    return;
+  }
+
+  // Priority 2: Look at Mouse
   const agentCenterX = x.value + AGENT_SIZE / 2;
   const agentCenterY = y.value + AGENT_SIZE / 2;
 
@@ -259,8 +350,17 @@ const triggerDizzy = () => {
   
   dizzyTimeout = window.setTimeout(() => {
     isDizzy.value = false;
-    message.value = "I'm okay now.";
-    setTimeout(() => message.value = "", 2000);
+    
+    // Recovery Phase: Confused for a moment
+    isConfused.value = true;
+    message.value = "Ugh... where am I?";
+    
+    setTimeout(() => {
+        isConfused.value = false;
+        message.value = "I'm okay now.";
+        setTimeout(() => message.value = "", 2000);
+    }, 2000);
+    
   }, 3000);
 };
 
@@ -282,7 +382,72 @@ const handleMouseLeave = () => {
 
 const handleClick = () => {
   if (isDizzy.value) return;
-  toggleChat();
+  
+  // Happy reaction!
+  isHappy.value = true;
+  setTimeout(() => {
+    isHappy.value = false;
+    toggleChat();
+  }, 500);
+};
+
+const handleFocusIn = (e: FocusEvent) => {
+  const target = e.target as HTMLElement;
+  if (!target) return;
+  
+  // Ignore if focus is inside the agent itself (e.g. chat window input)
+  if ((e.target as HTMLElement).closest('.agent-container')) return;
+
+  const rect = target.getBoundingClientRect();
+  avoidObstacle(rect);
+};
+
+const avoidObstacle = (obstacleRect: DOMRect) => {
+  const agentSize = AGENT_SIZE;
+  const agentRect = {
+    left: x.value,
+    top: y.value,
+    right: x.value + agentSize,
+    bottom: y.value + agentSize
+  };
+
+  // Simple AABB Collision Detection
+  const isOverlapping = 
+    agentRect.left < obstacleRect.right &&
+    agentRect.right > obstacleRect.left &&
+    agentRect.top < obstacleRect.bottom &&
+    agentRect.bottom > obstacleRect.top;
+
+  if (isOverlapping) {
+    // Determine direction to move
+    // Default: Move to the opposite side of the screen horizontally
+    const moveLeft = x.value > window.innerWidth / 2;
+    
+    const newX = moveLeft ? 50 : window.innerWidth - agentSize - 50;
+    let newY = y.value; // Keep Y if possible
+    
+    // If Y is also overlapping significantly?
+    // Let's just default to a safe corner to be sure.
+    // If obstacle is top-heavy, go bottom.
+    const moveDown = obstacleRect.top < window.innerHeight / 2;
+    newY = moveDown ? window.innerHeight - agentSize - 50 : 50;
+
+    targetX.value = newX;
+    targetY.value = newY;
+    
+    // Animate move
+    isMoving.value = true;
+    x.value = newX; // Snap or Lerp? Snap for quick avoidance
+    y.value = newY;
+    
+    message.value = "Oops, excuse me!";
+    
+    // Resume normal behavior after a delay
+    setTimeout(() => {
+        isMoving.value = false;
+        if (!chatOpen.value) message.value = "";
+    }, 1500);
+  }
 };
 
 const handleGlobalMouseMove = (e: MouseEvent) => {
@@ -324,12 +489,14 @@ onMounted(async () => {
   }
 
   window.addEventListener('mousemove', handleGlobalMouseMove);
+  window.addEventListener('focusin', handleFocusIn);
   startLoop();
   startRoaming();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('mousemove', handleGlobalMouseMove);
+  window.removeEventListener('focusin', handleFocusIn);
   cancelAnimationFrame(animationFrameId);
   if (roamTimer) clearInterval(roamTimer);
   if (dizzyTimeout) clearTimeout(dizzyTimeout);

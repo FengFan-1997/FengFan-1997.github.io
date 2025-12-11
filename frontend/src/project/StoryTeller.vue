@@ -145,7 +145,7 @@ const generateStory = async () => {
         story.value = text;
       }
     }
-  } catch (e) {
+  } catch {
     story.value = "An error occurred while generating the story.";
   }
   

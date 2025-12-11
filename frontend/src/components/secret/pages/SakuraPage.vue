@@ -26,7 +26,6 @@ const dummy = new THREE.Object3D();
 
 // Interactive variables
 let mouseX = 0;
-let mouseY = 0;
 let windStrength = 0;
 
 const goBack = () => {
@@ -35,14 +34,12 @@ const goBack = () => {
 
 const onMouseMove = (event: MouseEvent) => {
   mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-  mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
   windStrength = mouseX * 2;
 };
 
 const onTouchMove = (event: TouchEvent) => {
   if (event.touches.length > 0) {
     mouseX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-    mouseY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
     windStrength = mouseX * 2;
   }
 };

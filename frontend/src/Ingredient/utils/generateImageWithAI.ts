@@ -488,7 +488,7 @@ const renderSupplementFacts = (sections: any[]) => {
     actives.forEach((item: any, itemIdx: number) => {
       if (item.name) {
         const amount = item.amount === DEFAULT_MISSING_TEXT ? '0' : item.amount;
-        let dv = item.dv === DEFAULT_MISSING_TEXT ? '0' : item.dv;
+        const dv = item.dv === DEFAULT_MISSING_TEXT ? '0' : item.dv;
         if (String(dv).includes('*')) {
           hasAsterisk = true;
         } else if (String(dv).includes('†')) {
@@ -574,7 +574,7 @@ const renderSupplementFacts = (sections: any[]) => {
     }
 
     if (contentParts.length > 0) {
-      let firstLineContent = contentParts[0];
+      const firstLineContent = contentParts[0];
       let firstLineX = CONTENT_X;
       let yOffset = 0;
       const firstLineWidth = getCtx(FONT_BODY)?.measureText(firstLineContent).width || 0;

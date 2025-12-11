@@ -20,7 +20,7 @@ let animationId: number;
 
 // State
 const fontSize = 16;
-let drops: number[] = [];
+const drops: number[] = [];
 
 // Interaction
 let mouseX = 0;

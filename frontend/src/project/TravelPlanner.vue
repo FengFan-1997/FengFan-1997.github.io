@@ -100,11 +100,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { generateContent } from '../services/aiService';
 import LabelTypeSelect from '../Ingredient/utils/LabelTypeSelect.vue';
 
-const router = useRouter();
 const destination = ref('');
 const duration = ref(3);
 const interests = ref('');

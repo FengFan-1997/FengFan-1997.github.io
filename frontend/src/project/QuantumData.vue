@@ -47,7 +47,6 @@ let animationId: number;
 let particles: THREE.Points;
 let mouseX = 0;
 let mouseY = 0;
-let targetRotationY = 0;
 
 const initScene = () => {
   if (!container.value) return;
@@ -118,8 +117,6 @@ const animate = () => {
   animationId = requestAnimationFrame(animate);
 
   const time = Date.now() * 0.001;
-
-  targetRotationY += 0.002;
 
   if (particles) {
     particles.rotation.y += 0.05 * (mouseX - particles.rotation.y);

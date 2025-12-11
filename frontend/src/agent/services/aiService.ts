@@ -6,7 +6,7 @@ const USER_API_URL = 'http://localhost:8080/api/user';
 
 export const sendMessageToAI = async (
   message: string, 
-  history: ChatMessage[] = [] // Kept for compatibility but not strictly needed for backend context
+  _history: ChatMessage[] = [] // Kept for compatibility but not strictly needed for backend context
 ): Promise<string> => {
   try {
     const userId = getUserId();
