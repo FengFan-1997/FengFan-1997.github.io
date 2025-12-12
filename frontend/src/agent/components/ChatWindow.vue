@@ -223,6 +223,11 @@ const toggleVoice = () => {
 
 // Smart Positioning State
 const windowStyle = computed(() => {
+  // On mobile, let CSS handle fixed positioning
+  if (window.innerWidth <= 768) {
+    return {};
+  }
+
   const style: any = {};
 
   // Basic boundary detection to prevent overflow
@@ -732,3 +737,9 @@ watch(
   opacity: 0;
 }
 </style>
+
+@media (max-width: 768px) { .chat-window { position: fixed !important; top: 50% !important; left:
+50% !important; transform: translate(-50%, -50%) !important; right: auto !important; bottom: auto
+!important; width: 90vw !important; max-width: 400px; height: 70vh !important; max-height: 600px;
+margin: 0 !important; z-index: 100000 !important; } .chat-window.top, .chat-window.bottom { top: 50%
+!important; bottom: auto !important; transform: translate(-50%, -50%) !important; } }

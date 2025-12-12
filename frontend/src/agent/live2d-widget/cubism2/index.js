@@ -118,8 +118,17 @@ class Cubism2Model {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         if (this.gl) {
-          this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+          // Clear both color and depth buffers to ensure clean state
+          this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
           this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+          // Force reset Live2D WebGL context and mask buffers
+          Live2D.setGL(this.gl);
+
+          // Force model update to redraw correctly
+          if (this.live2DMgr && this.live2DMgr.model) {
+            this.live2DMgr.model.setUpdating(true);
+          }
         }
       }
     });
@@ -305,7 +314,10 @@ class Cubism2Model {
 
     this.dragMgr.setPoint(vx, vy);
 
-    if (this.live2DMgr?.model.hitTest(LAppDefine.HIT_AREA_BODY, vx, vy)) {
+    if (
+      this.live2DMgr?.model?.hitTest &&
+      this.live2DMgr.model.hitTest(LAppDefine.HIT_AREA_BODY, vx, vy)
+    ) {
       window.dispatchEvent(new Event('live2d:hoverbody'));
     }
   }

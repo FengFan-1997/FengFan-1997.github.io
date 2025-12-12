@@ -460,6 +460,21 @@ app.post('/api/chat', async (req, res) => {
          - "Press Enter" -> "Pressing Enter. \\n press: Enter"
          - "Search for 'apple'" -> "Typing... \\n input: .search | apple \\n press: Enter on .search"
 
+      8. **Live2D Motion Control:**
+         You can control your avatar's body language.
+         Use \`[MOTION: name]\` in your response.
+         
+         Available Motions:
+         - \`[MOTION: tap_body]\` (Standard interaction)
+         - \`[MOTION: flick_head]\` (Surprised/Hit)
+         - \`[MOTION: shake]\` (Angry/Refusal)
+         - \`[MOTION: talking]\` (Speaking)
+         - \`[MOTION: idle]\` (Reset)
+         
+         Example:
+         - "I did it! [MOTION: tap_body]"
+         - "Don't touch me! [MOTION: shake]"
+
       9. **Task Plan (Multi-step):**
          If the user asks for a complex task (e.g., "Help me login", "Go to settings and change name"), return a JSON plan on a new line.
          Format:
@@ -517,10 +532,12 @@ app.post('/api/chat', async (req, res) => {
         }
     }
 
-    // Save to Memory
-    allChats[user].push({ role: 'user', text: message, timestamp: Date.now() });
-    allChats[user].push({ role: 'agent', text: reply, timestamp: Date.now() });
-    writeJson(CHATS_FILE, allChats);
+    // Save to Memory (Only if it's not a connection error)
+    if (!reply.includes("can't connect to my brain")) {
+        allChats[user].push({ role: 'user', text: message, timestamp: Date.now() });
+        allChats[user].push({ role: 'agent', text: reply, timestamp: Date.now() });
+        writeJson(CHATS_FILE, allChats);
+    }
 
     res.json({ reply });
 
@@ -543,7 +560,9 @@ app.get('/api/chat/history/:userId', (req, res) => {
     const allChats = readJson(CHATS_FILE, {});
     const history = allChats[userId] || [];
     // Only return last 20 messages to keep payload light
-    res.json({ history: history.slice(-20) });
+    // And filter out previous error messages from history
+    const cleanHistory = history.filter(msg => !msg.text.includes("can't connect to my brain"));
+    res.json({ history: cleanHistory.slice(-20) });
   } catch (error) {
     console.error('Error in GET /api/chat/history:', error);
     res.status(500).json({ error: 'Internal Server Error' });

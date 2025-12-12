@@ -28,6 +28,7 @@ const props = defineProps<{
   isPouting?: boolean;
   isHeadHit?: boolean;
   currentLang?: string;
+  motionCommand?: string;
 }>();
 
 const { isAngry, isDizzy, isHeadHit } = toRefs(props);
@@ -42,6 +43,15 @@ const toggleChat = () => {
 };
 
 // --- Watchers for Agent Integration ---
+
+watch(
+  () => props.motionCommand,
+  (newCmd) => {
+    if (newCmd && modelMgr.value) {
+      modelMgr.value.startMotion(newCmd);
+    }
+  }
+);
 
 watch(
   () => props.isMoving,
@@ -152,6 +162,7 @@ const initLive2D = async () => {
           cubism2Path: '/live2d/core/live2d.min.js',
           // Updated tools list: Chat (Agent), Quote (Hitokoto), Model, Texture, Photo
           tools: ['chat', 'hitokoto', 'switch-model', 'switch-texture', 'photo'],
+          modelId: 3, // Default to Xier (Index 3 in model_list.json)
           drag: false, // Disable internal drag, handled by Agent.vue
           logLevel: 'none',
           onChat: toggleChat
@@ -165,10 +176,36 @@ const initLive2D = async () => {
 };
 
 const cleanup = () => {
-  // ModelManager handles cleanup if we call destroy, but currently we just remove DOM
-  // Ideally we should add a destroy method to ModelManager
+  // Force WebGL context cleanup
+  const canvas = document.getElementById('live2dcanvas') as HTMLCanvasElement;
+  if (canvas) {
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    // Type guard to ensure we have a WebGLRenderingContext
+    const isWebGL = (ctx: any): ctx is WebGLRenderingContext => {
+      return ctx && typeof ctx.getParameter === 'function';
+    };
+
+    if (isWebGL(gl)) {
+      const numTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+      for (let unit = 0; unit < numTextureUnits; ++unit) {
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+      gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    }
+    canvas.remove();
+  }
+
   const waifu = document.getElementById('waifu');
   if (waifu) waifu.remove();
+
+  // Reset ModelManager
+  modelMgr.value = null;
 };
 
 onMounted(() => {

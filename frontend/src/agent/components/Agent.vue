@@ -19,26 +19,29 @@
       :is-fainted="isFainted"
       :is-pouting="isPouting"
       :is-head-hit="isHeadHit"
+      :motion-command="motionCommand"
       :message="message"
       :current-lang="currentLang"
       @toggle-chat="toggleChat"
     />
 
-    <transition name="pop">
-      <ChatWindow
-        v-if="chatOpen"
-        :messages="messages"
-        :is-loading="isLoading"
-        :placement="chatPlacement"
-        :is-muted="isMuted"
-        :agent-rect="{ x, y, width: 80, height: 80 }"
-        :current-lang="currentLang"
-        @close="toggleChat"
-        @send="handleSendMessage"
-        @toggle-mute="isMuted = !isMuted"
-        @click.stop
-      />
-    </transition>
+    <Teleport to="body" :disabled="!isMobile">
+      <transition name="pop">
+        <ChatWindow
+          v-if="chatOpen"
+          :messages="messages"
+          :is-loading="isLoading"
+          :placement="chatPlacement"
+          :is-muted="isMuted"
+          :agent-rect="{ x, y, width: AGENT_SIZE, height: AGENT_SIZE }"
+          :current-lang="currentLang"
+          @close="toggleChat"
+          @send="handleSendMessage"
+          @toggle-mute="isMuted = !isMuted"
+          @click.stop
+        />
+      </transition>
+    </Teleport>
 
     <TaskDisplay :plan="plan" :placement="taskPlacement" />
 
@@ -75,9 +78,13 @@ const { initAuth, isAuthenticated, currentUser } = useAuth();
 const languageStore = useLanguageStore();
 const { currentLang } = storeToRefs(languageStore);
 
+const isMobile = ref(window.innerWidth <= 768);
+const AGENT_SIZE = computed(() => (isMobile.value ? 250 : 400)); // px - Responsive size
+
 // --- State ---
-const x = ref(window.innerWidth - 100);
-const y = ref(window.innerHeight - 100);
+const initialSize = window.innerWidth <= 768 ? 250 : 400;
+const x = ref(window.innerWidth - initialSize);
+const y = ref(window.innerHeight - initialSize);
 const targetX = ref(x.value);
 const targetY = ref(y.value);
 
@@ -93,6 +100,7 @@ const isPouting = ref(false); // New Pouting State
 const isHeadHit = ref(false); // New Head Hit State
 const isMuted = ref(false);
 const message = ref('Hello! I am Lumina!');
+const motionCommand = ref(''); // New: Motion command from AI
 
 // Drag State
 const isDragging = ref(false);
@@ -111,7 +119,7 @@ const interactionState = ref({
   startTime: 0
 });
 let interactionTimer: ReturnType<typeof setTimeout> | null = null;
-let singleClickTimer: ReturnType<typeof setTimeout> | null = null;
+const singleClickTimer: ReturnType<typeof setTimeout> | null = null;
 
 function resetInteractionTimer() {
   if (interactionTimer) clearTimeout(interactionTimer);
@@ -175,8 +183,8 @@ const handleMouseMove = (event: MouseEvent) => {
 
   // We need the Agent's center position.
   // x, y are refs to the top-left corner.
-  const centerX = x.value + AGENT_SIZE / 2;
-  const centerY = y.value + AGENT_SIZE / 2;
+  const centerX = x.value + AGENT_SIZE.value / 2;
+  const centerY = y.value + AGENT_SIZE.value / 2;
 
   // Eye offset logic
   eyeOffset.value = {
@@ -202,86 +210,44 @@ const handleMouseMove = (event: MouseEvent) => {
 
   lastMouseAngle.value = currentAngle;
 
-  // Threshold: 3 full circles (1080 degrees)
-  if (Math.abs(accumulatedAngle.value) > 1080) {
-    triggerFaint();
+  // Threshold: 360 degrees (1 full circle) for quick reaction
+  if (Math.abs(accumulatedAngle.value) > 360) {
+    triggerDizzy();
     resetInteractionState(); // Clear AI accumulator if local triggers
+    accumulatedAngle.value = 0; // Reset local accumulator
   }
 };
 
-const triggerFaint = () => {
-  isFainted.value = true;
-  isDizzy.value = true;
-  message.value = "I'm... spinning... @.@";
-  accumulatedAngle.value = 0;
+const triggerDizzy = () => {
+  if (isDizzy.value || isFainted.value) return;
 
-  // ASYNC MEMORY INJECTION: Notify AI context for future conversations
-  // We add this to messages but do NOT call sendMessageToAI
+  isDizzy.value = true;
+  message.value = "Whoa! I'm dizzy... @.@";
+  motionCommand.value = 'shake'; // Trigger shake motion
+
+  // Notify AI context silently
   messages.value.push({
     role: 'user',
-    text: '[System Event: User made you dizzy by circling the mouse around you rapidly.]'
+    text: '[System Event: User made you dizzy by circling the mouse around you.]'
   });
 
-  setTimeout(() => {
-    message.value = 'Zzz...';
-    isDizzy.value = false; // Transition to full faint (sleeping)
-  }, 1500);
+  if (dizzyTimeout) clearTimeout(dizzyTimeout);
 
-  // Wake up after 5 seconds
-  setTimeout(() => {
-    isFainted.value = false;
-    message.value = 'Ugh... what happened?';
-  }, 6500);
+  dizzyTimeout = window.setTimeout(() => {
+    isDizzy.value = false;
+    isConfused.value = true;
+    message.value = 'Ugh... where am I?';
+    motionCommand.value = '';
+
+    setTimeout(() => {
+      isConfused.value = false;
+      message.value = "Don't spin me like that! >_<";
+      setTimeout(() => (message.value = ''), 2000);
+    }, 2000);
+  }, 3000);
 };
 
-// Handle Clicks for Angry Interaction
-const handleAgentClick = () => {
-  if (isFainted.value) return;
-
-  const now = Date.now();
-
-  // Clear pending single click action if any
-  if (singleClickTimer) clearTimeout(singleClickTimer);
-
-  if (now - lastClickTime.value < 500) {
-    clickCount.value++;
-  } else {
-    clickCount.value = 1;
-  }
-  lastClickTime.value = now;
-
-  interactionState.value.clicks++;
-  resetInteractionTimer();
-
-  // Single Click Logic: Wait 300ms to see if more clicks come
-  if (clickCount.value === 1) {
-    singleClickTimer = setTimeout(() => {
-      // If we are here, no more clicks happened in 300ms
-      toggleChat();
-    }, 300);
-  }
-
-  if (clickCount.value >= 5) {
-    isAngry.value = true;
-    message.value = 'Stop poking me! Baka! 💢';
-    clickCount.value = 0;
-
-    resetInteractionState(); // Clear AI accumulator if local triggers
-
-    // ASYNC MEMORY INJECTION: Notify AI context for future conversations
-    messages.value.push({
-      role: 'user',
-      text: '[System Event: User poked you rapidly 5 times. You got angry and called them Baka.]'
-    });
-    // We also add the Agent's reaction to history so it knows it already responded
-    messages.value.push({
-      role: 'agent',
-      text: 'Stop poking me! Baka! 💢'
-    });
-
-    setTimeout(() => (isAngry.value = false), 2000);
-  }
-};
+// handleClick moved to bottom to resolve dependency issues
 
 // Add global mouse listener
 onMounted(() => {
@@ -301,8 +267,8 @@ const isLoading = ref(false);
 const { plan, isExecuting, executeTask, setPlan, stopTask } = useTaskExecutor();
 
 const lineStart = computed(() => ({
-  x: x.value + AGENT_SIZE / 2,
-  y: y.value + AGENT_SIZE / 2
+  x: x.value + AGENT_SIZE.value / 2,
+  y: y.value + AGENT_SIZE.value / 2
 }));
 
 const lineEnd = computed(() => {
@@ -431,7 +397,6 @@ const mouseHistory: { x: number; y: number; time: number }[] = [];
 let dizzyTimeout: number | null = null;
 
 // --- Config ---
-const AGENT_SIZE = 400; // px - Increased to ensure full visibility
 const MOVE_INTERVAL = 8000; // ms (for idle roaming)
 const LERP_FACTOR = 0.05; // Smoothness factor
 const MOUSE_FOLLOW_OFFSET = { x: 40, y: 40 };
@@ -439,8 +404,8 @@ const MOUSE_FOLLOW_OFFSET = { x: 40, y: 40 };
 // --- Computed ---
 const containerStyle = computed(() => ({
   transform: `translate(${x.value}px, ${y.value}px)`,
-  width: `${AGENT_SIZE}px`,
-  height: `${AGENT_SIZE}px`,
+  width: `${AGENT_SIZE.value}px`,
+  height: `${AGENT_SIZE.value}px`,
   // Disable transition when dragging for immediate response
   transition: isDragging.value
     ? 'none'
@@ -461,6 +426,62 @@ const toggleChat = () => {
   chatOpen.value = !chatOpen.value;
   if (chatOpen.value) {
     message.value = ''; // Clear bubble when chat opens
+  }
+};
+
+// Unified Click Handler (Moved here to access toggleChat)
+const handleClick = () => {
+  if (isDizzy.value || isFainted.value) return;
+
+  const now = Date.now();
+  if (now - lastClickTime.value < 500) {
+    clickCount.value++;
+  } else {
+    clickCount.value = 1;
+  }
+  lastClickTime.value = now;
+
+  // Rapid Click (Anger) - Tsundere Mode
+  if (clickCount.value >= 5) {
+    isAngry.value = true;
+    // Random Tsundere lines
+    const angryMessages = [
+      'Stop poking me! Baka! 💢',
+      'Hey! I am not a touch screen!',
+      'Do that again and I will ignore you!',
+      'Ugh! So annoying!'
+    ];
+    message.value = angryMessages[Math.floor(Math.random() * angryMessages.length)];
+    motionCommand.value = 'shake';
+    clickCount.value = 0;
+
+    // Notify AI of the "assault"
+    messages.value.push({
+      role: 'user',
+      text: '[System Event: User poked you rapidly. You are annoyed.]'
+    });
+
+    setTimeout(() => {
+      isAngry.value = false;
+      motionCommand.value = '';
+    }, 3000);
+    return;
+  }
+
+  // Single Click
+  // We REMOVED the generic 'tap_body' motion command here.
+  // This allows the specific Live2D hit areas (Head, Face, Breast, Leg)
+  // to trigger their own defined motions (flick_head, tap_breast, etc.)
+  // defined in the model.json.
+
+  // Toggle chat on first click if not in "Rage Mode"
+  if (clickCount.value === 1) {
+    if (!chatOpen.value) {
+      // Just a subtle reaction when opening chat
+      isConfused.value = true; // Slight blush/surprise
+      toggleChat();
+      setTimeout(() => (isConfused.value = false), 1000);
+    }
   }
 };
 
@@ -525,6 +546,18 @@ async function handleSendMessage(text: string) {
     cleanResponse = cleanResponse.replace('[POUT]', '').replace('[SHY]', '');
   }
 
+  // Detect Motion Commands
+  const motionMatch = cleanResponse.match(/\[MOTION:\s*(\w+)\]/);
+  if (motionMatch) {
+    motionCommand.value = motionMatch[1];
+    cleanResponse = cleanResponse.replace(motionMatch[0], '');
+
+    // Reset motion command shortly after
+    setTimeout(() => {
+      motionCommand.value = '';
+    }, 2000);
+  }
+
   // Auto-reset emotions after a delay
   if (isAngry.value || isPouting.value) {
     setTimeout(() => {
@@ -573,6 +606,7 @@ async function handleSendMessage(text: string) {
         if (result.success) {
           // Success Emotion
           isHappy.value = true;
+          motionCommand.value = 'tap_body'; // Trigger happy motion
           const successMsg = 'Mission Complete! Praise me! [HAPPY]';
           messages.value.push({ role: 'agent', text: successMsg });
           message.value = 'Mission Complete! ✨';
@@ -580,6 +614,7 @@ async function handleSendMessage(text: string) {
 
           setTimeout(() => {
             isHappy.value = false;
+            motionCommand.value = '';
           }, 4000);
         } else {
           // Fail Emotion
@@ -782,8 +817,8 @@ const onDrag = (event: MouseEvent | TouchEvent) => {
   let newY = clientY - dragOffset.value.y;
 
   // Boundary checks during drag
-  const maxX = window.innerWidth - AGENT_SIZE;
-  const maxY = window.innerHeight - AGENT_SIZE;
+  const maxX = window.innerWidth - AGENT_SIZE.value;
+  const maxY = window.innerHeight - AGENT_SIZE.value;
 
   newX = Math.max(-100, Math.min(newX, maxX + 100)); // Allow slight overflow
   newY = Math.max(-50, Math.min(newY, maxY + 50));
@@ -804,8 +839,8 @@ const endDrag = () => {
 };
 
 const checkBoundaries = () => {
-  const maxX = window.innerWidth - AGENT_SIZE;
-  const maxY = window.innerHeight - AGENT_SIZE;
+  const maxX = window.innerWidth - AGENT_SIZE.value;
+  const maxY = window.innerHeight - AGENT_SIZE.value;
 
   // Smooth return if out of bounds
   let targetX = x.value;
@@ -852,8 +887,8 @@ const updateEyeTracking = () => {
 
   // Priority 1: Look at Guide Target if active
   if (guideTargetRect.value) {
-    const agentCenterX = x.value + AGENT_SIZE / 2;
-    const agentCenterY = y.value + AGENT_SIZE / 2;
+    const agentCenterX = x.value + AGENT_SIZE.value / 2;
+    const agentCenterY = y.value + AGENT_SIZE.value / 2;
     const targetCenterX = guideTargetRect.value.left + guideTargetRect.value.width / 2;
     const targetCenterY = guideTargetRect.value.top + guideTargetRect.value.height / 2;
 
@@ -870,8 +905,8 @@ const updateEyeTracking = () => {
   }
 
   // Priority 2: Look at Mouse (only if not Fainted)
-  const agentCenterX = x.value + AGENT_SIZE / 2;
-  const agentCenterY = y.value + AGENT_SIZE / 2;
+  const agentCenterX = x.value + AGENT_SIZE.value / 2;
+  const agentCenterY = y.value + AGENT_SIZE.value / 2;
 
   // Use the last known mouse position from global listener
   // We can just rely on the eyeOffset set in handleMouseMove actually,
@@ -922,7 +957,7 @@ const startRoaming = () => {
 };
 
 const moveRandomly = () => {
-  const newPos = getRandomPosition(window.innerWidth, window.innerHeight, AGENT_SIZE);
+  const newPos = getRandomPosition(window.innerWidth, window.innerHeight, AGENT_SIZE.value);
   isMoving.value = true;
   x.value = newPos.x;
   y.value = newPos.y;
@@ -933,29 +968,6 @@ const moveRandomly = () => {
   }, 2000);
 };
 
-const triggerDizzy = () => {
-  if (isDizzy.value) return;
-  isDizzy.value = true;
-  message.value = "Whoa! I'm dizzy...";
-
-  if (dizzyTimeout) clearTimeout(dizzyTimeout);
-
-  dizzyTimeout = window.setTimeout(() => {
-    isDizzy.value = false;
-
-    // Recovery Phase: Confused for a moment
-    isConfused.value = true;
-    message.value = 'Ugh... where am I?';
-
-    setTimeout(() => {
-      isConfused.value = false;
-      message.value = "I'm okay now.";
-      setTimeout(() => (message.value = ''), 2000);
-    }, 2000);
-  }, 3000);
-};
-
-// --- Event Handlers ---
 const handleMouseEnter = () => {
   isHovered.value = true;
   isMoving.value = false; // Stop random movement animation
@@ -971,17 +983,6 @@ const handleMouseLeave = () => {
   }
 };
 
-const handleClick = () => {
-  if (isDizzy.value) return;
-
-  // Happy reaction!
-  isHappy.value = true;
-  setTimeout(() => {
-    isHappy.value = false;
-    toggleChat();
-  }, 500);
-};
-
 const handleFocusIn = (e: FocusEvent) => {
   const target = e.target as HTMLElement;
   if (!target) return;
@@ -994,7 +995,7 @@ const handleFocusIn = (e: FocusEvent) => {
 };
 
 const avoidObstacle = (obstacleRect: DOMRect) => {
-  const agentSize = AGENT_SIZE;
+  const agentSize = AGENT_SIZE.value;
   const agentRect = {
     left: x.value,
     top: y.value,
@@ -1043,6 +1044,10 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
 
 // --- Lifecycle ---
 onMounted(async () => {
+  window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth <= 768;
+  });
+
   // handleMouseMove is added in the other onMounted block
   window.addEventListener('focusin', handleFocusIn);
   startLoop();
