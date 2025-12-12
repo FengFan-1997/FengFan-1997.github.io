@@ -23,6 +23,7 @@
         :messages="messages"
         :is-loading="isLoading"
         :placement="chatPlacement"
+        :agent-rect="{ x, y, width: 80, height: 80 }"
         @close="toggleChat"
         @send="handleSendMessage"
         @click.stop
@@ -220,6 +221,44 @@ const handleSendMessage = async (text: string) => {
           guideTargetRect.value = null;
         }, 1000);
       }, 500); // Small delay to show the "Clicking this!" label
+    }
+  }
+
+  // 4. Scroll: scroll: direction_or_selector
+  const scrollMatch = response.match(/scroll:\s*([^\s\n]+)/);
+  if (scrollMatch) {
+    const target = scrollMatch[1];
+    if (target === 'down') {
+      window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    } else if (target === 'up') {
+      window.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    } else if (target === 'bottom') {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else if (target === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const el = document.querySelector(target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // 5. Input: input: selector | value
+  const inputMatch = response.match(/input:\s*([^|]+)\|\s*(.+)/);
+  if (inputMatch) {
+    const selector = inputMatch[1].trim();
+    const value = inputMatch[2].trim();
+    const el = document.querySelector(selector) as HTMLInputElement;
+    if (el) {
+      guideTarget.value = el;
+      guideTargetRect.value = el.getBoundingClientRect();
+      guideLabel.value = `Typing "${value}"...`;
+
+      setTimeout(() => {
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        guideTarget.value = null;
+      }, 1000);
     }
   }
 };

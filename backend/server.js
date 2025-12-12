@@ -302,14 +302,30 @@ app.post('/api/chat', async (req, res) => {
          - "Click the login button" -> "Clicking it now! \n click: #login-btn"
          - "Select the first option" -> "Done. \n click: .option:first-child"
 
-      4. **Task Plan (Multi-step):**
+      4. **Scroll Page:**
+         If the user asks to scroll down/up or to a specific section:
+         \`scroll: <direction_or_selector>\`
+         
+         Examples:
+         - "Scroll down" -> "Scrolling... \n scroll: down"
+         - "Scroll to bottom" -> "Going down! \n scroll: bottom"
+         - "Go to the features section" -> "Here are the features. \n scroll: #features"
+
+      5. **Input Text:**
+         If the user asks to fill a form or type something:
+         \`input: <css_selector> | <value>\`
+         
+         Examples:
+         - "Type 'hello' in the search box" -> "Typing now. \n input: .search-input | hello"
+
+      6. **Task Plan (Multi-step):**
          If the user asks for a complex task (e.g., "Help me login", "Go to settings and change name"), return a JSON plan on a new line.
          Format:
          plan: [{"type": "navigate", "target": "/path"}, {"type": "highlight", "target": ".selector"}, {"type": "click", "target": ".selector"}, {"type": "input", "target": ".selector", "value": "text"}]
 
-         Valid types: "navigate", "highlight", "click", "input", "wait".
+         Valid types: "navigate", "highlight", "click", "input", "wait", "scroll".
 
-      (Note: Use standard CSS selectors like #id, .class. Guess if unsure.)
+      (Note: Use standard CSS selectors like #id, .class. Guess if unsure. For scrolling 'down'/'up', it scrolls one page height.)
 
       ${contextText ? `\nContext Information:\n${contextText}\n` : ''}
       
