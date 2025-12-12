@@ -27,6 +27,7 @@ const props = defineProps<{
   isFainted?: boolean;
   isPouting?: boolean;
   isHeadHit?: boolean;
+  currentLang?: string;
 }>();
 
 const { isAngry, isDizzy, isHeadHit } = toRefs(props);
@@ -41,6 +42,16 @@ const toggleChat = () => {
 };
 
 // --- Watchers for Agent Integration ---
+
+watch(
+  () => props.isMoving,
+  (val) => {
+    if (val && modelMgr.value) {
+      // Trigger a motion when moving. 'tap_body' is a common safe fallback if specific walk motion isn't defined
+      modelMgr.value.startMotion('tap_body');
+    }
+  }
+);
 
 watch(
   () => props.message,

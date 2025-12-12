@@ -18,6 +18,7 @@
       :is-pouting="isPouting"
       :is-head-hit="isHeadHit"
       :message="message"
+      :current-lang="currentLang"
       @toggle-chat="toggleChat"
     />
 
@@ -29,6 +30,7 @@
         :placement="chatPlacement"
         :is-muted="isMuted"
         :agent-rect="{ x, y, width: 80, height: 80 }"
+        :current-lang="currentLang"
         @close="toggleChat"
         @send="handleSendMessage"
         @toggle-mute="isMuted = !isMuted"
@@ -52,6 +54,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useLanguageStore } from '../../stores/language';
+import { storeToRefs } from 'pinia';
 import Live2DWidget from './Live2DWidget.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
@@ -66,6 +70,8 @@ import type { Position, ChatMessage } from '../types';
 
 const router = useRouter();
 const { initAuth, isAuthenticated, currentUser } = useAuth();
+const languageStore = useLanguageStore();
+const { currentLang } = storeToRefs(languageStore);
 
 // --- State ---
 const x = ref(window.innerWidth - 100);
@@ -429,7 +435,7 @@ const containerStyle = computed(() => ({
   transform: `translate(${x.value}px, ${y.value}px)`,
   width: `${AGENT_SIZE}px`,
   height: `${AGENT_SIZE}px`,
-  transition: isHovered.value ? 'none' : 'transform 4s cubic-bezier(0.4, 0.0, 0.2, 1)', // Slower movement
+  transition: isHovered.value ? 'none' : 'transform 40s cubic-bezier(0.4, 0.0, 0.2, 1)', // Slower movement
   zIndex: 9999,
   position: 'fixed' as const,
   top: 0,
