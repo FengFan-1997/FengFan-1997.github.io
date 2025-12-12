@@ -485,6 +485,8 @@ const handleClick = () => {
   }
 };
 
+// Expose methods/props if needed, but <script setup> does this automatically for template
+
 const speak = (text: string) => {
   if (isMuted.value || !window.speechSynthesis) return;
 
