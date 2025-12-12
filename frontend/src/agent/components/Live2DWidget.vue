@@ -152,7 +152,7 @@ const initLive2D = async () => {
           cubism2Path: '/live2d/core/live2d.min.js',
           // Updated tools list: Chat (Agent), Quote (Hitokoto), Model, Texture, Photo
           tools: ['chat', 'hitokoto', 'switch-model', 'switch-texture', 'photo'],
-          drag: true,
+          drag: false, // Disable internal drag, handled by Agent.vue
           logLevel: 'none',
           onChat: toggleChat
         },
@@ -259,8 +259,9 @@ onUnmounted(() => {
 :deep(#live2d) {
   cursor: grab;
   /* width and height are set by canvas attributes but CSS can override */
-  width: 300px;
-  height: 300px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 :deep(#live2d:active) {

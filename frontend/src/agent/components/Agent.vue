@@ -4,7 +4,9 @@
     :style="containerStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
-    @click="handleAgentClick"
+    @mousedown="startDrag"
+    @touchstart="startDrag"
+    @click="handleClick"
   >
     <Live2DWidget
       :is-talking="isTalking"
@@ -91,6 +93,10 @@ const isPouting = ref(false); // New Pouting State
 const isHeadHit = ref(false); // New Head Hit State
 const isMuted = ref(false);
 const message = ref('Hello! I am Lumina!');
+
+// Drag State
+const isDragging = ref(false);
+const dragOffset = ref({ x: 0, y: 0 });
 
 // Interaction State
 const clickCount = ref(0);
@@ -425,24 +431,28 @@ const mouseHistory: { x: number; y: number; time: number }[] = [];
 let dizzyTimeout: number | null = null;
 
 // --- Config ---
-const AGENT_SIZE = 300; // px - Increased for Live2D model size
-const MOVE_INTERVAL = 8000; // ms (for idle roaming) - Slowed down
-const LERP_FACTOR = 0.05; // Smoothness factor - Smoother
-const MOUSE_FOLLOW_OFFSET = { x: 40, y: 40 }; // Offset from cursor to center agent
+const AGENT_SIZE = 400; // px - Increased to ensure full visibility
+const MOVE_INTERVAL = 8000; // ms (for idle roaming)
+const LERP_FACTOR = 0.05; // Smoothness factor
+const MOUSE_FOLLOW_OFFSET = { x: 40, y: 40 };
 
 // --- Computed ---
 const containerStyle = computed(() => ({
   transform: `translate(${x.value}px, ${y.value}px)`,
   width: `${AGENT_SIZE}px`,
   height: `${AGENT_SIZE}px`,
-  transition: isHovered.value ? 'none' : 'transform 40s cubic-bezier(0.4, 0.0, 0.2, 1)', // Slower movement
+  // Disable transition when dragging for immediate response
+  transition: isDragging.value
+    ? 'none'
+    : isHovered.value
+      ? 'none'
+      : 'transform 40s cubic-bezier(0.4, 0.0, 0.2, 1)',
   zIndex: 9999,
   position: 'fixed' as const,
   top: 0,
   left: 0,
   pointerEvents: 'auto' as const,
-  // Allow Live2D widget to overflow (it's 300x300 usually)
-  overflow: 'visible'
+  overflow: 'visible' // Ensure popups/shadows aren't clipped
 }));
 
 // --- Logic: Chat ---
@@ -736,12 +746,86 @@ async function handleSendMessage(text: string) {
   }
 }
 
+// --- Logic: Dragging ---
+const startDrag = (event: MouseEvent | TouchEvent) => {
+  if (isFainted.value || isDizzy.value) return;
+
+  // Prevent default to avoid selecting text etc.
+  // event.preventDefault(); // Don't prevent default on touchstart as it might block scroll if not intended
+
+  isDragging.value = true;
+  isMoving.value = false; // Stop autonomous movement
+
+  const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+  const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+  dragOffset.value = {
+    x: clientX - x.value,
+    y: clientY - y.value
+  };
+
+  window.addEventListener('mousemove', onDrag);
+  window.addEventListener('touchmove', onDrag, { passive: false });
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('touchend', endDrag);
+};
+
+const onDrag = (event: MouseEvent | TouchEvent) => {
+  if (!isDragging.value) return;
+
+  event.preventDefault(); // Prevent scrolling while dragging
+
+  const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+  const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+  let newX = clientX - dragOffset.value.x;
+  let newY = clientY - dragOffset.value.y;
+
+  // Boundary checks during drag
+  const maxX = window.innerWidth - AGENT_SIZE;
+  const maxY = window.innerHeight - AGENT_SIZE;
+
+  newX = Math.max(-100, Math.min(newX, maxX + 100)); // Allow slight overflow
+  newY = Math.max(-50, Math.min(newY, maxY + 50));
+
+  x.value = newX;
+  y.value = newY;
+};
+
+const endDrag = () => {
+  isDragging.value = false;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('touchmove', onDrag);
+  window.removeEventListener('mouseup', endDrag);
+  window.removeEventListener('touchend', endDrag);
+
+  // Snap back if out of bounds (more strict than drag limits)
+  checkBoundaries();
+};
+
 const checkBoundaries = () => {
-  // Top boundary check (Head Hit)
+  const maxX = window.innerWidth - AGENT_SIZE;
+  const maxY = window.innerHeight - AGENT_SIZE;
+
+  // Smooth return if out of bounds
+  let targetX = x.value;
+  let targetY = y.value;
+
+  if (x.value < 0) targetX = 0;
+  if (x.value > maxX) targetX = maxX;
+  if (y.value < 0) targetY = 0;
+  if (y.value > maxY) targetY = maxY;
+
+  // Head hit logic
   if (y.value <= 10) {
     triggerHeadHit();
-    // Bounce back slightly to avoid getting stuck
-    y.value = 60;
+    targetY = 60;
+  }
+
+  // Apply corrections
+  if (targetX !== x.value || targetY !== y.value) {
+    x.value = targetX;
+    y.value = targetY;
   }
 };
 
