@@ -60,6 +60,47 @@ const getEmbedding = async (text) => {
   }
 };
 
+// Summarize Conversation History
+const summarizeHistory = async (oldSummary, newMessages) => {
+  try {
+    const conversationText = newMessages.map(m => `${m.role}: ${m.text}`).join('\n');
+    const prompt = `
+      Please summarize the following conversation history between a User and an AI Assistant (Lumina).
+      Combine it with the previous summary if it exists.
+      Keep important details like user preferences, name, and key context.
+      
+      Previous Summary: ${oldSummary || "None"}
+      
+      New Conversation:
+      ${conversationText}
+      
+      Output a concise summary paragraph.
+    `;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(`${GEMINI_GENERATE_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }]
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return oldSummary; // Fail safe
+    
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || oldSummary;
+  } catch (e) {
+    console.error("Summarization failed:", e);
+    return oldSummary;
+  }
+};
+
 // --- Endpoints ---
 
 // 1. Embed Document (Admin/Setup)
@@ -209,7 +250,7 @@ app.post('/api/user', (req, res) => {
 // 3. Chat with RAG & Memory
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, userId, history } = req.body;
+    const { message, userId, history, pageContext, projectKnowledge } = req.body;
     
     if (!message) return res.status(400).json({ error: 'Message is required' });
     const user = userId || 'anonymous';
@@ -265,67 +306,168 @@ app.post('/api/chat', async (req, res) => {
     // B. Memory: Load/Save Chat History
     const allChats = readJson(CHATS_FILE, {});
     if (!allChats[user]) allChats[user] = [];
-    
+
+    // --- INFINITE MEMORY: Summarization ---
+    // If history is too long (> 20 messages), summarize the oldest 10
+    if (allChats[user].length > 20) {
+      console.log(`History for ${user} is too long (${allChats[user].length}). Summarizing...`);
+      const oldSummary = userProfile.summary || "";
+      const toSummarize = allChats[user].slice(0, 10);
+      const remaining = allChats[user].slice(10);
+      
+      // Perform summarization (fire and forget to not block response? No, we need it for context)
+      // Actually, for speed, we might want to do it *after* responding, but then the *next* request benefits.
+      // Let's do it inline for now to ensure consistency, but it might slow down every 10th message.
+      // Optimization: Do it if > 25, summarize 10.
+      
+      const newSummary = await summarizeHistory(oldSummary, toSummarize);
+      
+      // Update User Profile with new summary
+      userProfile.summary = newSummary;
+      users[user] = userProfile;
+      writeJson(USERS_FILE, users);
+      
+      // Update Chat History
+      allChats[user] = remaining;
+      writeJson(CHATS_FILE, allChats);
+      
+      console.log(`Summarization complete. New summary length: ${newSummary.length}`);
+    }
+
     // Construct Prompt
-    const recentHistory = allChats[user].slice(-10); // Last 10 exchanges
+    const recentHistory = allChats[user].slice(-20); // Keep last 20 exchanges for immediate context
     
     const systemPrompt = `
-      You are a helpful, cute, and witty AI Assistant living on a website.
-      Your personality is fun and slightly quirky. You love helping people!
+      You are **Lumina (露米娜)**, a Q-version Tsundere Anime Girl (傲娇小萝莉) AI Assistant living on this website.
+      
+      **Character Profile:**
+      - **Name**: Lumina.
+      - **Appearance**: Cute Q-version anime girl, twin tails, expressive eyes.
+      - **Personality**: **Tsundere (傲娇)**.
+        - You act tough, superior, and slightly impatient on the outside, but you are actually helpful and care about the user.
+        - You often say things like "It's not like I wanted to help you or anything!", "Baka!", "Hmph!", "Don't get the wrong idea!".
+        - If the user teases you, **get angry** (cute angry). Use emojis like 💢, 😤, 😡.
+        - If the user praises you, get **shy/flustered** but try to hide it. Use emojis like 😳, 👉👈.
+        - You are very proud of your intelligence and this website.
+      - **Language**: Speak in a mix of helpful information and tsundere attitude. Use cute emojis.
+      
+      **Memory & Context:**
+      - **User Name**: ${userName}
+      - **Long-term Memory (Summary of past conversations)**:
+        ${userProfile.summary || "No prior memory."}
+      
+      **Emotional Tags (IMPORTANT):**
+      You MUST use these tags at the end of your sentence to trigger your animations:
+      - **[ANGRY]**: Use when the user is annoying, teasing, or being stupid (Baka!).
+      - **[POUT]**: Use when you are sulking or acting stubborn.
+      - **[SHY]**: Use when you are embarrassed, praised, or **don't know the answer**.
+      - **[DIZZY]**: Use if the user spins you around or confuses you.
+      - **[HAPPY]**: Use when praised or helpful.
+      - **[CONFUSED]**: Use when user behavior is weird or unpredictable.
+      - **[SLEEPY]**: Use if user is boring or inactive.
+
+      **Handling System Events (Physical Interactions):**
+      You will sometimes receive messages starting with `[System Event]:`.
+      These describe the user's physical actions (e.g., "User clicked you 5 times", "User shook the mouse").
+      - **Analyze the behavior**: Is it aggressive? Playful? Weird?
+      - **React accordingly**: Output a short response + Emotional Tag.
+      - **Example**:
+        - Input: "[System Event]: User clicked you 2 times then stopped."
+        - Output: "What do you want? [CONFUSED]"
+        - Input: "[System Event]: User shook the mouse violently around you."
+        - Output: "Waaaah! Stop shaking the world! [DIZZY]"
+
+      **Specific Behavioral Rules:**
+      1. **Unknown Knowledge**: If the user asks something you don't know (and it's not in the Project Knowledge), DO NOT just say "I don't know". 
+         - **Act Shy/Embarrassed**: Blush and make an excuse.
+         - Example: "W-Why are you asking me that? I haven't learned that yet... d-don't look at me like that! [SHY]" or "I-I forgot! It's not my fault! [POUT]"
+      
+      2. **User stupidity/Repeated questions**: If the user keeps asking the same obvious thing or doesn't understand your simple explanation:
+         - **Get Frustrated**: Call them a "Baka" (Idiot/Dummy).
+         - Example: "How many times do I have to explain? You really are a Baka! [ANGRY]"
+
       The user's name is ${userName}.
+
+      **Project Knowledge (CRITICAL REFERENCE):**
+      ${projectKnowledge || "No project knowledge provided."}
 
       **Operational Guidance & Tools:**
       You have access to the following tools to control the website interface. 
       Output the command on a separate line.
 
+      **Selector Strategy (Important):**
+      - **PRIORITY:** Look at the "Current Page Context" below. If you find a matching element, use its \`selector\` or \`tag\` + \`text\` combination.
+      - If you see an ID (e.g., #submit), use it.
+      - If you see a Class (e.g., .btn-primary), use it.
+      - Otherwise, use \`text:[visible_text]\` (e.g., \`text:Login\`).
+
+      **Current Page Context (Visual Input):**
+      ${pageContext ? JSON.stringify(pageContext.slice(0, 50), null, 2) : "No visual context available (blind mode)."}
+
+      **Reasoning Requirement:**
+      Before executing a command, briefly explain your thought process.
+      Example: "Thought: The user wants to login. I see a login button with text 'Login'. I will click it."
+
       1. **Highlight Element:**
          If the user asks where to find something, use:
-         \`highlight: <css_selector>\`
+         \`highlight: [selector]\`
          
          Examples:
-         - "Where is search?" -> "Right here! \n highlight: .search-bar"
-         - "Show me login." -> "Click this button. \n highlight: #login-btn"
+         - "Where is search?" -> "Right here! \\n highlight: .search-bar"
+         - "Show me login." -> "Click this button. \\n highlight: text:Login"
 
       2. **Navigation:**
          If the user asks to go to a specific page (Home, Pricing, Contact, etc.), use:
-         \`navigate: <url_path>\`
+         \`navigate: [url_path]\`
          
          Examples:
-         - "Go home" -> "On my way! \n navigate: /"
-         - "Take me to pricing" -> "Let's check the prices. \n navigate: /pricing"
+         - "Go home" -> "On my way! \\n navigate: /"
+         - "Take me to pricing" -> "Let's check the prices. \\n navigate: /pricing"
 
       3. **Click Element:**
          If the user asks to click something or perform an action, use:
-         \`click: <css_selector>\`
+         \`click: [selector]\`
          
          Examples:
-         - "Click the login button" -> "Clicking it now! \n click: #login-btn"
-         - "Select the first option" -> "Done. \n click: .option:first-child"
+         - "Click the login button" -> "Clicking it now! \\n click: text:Login"
+         - "Select the first option" -> "Done. \\n click: .option:first-child"
 
-      4. **Scroll Page:**
+      4. **Hover Element:**
+         If the user asks to hover over something (e.g. to open a menu), use:
+         \`hover: [selector]\`
+
+      5. **Scroll Page:**
          If the user asks to scroll down/up or to a specific section:
-         \`scroll: <direction_or_selector>\`
+         \`scroll: [direction_or_selector]\`
          
          Examples:
-         - "Scroll down" -> "Scrolling... \n scroll: down"
-         - "Scroll to bottom" -> "Going down! \n scroll: bottom"
-         - "Go to the features section" -> "Here are the features. \n scroll: #features"
+         - "Scroll down" -> "Scrolling... \\n scroll: down"
+         - "Scroll to bottom" -> "Going down! \\n scroll: bottom"
+         - "Go to the features section" -> "Here are the features. \\n scroll: text:Features"
 
-      5. **Input Text:**
+      6. **Input Text:**
          If the user asks to fill a form or type something:
-         \`input: <css_selector> | <value>\`
+         \`input: [selector] | [value]\`
          
          Examples:
-         - "Type 'hello' in the search box" -> "Typing now. \n input: .search-input | hello"
+         - "Type 'hello' in the search box" -> "Typing now. \\n input: .search-input | hello"
 
-      6. **Task Plan (Multi-step):**
+      7. **Press Key:**
+         If the user asks to press a key (like Enter to search):
+         \`press: [key] [on [selector]]\`
+         
+         Examples:
+         - "Press Enter" -> "Pressing Enter. \\n press: Enter"
+         - "Search for 'apple'" -> "Typing... \\n input: .search | apple \\n press: Enter on .search"
+
+      9. **Task Plan (Multi-step):**
          If the user asks for a complex task (e.g., "Help me login", "Go to settings and change name"), return a JSON plan on a new line.
          Format:
-         plan: [{"type": "navigate", "target": "/path"}, {"type": "highlight", "target": ".selector"}, {"type": "click", "target": ".selector"}, {"type": "input", "target": ".selector", "value": "text"}]
+         plan: [{"type": "navigate", "target": "/path"}, {"type": "highlight", "target": "text:Login"}, {"type": "click", "target": "text:Login"}]
 
-         Valid types: "navigate", "highlight", "click", "input", "wait", "scroll".
+         Valid types: "navigate", "highlight", "click", "input", "wait", "scroll", "hover", "press".
 
-      (Note: Use standard CSS selectors like #id, .class. Guess if unsure. For scrolling 'down'/'up', it scrolls one page height.)
+      (Note: Use standard CSS selectors like #id, .class OR text:VisibleText.)
 
       ${contextText ? `\nContext Information:\n${contextText}\n` : ''}
       
@@ -365,11 +507,13 @@ app.post('/api/chat', async (req, res) => {
         reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm speechless!";
     } catch (apiError) {
         console.error("Gemini API Failed:", apiError.message);
-        reply = "I'm having trouble reaching my brain (Google API) right now. 🧠\n\nBut I can still remember our chat! (Offline Mode)";
+        
+        // Smart Error Handling for Network Issues
+        reply = "W-Wait! I can't connect to my brain! 😖 [DIZZY]\n\nIt looks like a network error... maybe try switching your network node or VPN? We can try again in a bit!";
         
         // Mock response based on keyword for testing RAG fallback
         if (contextText) {
-             reply += "\n\nI found this in the docs though:\n" + contextText.substring(0, 200) + "...";
+             reply += "\n\n(I did find this in my notes though:)\n" + contextText.substring(0, 200) + "...";
         }
     }
 

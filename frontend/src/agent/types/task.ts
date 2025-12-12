@@ -1,4 +1,12 @@
-export type TaskStepType = 'navigate' | 'highlight' | 'click' | 'input' | 'wait';
+export type TaskStepType =
+  | 'navigate'
+  | 'highlight'
+  | 'click'
+  | 'input'
+  | 'wait'
+  | 'scroll'
+  | 'hover'
+  | 'press';
 
 export interface TaskStep {
   type: TaskStepType;

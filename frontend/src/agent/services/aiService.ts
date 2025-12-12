@@ -1,5 +1,7 @@
 import type { ChatMessage } from '../types';
 import { getUserId } from '../utils/user';
+import { getPageContext } from '../utils/pageContext';
+import { projectKnowledge } from '../data/projectKnowledge';
 
 const API_URL = 'http://localhost:8080/api/chat';
 const USER_API_URL = 'http://localhost:8080/api/user';
@@ -10,6 +12,7 @@ export const sendMessageToAI = async (
 ): Promise<string> => {
   try {
     const userId = getUserId();
+    const pageContext = getPageContext();
 
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -18,7 +21,9 @@ export const sendMessageToAI = async (
       },
       body: JSON.stringify({
         message,
-        userId
+        userId,
+        pageContext, // Send current page state
+        projectKnowledge // Send project knowledge
       })
     });
 

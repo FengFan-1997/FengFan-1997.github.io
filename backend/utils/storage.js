@@ -24,7 +24,6 @@ const readJson = (filePath, defaultValue = []) => {
   }
 };
 
-// Helper to write JSON
 const writeJson = (filePath, data) => {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));

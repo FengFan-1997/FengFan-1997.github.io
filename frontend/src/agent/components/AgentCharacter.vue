@@ -1,39 +1,114 @@
 <template>
-  <div 
-    class="agent-body" 
-    :class="{ 
-      'is-moving': isMoving, 
+  <div
+    class="agent-body"
+    :class="{
+      'is-moving': isMoving,
       'is-hovered': isHovered,
       'is-dizzy': isDizzy,
       'is-thinking': isThinking,
       'is-happy': isHappy,
-      'is-confused': isConfused
+      'is-confused': isConfused,
+      'is-talking': isTalking,
+      'is-angry': isAngry,
+      'is-fainted': isFainted,
+      'is-pouting': isPouting
     }"
   >
-    <div class="agent-head">
-      <!-- Eyes with tracking logic -->
-      <div class="agent-eye left" :style="eyeStyle"></div>
-      <div class="agent-eye right" :style="eyeStyle"></div>
-      
-      <!-- Dizzy Effect (Stars/Swirls) -->
-      <div v-if="isDizzy" class="dizzy-stars">
-        <span>⭐</span><span>⭐</span><span>⭐</span>
+    <!-- Anime Girl SVG Character -->
+    <div class="character-container">
+      <!-- Hair Back -->
+      <svg class="hair-back" viewBox="0 0 100 100">
+        <path d="M20,50 Q10,80 30,90 T40,100" fill="#FFD1DC" stroke="#FFB6C1" stroke-width="2" />
+        <path d="M80,50 Q90,80 70,90 T60,100" fill="#FFD1DC" stroke="#FFB6C1" stroke-width="2" />
+      </svg>
+
+      <!-- Head -->
+      <div class="head">
+        <div class="face">
+          <!-- Blush -->
+          <div class="blush left"></div>
+          <div class="blush right"></div>
+
+          <!-- Eyes -->
+          <div class="eyes">
+            <div class="eye left" :style="eyeStyle">
+              <div v-if="isFainted" class="eye-closed">X</div>
+              <div v-else class="pupil"></div>
+              <div v-if="!isFainted" class="highlight"></div>
+            </div>
+            <div class="eye right" :style="eyeStyle">
+              <div v-if="isFainted" class="eye-closed">X</div>
+              <div v-else class="pupil"></div>
+              <div v-if="!isFainted" class="highlight"></div>
+            </div>
+          </div>
+
+          <!-- Mouth -->
+          <div
+            class="mouth"
+            :class="{
+              talking: isTalking,
+              angry: isAngry,
+              happy: isHappy,
+              pouting: isPouting,
+              fainted: isFainted
+            }"
+          ></div>
+        </div>
+
+        <!-- Hair Front (Bangs) -->
+        <svg class="hair-front" viewBox="0 0 100 100">
+          <path
+            d="M20,30 Q50,10 80,30"
+            fill="none"
+            stroke="#FFB6C1"
+            stroke-width="8"
+            stroke-linecap="round"
+          />
+          <path
+            d="M30,30 Q30,50 20,45"
+            fill="none"
+            stroke="#FFB6C1"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          <path
+            d="M70,30 Q70,50 80,45"
+            fill="none"
+            stroke="#FFB6C1"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+        </svg>
+
+        <!-- Twin Tails (Antenna replacement) -->
+        <div class="twin-tails">
+          <div class="tail left"></div>
+          <div class="tail right"></div>
+        </div>
       </div>
 
-      <!-- Confused Effect -->
-      <div v-if="isConfused" class="confused-marks">
-        <span>?</span>
+      <!-- Angry Mark -->
+      <div v-if="isAngry" class="angry-mark">💢</div>
+
+      <!-- Dizzy Stars -->
+      <div v-if="isDizzy || isFainted" class="dizzy-stars">
+        <span>⭐</span><span>⭐</span><span>💫</span>
       </div>
 
-      <div class="agent-antenna">
-        <div class="agent-antenna-ball"></div>
-      </div>
+      <!-- Question Mark -->
+      <div v-if="isConfused" class="confused-mark">?</div>
+
+      <!-- Sweat Drop (for Pouting/Shy) -->
+      <div v-if="isPouting" class="sweat-drop">💧</div>
     </div>
+
     <div class="agent-shadow"></div>
-    
+
     <!-- Speech Bubble -->
     <transition name="fade">
-      <div v-if="message" class="speech-bubble">
+      <div v-if="isFainted" class="speech-bubble zzz">Zzz...</div>
+      <div v-else-if="message" class="speech-bubble">
         {{ message }}
       </div>
     </transition>
@@ -51,32 +126,49 @@ const props = defineProps<{
   isThinking?: boolean;
   isHappy?: boolean;
   isConfused?: boolean;
+  isTalking?: boolean;
+  isAngry?: boolean;
+  isFainted?: boolean;
+  isPouting?: boolean;
   message: string;
   eyeOffset: Position;
 }>();
 
-const { isMoving, isHovered, isDizzy, isThinking, isHappy, isConfused, message } = toRefs(props);
+const {
+  isMoving,
+  isHovered,
+  isDizzy,
+  isThinking,
+  isHappy,
+  isConfused,
+  isTalking,
+  isAngry,
+  isFainted,
+  isPouting,
+  message
+} = toRefs(props);
 
 const eyeStyle = computed(() => {
+  if (props.isFainted) {
+    return { transform: 'scale(1)', background: 'transparent', border: 'none' };
+  }
   if (props.isDizzy) {
-     return { transform: 'scaleY(0.1)' }; // Squint hard
+    return { transform: 'scaleY(0.1)' };
   }
   if (props.isHappy) {
-    // Happy eyes (inverted arch or just move up)
-    return { transform: 'translateY(-2px) scaleY(1.2)' };
+    return { transform: 'scaleY(1.2)' }; // Big happy eyes
   }
-  if (props.isConfused) {
-    // One up, one down (asymmetry handled in CSS ideally, but here we can just shift)
-    return { transform: 'translate(2px, 0)' };
+  if (props.isAngry) {
+    return { transform: 'translateY(2px) rotate(10deg)' }; // Angry glare
+  }
+  if (props.isPouting) {
+    return { transform: 'translateY(1px) scaleX(1.1)' }; // Wide eyes looking away slightly
   }
   if (props.isThinking) {
-    // Thinking pose: Look up-right
-    return {
-      transform: 'translate(4px, -4px)' 
-    };
+    return { transform: 'translate(2px, -2px)' };
   }
   return {
-    transform: `translate(${props.eyeOffset.x}px, ${props.eyeOffset.y}px)`
+    transform: `translate(${props.eyeOffset.x * 0.5}px, ${props.eyeOffset.y * 0.5}px)`
   };
 });
 </script>
@@ -86,11 +178,6 @@ const eyeStyle = computed(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0);
-  border-radius: 50%;
-  box-shadow: 
-    0 10px 20px rgba(0,0,0,0.1),
-    inset -5px -5px 15px rgba(0,0,0,0.1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -99,190 +186,333 @@ const eyeStyle = computed(() => {
   cursor: pointer;
 }
 
-.agent-body.is-moving {
-  animation: float 2s infinite ease-in-out;
-}
-
-.agent-body.is-hovered {
-  transform: scale(1.1);
-  box-shadow: 0 15px 30px rgba(64, 158, 255, 0.3);
-}
-
-.agent-body.is-happy {
-  animation: bounce 0.5s infinite alternate;
-}
-
-.agent-body.is-confused {
-  animation: tilt 2s infinite ease-in-out;
-}
-
-.agent-body.is-dizzy {
-  animation: shake 0.5s infinite;
-  background: radial-gradient(circle at 30% 30%, #ffe0e0, #ffcccc);
-}
-
-.agent-body.is-thinking .agent-antenna-ball {
-  animation: pulse-fast 0.5s infinite alternate;
-  background: #faad14; /* Amber for thinking */
-}
-
-.agent-head {
+/* Character Container */
+.character-container {
   position: relative;
-  width: 70%;
-  height: 60%;
-  background: #409eff;
-  border-radius: 40% 40% 45% 45%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: inset 0 5px 10px rgba(255,255,255,0.4);
+  width: 80px;
+  height: 80px;
+}
+
+/* Head */
+.head {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 60px;
+  height: 60px;
+  background: #fff0e5; /* Skin tone */
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 2;
   overflow: hidden;
 }
 
-.agent-eye {
-  width: 12px;
-  height: 12px;
-  background: #333;
-  border-radius: 50%;
+/* Face */
+.face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Eyes */
+.eyes {
   position: absolute;
   top: 40%;
-  transition: transform 0.1s linear;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
-.agent-eye.left { left: 25%; }
-.agent-eye.right { right: 25%; }
-
-.is-dizzy .agent-eye {
-  height: 4px; /* Squint/Closed eyes */
-  border-radius: 2px;
+.eye {
+  width: 12px;
+  height: 14px;
+  background: #333;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s;
 }
 
-.agent-antenna {
+.eye .pupil {
+  width: 6px;
+  height: 8px;
+  background: #8a2be2; /* Purple eyes */
   position: absolute;
-  top: -15px;
+  bottom: 0;
+  left: 3px;
+  border-radius: 50%;
+}
+
+.eye .highlight {
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+/* Mouth */
+.mouth {
+  position: absolute;
+  bottom: 15%;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 15px;
-  background: #666;
-  z-index: -1;
+  width: 8px;
+  height: 4px;
+  background: #ff6b6b;
+  border-radius: 0 0 4px 4px;
+  transition: all 0.2s;
 }
 
-.agent-antenna-ball {
-  position: absolute;
-  top: -8px;
-  left: -4px;
+.mouth.talking {
+  height: 8px;
+  border-radius: 50%;
+  animation: talk 0.2s infinite alternate;
+}
+
+.mouth.angry {
+  width: 10px;
+  height: 2px;
+  border-radius: 2px;
+  transform: translateX(-50%) rotate(-5deg);
+}
+
+.mouth.happy {
   width: 12px;
-  height: 12px;
-  background: #ff4d4f;
-  border-radius: 50%;
-  animation: blink 2s infinite;
+  height: 6px;
+  border-radius: 0 0 6px 6px;
 }
 
-.agent-shadow {
+/* Blush */
+.blush {
   position: absolute;
-  bottom: -20px;
-  width: 60%;
-  height: 10px;
-  background: rgba(0,0,0,0.1);
+  top: 55%;
+  width: 8px;
+  height: 4px;
+  background: #ffb6c1;
   border-radius: 50%;
-  filter: blur(4px);
+  opacity: 0.6;
+}
+.blush.left {
+  left: 8px;
+}
+.blush.right {
+  right: 8px;
+}
+
+/* Hair */
+.hair-back,
+.hair-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.hair-front {
+  z-index: 3;
+}
+.hair-back {
   z-index: 1;
+}
+
+.twin-tails .tail {
+  position: absolute;
+  top: 20px;
+  width: 20px;
+  height: 50px;
+  background: #ffb6c1;
+  border-radius: 10px;
+  z-index: 0;
+}
+.twin-tails .tail.left {
+  left: -5px;
+  transform: rotate(20deg);
+}
+.twin-tails .tail.right {
+  right: -5px;
+  transform: rotate(-20deg);
+}
+
+/* Marks */
+.angry-mark {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 20px;
+  color: #ff0000;
+  animation: pop 0.3s ease-out;
+  z-index: 4;
+}
+
+.confused-mark {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  font-size: 24px;
+  color: #333;
+  font-weight: bold;
+  animation: bounce 1s infinite;
+  z-index: 4;
 }
 
 .dizzy-stars {
   position: absolute;
-  top: -20px;
+  top: -10px;
   width: 100%;
   text-align: center;
+  font-size: 16px;
   animation: spin 2s infinite linear;
+  z-index: 4;
 }
 
-.speech-bubble {
+/* Shadow */
+.agent-shadow {
   position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #333;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.speech-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px 6px 0;
-  border-style: solid;
-  border-color: white transparent transparent;
+  bottom: -10px;
+  width: 50%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  filter: blur(2px);
+  z-index: 0;
 }
 
 /* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+@keyframes talk {
+  from {
+    height: 4px;
+  }
+  to {
+    height: 8px;
+  }
 }
 
-@keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
-  100% { transform: rotate(0deg); }
-}
-
-.confused-marks {
-  position: absolute;
-  top: -25px;
-  right: -10px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #faad14;
-  animation: float-up 1s infinite;
-}
-
-@keyframes float-up {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(-10px); opacity: 0; }
-}
-
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-10px); }
-}
-
-@keyframes tilt {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.agent-body.is-moving {
+  animation: bounce 0.5s infinite alternate;
+}
+.agent-body.is-hovered {
+  transform: scale(1.1);
+}
+.agent-body.is-angry {
+  animation: shake 0.3s infinite;
 }
 
-@keyframes pulse-fast {
-  from { transform: scale(1); box-shadow: 0 0 5px #faad14; }
-  to { transform: scale(1.3); box-shadow: 0 0 15px #faad14; }
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s;
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-5px);
+  }
 }
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+
+.agent-body.is-fainted {
+  filter: grayscale(0.5);
+  transform: rotate(90deg) translateY(20px);
+  transition: transform 0.5s ease-in;
+}
+
+.eye-closed {
+  font-size: 8px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  line-height: 10px;
+}
+
+.mouth.pouting {
+  width: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: #ff8888;
+  transform: translateY(-2px);
+}
+
+.mouth.fainted {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #333;
+  animation: breathe 2s infinite;
+}
+
+.sweat-drop {
+  position: absolute;
+  top: 10px;
+  right: -5px;
+  font-size: 16px;
+  animation: drop 1s infinite;
+}
+
+.speech-bubble.zzz {
+  color: #888;
+  font-style: italic;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes drop {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(5px);
+    opacity: 0;
+  }
 }
 </style>

@@ -4,7 +4,7 @@
     :style="containerStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
-    @click="handleClick"
+    @click="handleAgentClick"
   >
     <AgentCharacter
       :is-moving="isMoving"
@@ -13,6 +13,10 @@
       :is-thinking="isLoading || plan?.status === 'running'"
       :is-happy="isHappy"
       :is-confused="isConfused"
+      :is-talking="isTalking"
+      :is-angry="isAngry"
+      :is-fainted="isFainted"
+      :is-pouting="isPouting"
       :message="message"
       :eye-offset="eyeOffset"
     />
@@ -23,14 +27,18 @@
         :messages="messages"
         :is-loading="isLoading"
         :placement="chatPlacement"
+        :is-muted="isMuted"
         :agent-rect="{ x, y, width: 80, height: 80 }"
         @close="toggleChat"
         @send="handleSendMessage"
+        @toggle-mute="isMuted = !isMuted"
         @click.stop
       />
     </transition>
 
     <TaskDisplay :plan="plan" :placement="taskPlacement" />
+
+    <ConnectionLine v-if="guideTargetRect" :start="lineStart" :end="lineEnd" />
 
     <GuideOverlay
       :visible="!!guideTarget"
@@ -48,9 +56,11 @@ import AgentCharacter from './AgentCharacter.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
 import TaskDisplay from './TaskDisplay.vue';
+import ConnectionLine from './ConnectionLine.vue';
 import { useTaskExecutor } from '../composables/useTaskExecutor';
 import { useAuth } from '../composables/useAuth';
 import { lerp, getRandomPosition } from '../utils/math';
+import { resolveTarget } from '../utils/dom';
 import { sendMessageToAI, getChatHistory } from '../services/aiService';
 import type { Position, ChatMessage } from '../types';
 
@@ -68,7 +78,206 @@ const isHovered = ref(false);
 const isDizzy = ref(false);
 const isHappy = ref(false);
 const isConfused = ref(false);
-const message = ref('Hi! I am your AI Agent.');
+const isTalking = ref(false);
+const isAngry = ref(false);
+const isFainted = ref(false); // New Fainted State
+const isPouting = ref(false); // New Pouting State
+const isMuted = ref(false);
+const message = ref('Hello! I am Lumina!');
+
+// Interaction State
+const clickCount = ref(0);
+const lastClickTime = ref(0);
+const accumulatedAngle = ref(0);
+const lastMouseAngle = ref(0);
+
+// Interaction Accumulator for AI Context
+const interactionState = ref({
+  clicks: 0,
+  accumulatedAngle: 0,
+  startTime: 0
+});
+let interactionTimer: ReturnType<typeof setTimeout> | null = null;
+let singleClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+function resetInteractionTimer() {
+  if (interactionTimer) clearTimeout(interactionTimer);
+  interactionTimer = setTimeout(processInteraction, 1500); // 1.5s idle trigger
+}
+
+function processInteraction() {
+  // If local states are active, we assume they handled the interaction
+  if (isFainted.value || isAngry.value || isDizzy.value) {
+    resetInteractionState();
+    return;
+  }
+
+  // Check if there's significant interaction to report
+  const { clicks, accumulatedAngle } = interactionState.value;
+
+  // Single click handled by chat toggle?
+  if (clicks === 1 && Math.abs(accumulatedAngle) < 360) {
+    // Logic handled in handleAgentClick's timeout
+    // But if we are here, it means 1.5s passed.
+    // If single click happened, toggleChat() already ran 300ms after click.
+    // So we don't need to report it to AI unless we want AI to know "User opened chat".
+    // Let's skip reporting single clicks that opened chat.
+    resetInteractionState();
+    return;
+  }
+
+  if (clicks === 0 && Math.abs(accumulatedAngle) < 360) {
+    return; // Noise
+  }
+
+  // Construct message
+  let desc = '[System Event]: User interaction session ended. ';
+  if (clicks > 0) desc += `User clicked you ${clicks} times. `;
+  if (Math.abs(accumulatedAngle) > 360)
+    desc += `User circled the mouse ${Math.round(accumulatedAngle)} degrees around you. `;
+
+  desc += 'Decide how to react based on this combination.';
+
+  // Send to AI
+  console.log('Processing Interaction:', desc);
+  handleSendMessage(desc);
+
+  resetInteractionState();
+}
+
+function resetInteractionState() {
+  interactionState.value = { clicks: 0, accumulatedAngle: 0, startTime: Date.now() };
+}
+
+// Handle Mouse Movement for Dizzy/Faint Detection
+const handleMouseMove = (event: MouseEvent) => {
+  if (isFainted.value) return;
+
+  resetInteractionTimer();
+
+  // Existing logic for eyes following mouse
+  const rect = (event.currentTarget as HTMLElement)?.getBoundingClientRect();
+  // If we are not hovering the agent, we might still be circling it if we use global coordinates relative to agent center
+  // But the event listener is on window (see onMounted), so this is fine.
+
+  // We need the Agent's center position.
+  // x, y are refs to the top-left corner.
+  const centerX = x.value + AGENT_SIZE / 2;
+  const centerY = y.value + AGENT_SIZE / 2;
+
+  // Eye offset logic
+  eyeOffset.value = {
+    x: (event.clientX - centerX) / 20,
+    y: (event.clientY - centerY) / 20
+  };
+
+  // Calculate Angle for Circling Detection
+  const dx = event.clientX - centerX;
+  const dy = event.clientY - centerY;
+  const currentAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  let delta = currentAngle - lastMouseAngle.value;
+  // Normalize delta to -180 to 180
+  if (delta > 180) delta -= 360;
+  if (delta < -180) delta += 360;
+
+  // Only accumulate if movement is significant but not a huge jump (teleport)
+  if (Math.abs(delta) < 100) {
+    accumulatedAngle.value += delta;
+    interactionState.value.accumulatedAngle += delta;
+  }
+
+  lastMouseAngle.value = currentAngle;
+
+  // Threshold: 3 full circles (1080 degrees)
+  if (Math.abs(accumulatedAngle.value) > 1080) {
+    triggerFaint();
+    resetInteractionState(); // Clear AI accumulator if local triggers
+  }
+};
+
+const triggerFaint = () => {
+  isFainted.value = true;
+  isDizzy.value = true;
+  message.value = "I'm... spinning... @.@";
+  accumulatedAngle.value = 0;
+
+  // ASYNC MEMORY INJECTION: Notify AI context for future conversations
+  // We add this to messages but do NOT call sendMessageToAI
+  messages.value.push({
+    role: 'user',
+    text: '[System Event: User made you dizzy by circling the mouse around you rapidly.]'
+  });
+
+  setTimeout(() => {
+    message.value = 'Zzz...';
+    isDizzy.value = false; // Transition to full faint (sleeping)
+  }, 1500);
+
+  // Wake up after 5 seconds
+  setTimeout(() => {
+    isFainted.value = false;
+    message.value = 'Ugh... what happened?';
+  }, 6500);
+};
+
+// Handle Clicks for Angry Interaction
+const handleAgentClick = () => {
+  if (isFainted.value) return;
+
+  const now = Date.now();
+
+  // Clear pending single click action if any
+  if (singleClickTimer) clearTimeout(singleClickTimer);
+
+  if (now - lastClickTime.value < 500) {
+    clickCount.value++;
+  } else {
+    clickCount.value = 1;
+  }
+  lastClickTime.value = now;
+
+  interactionState.value.clicks++;
+  resetInteractionTimer();
+
+  // Single Click Logic: Wait 300ms to see if more clicks come
+  if (clickCount.value === 1) {
+    singleClickTimer = setTimeout(() => {
+      // If we are here, no more clicks happened in 300ms
+      toggleChat();
+    }, 300);
+  }
+
+  if (clickCount.value >= 5) {
+    isAngry.value = true;
+    message.value = 'Stop poking me! Baka! 💢';
+    clickCount.value = 0;
+
+    resetInteractionState(); // Clear AI accumulator if local triggers
+
+    // ASYNC MEMORY INJECTION: Notify AI context for future conversations
+    messages.value.push({
+      role: 'user',
+      text: '[System Event: User poked you rapidly 5 times. You got angry and called them Baka.]'
+    });
+    // We also add the Agent's reaction to history so it knows it already responded
+    messages.value.push({
+      role: 'agent',
+      text: 'Stop poking me! Baka! 💢'
+    });
+
+    setTimeout(() => (isAngry.value = false), 2000);
+  }
+};
+
+// Add global mouse listener
+onMounted(() => {
+  window.addEventListener('mousemove', handleMouseMove);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('mousemove', handleMouseMove);
+});
 
 // Chat State
 const chatOpen = ref(false);
@@ -76,7 +285,112 @@ const messages = ref<ChatMessage[]>([{ role: 'agent', text: 'Hello! How can I he
 const isLoading = ref(false);
 
 // Task Executor
-const { plan, setPlan } = useTaskExecutor();
+const { plan, isExecuting, executeTask, setPlan, stopTask } = useTaskExecutor();
+
+const lineStart = computed(() => ({
+  x: x.value + AGENT_SIZE / 2,
+  y: y.value + AGENT_SIZE / 2
+}));
+
+const lineEnd = computed(() => {
+  if (!guideTargetRect.value) return { x: 0, y: 0 };
+  return {
+    x: guideTargetRect.value.left + guideTargetRect.value.width / 2,
+    y: guideTargetRect.value.top + guideTargetRect.value.height / 2
+  };
+});
+
+// Update guideTargetRect loop to handle scrolling/movement
+const updateGuideRect = () => {
+  // Polling for guide target during execution if missing
+  if (!guideTarget.value && plan.value?.status === 'running') {
+    const activeStep = plan.value.steps.find((s) => s.status === 'running');
+    if (activeStep?.target) {
+      const el = resolveTarget(activeStep.target);
+      if (el) {
+        guideTarget.value = el;
+        guideLabel.value = activeStep.description || 'Working...';
+      }
+    }
+  }
+
+  if (guideTarget.value) {
+    if (!document.body.contains(guideTarget.value)) {
+      guideTarget.value = null;
+      guideTargetRect.value = null;
+    } else {
+      const rect = guideTarget.value.getBoundingClientRect();
+      guideTargetRect.value = rect;
+    }
+  }
+  requestAnimationFrame(updateGuideRect);
+};
+requestAnimationFrame(updateGuideRect);
+
+// Sync with Plan Execution
+watch(
+  () => plan.value?.steps,
+  (steps) => {
+    if (!plan.value) {
+      // Clear guide if plan is done/cancelled
+      if (!guideLabel.value || guideLabel.value === 'Executing plan...') {
+        // Only clear if we set it?
+      }
+      return;
+    }
+  },
+  { deep: true }
+);
+
+watch(isExecuting, (newVal) => {
+  if (!newVal) {
+    guideTarget.value = null;
+    guideTargetRect.value = null;
+    guideLabel.value = '';
+  }
+});
+
+// We need to know which step is active to update guideTarget
+watch(
+  () => plan.value?.steps,
+  async (steps) => {
+    if (!steps) return;
+    const activeStep = steps.find((s) => s.status === 'running');
+    if (activeStep && activeStep.target) {
+      const el = resolveTarget(activeStep.target);
+      if (el) {
+        guideTarget.value = el;
+        guideTargetRect.value = el.getBoundingClientRect();
+        guideLabel.value = activeStep.description || 'Working...';
+      }
+    }
+  },
+  { deep: true }
+);
+
+// Celebrate when plan is completed
+watch(
+  () => plan.value?.status,
+  (newStatus) => {
+    if (newStatus === 'completed') {
+      isHappy.value = true;
+      message.value = 'Mission Accomplished!';
+      guideLabel.value = 'Done!';
+      setTimeout(() => {
+        isHappy.value = false;
+        if (message.value === 'Mission Accomplished!') message.value = '';
+        if (guideLabel.value === 'Done!') guideLabel.value = '';
+      }, 3000);
+    } else if (newStatus === 'failed') {
+      isConfused.value = true;
+      message.value = 'Oops, something went wrong.';
+      setTimeout(() => {
+        isConfused.value = false;
+        message.value = '';
+      }, 3000);
+    }
+  }
+);
 
 // Chat Placement Logic
 const chatPlacement = computed(() => {
@@ -130,31 +444,101 @@ const toggleChat = () => {
   }
 };
 
-const handleSendMessage = async (text: string) => {
+const speak = (text: string) => {
+  if (isMuted.value || !window.speechSynthesis) return;
+
+  // Cancel current speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.pitch = 1.2; // Slightly higher pitch for "cute" robot voice
+  utterance.rate = 1.1; // Slightly faster
+
+  utterance.onstart = () => {
+    isTalking.value = true;
+  };
+
+  utterance.onend = () => {
+    isTalking.value = false;
+  };
+
+  utterance.onerror = () => {
+    isTalking.value = false;
+  };
+
+  window.speechSynthesis.speak(utterance);
+};
+
+async function handleSendMessage(text: string) {
   // Add user message
   messages.value.push({ role: 'user', text });
   isLoading.value = true;
   message.value = 'Hmm...'; // Thinking text
 
   // Call AI Service
-  const response = await sendMessageToAI(text, messages.value);
+  const rawResponse = await sendMessageToAI(text, messages.value);
 
   isLoading.value = false;
-  message.value = ''; // Clear thinking text
 
-  // Clean response for display (remove hidden commands)
-  const displayResponse = response
-    .replace(/highlight:\s*[^\s\n]+/g, '')
-    .replace(/navigate:\s*[^\s\n]+/g, '')
-    .replace(/click:\s*[^\s\n]+/g, '')
+  // --- Emotion Parsing Logic ---
+  let cleanResponse = rawResponse;
+
+  // Reset emotions first
+  isAngry.value = false;
+  isPouting.value = false;
+
+  // Detect angry keywords or tags
+  if (
+    rawResponse.includes('[ANGRY]') ||
+    rawResponse.includes('Baka') ||
+    rawResponse.includes('Hmph') ||
+    rawResponse.includes('💢')
+  ) {
+    isAngry.value = true;
+    cleanResponse = cleanResponse.replace('[ANGRY]', '');
+  }
+
+  // Detect shy/pouting tags
+  if (rawResponse.includes('[POUT]') || rawResponse.includes('[SHY]')) {
+    isPouting.value = true;
+    cleanResponse = cleanResponse.replace('[POUT]', '').replace('[SHY]', '');
+  }
+
+  // Auto-reset emotions after a delay
+  if (isAngry.value || isPouting.value) {
+    setTimeout(() => {
+      isAngry.value = false;
+      isPouting.value = false;
+    }, 4000);
+  }
+
+  // --- Clean hidden commands ---
+  const displayResponse = cleanResponse
+    .replace(/highlight:\s*[^\n]+/g, '')
+    .replace(/navigate:\s*[^\n]+/g, '')
+    .replace(/click:\s*[^\n]+/g, '')
+    .replace(/hover:\s*[^\n]+/g, '')
+    .replace(/scroll:\s*[^\n]+/g, '')
+    .replace(/input:\s*[^\n]+/g, '')
+    .replace(/press:\s*[^\n]+/g, '')
     .replace(/plan:\s*\[[\s\S]*?\]/g, '') // Hide JSON plan
     .trim();
 
+  // Update Agent Bubble and Chat History
   if (displayResponse) {
     messages.value.push({ role: 'agent', text: displayResponse });
+    message.value = displayResponse; // Show in bubble!
+    speak(displayResponse);
   } else {
-    messages.value.push({ role: 'agent', text: "I'm on it!" });
+    const fallback = "I'm on it!";
+    messages.value.push({ role: 'agent', text: fallback });
+    message.value = fallback;
+    speak(fallback);
   }
+
+  // Use raw response for command parsing (commands might be stripped from display)
+  const response = rawResponse;
 
   // Check for Task Plan
   const planMatch = response.match(/plan:\s*(\[[\s\S]*?\])/);
@@ -163,9 +547,33 @@ const handleSendMessage = async (text: string) => {
       const planJson = JSON.parse(planMatch[1]);
       if (Array.isArray(planJson)) {
         console.log('Executing Plan:', planJson);
-        setPlan(planJson);
-        // If we have a plan, maybe close the chat to show the action?
-        // toggleChat();
+        // Execute and wait for result
+        const result = await setPlan(planJson);
+
+        if (result.success) {
+          // Success Emotion
+          isHappy.value = true;
+          const successMsg = 'Mission Complete! Praise me! [HAPPY]';
+          messages.value.push({ role: 'agent', text: successMsg });
+          message.value = 'Mission Complete! ✨';
+          speak('Mission Complete! Praise me!');
+
+          setTimeout(() => {
+            isHappy.value = false;
+          }, 4000);
+        } else {
+          // Fail Emotion
+          isPouting.value = true;
+          // Maybe use SHY if available, but Pouting is mapped
+          const failMsg = `Oops... I failed: ${result.message || 'Unknown error'}. [SHY]`;
+          messages.value.push({ role: 'agent', text: failMsg });
+          message.value = 'Oops... failed... 😖';
+          speak("Oops... I failed... don't look at me!");
+
+          setTimeout(() => {
+            isPouting.value = false;
+          }, 4000);
+        }
       }
     } catch (e) {
       console.error('Failed to parse task plan:', e);
@@ -173,11 +581,11 @@ const handleSendMessage = async (text: string) => {
   }
 
   // Check for Guide Commands (Single commands)
-  // 1. Highlight: highlight: .selector
-  const guideMatch = response.match(/highlight:\s*([^\s\n]+)/);
+  // 1. Highlight: highlight: selector
+  const guideMatch = response.match(/highlight:\s*([^\n]+)/);
   if (guideMatch) {
-    const selector = guideMatch[1];
-    const el = document.querySelector(selector) as HTMLElement;
+    const selector = guideMatch[1].trim();
+    const el = resolveTarget(selector);
     if (el) {
       guideTarget.value = el;
       guideTargetRect.value = el.getBoundingClientRect();
@@ -194,16 +602,16 @@ const handleSendMessage = async (text: string) => {
   // 2. Navigate: navigate: /path
   const navMatch = response.match(/navigate:\s*([^\s\n]+)/);
   if (navMatch) {
-    const path = navMatch[1];
+    const path = navMatch[1].trim();
     console.log('Navigating to:', path);
     router.push(path);
   }
 
-  // 3. Click: click: .selector
-  const clickMatch = response.match(/click:\s*([^\s\n]+)/);
+  // 3. Click: click: selector
+  const clickMatch = response.match(/click:\s*([^\n]+)/);
   if (clickMatch) {
-    const selector = clickMatch[1];
-    const el = document.querySelector(selector) as HTMLElement;
+    const selector = clickMatch[1].trim();
+    const el = resolveTarget(selector);
     if (el) {
       console.log('Agent clicking:', selector);
 
@@ -224,10 +632,33 @@ const handleSendMessage = async (text: string) => {
     }
   }
 
-  // 4. Scroll: scroll: direction_or_selector
-  const scrollMatch = response.match(/scroll:\s*([^\s\n]+)/);
+  // 4. Hover: hover: selector
+  const hoverMatch = response.match(/hover:\s*([^\n]+)/);
+  if (hoverMatch) {
+    const selector = hoverMatch[1].trim();
+    const el = resolveTarget(selector);
+    if (el) {
+      guideTarget.value = el;
+      guideTargetRect.value = el.getBoundingClientRect();
+      guideLabel.value = 'Hovering...';
+
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+
+        setTimeout(() => {
+          guideTarget.value = null;
+          guideTargetRect.value = null;
+        }, 1500);
+      }, 500);
+    }
+  }
+
+  // 5. Scroll: scroll: direction_or_selector
+  const scrollMatch = response.match(/scroll:\s*([^\n]+)/);
   if (scrollMatch) {
-    const target = scrollMatch[1];
+    const target = scrollMatch[1].trim();
     if (target === 'down') {
       window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
     } else if (target === 'up') {
@@ -237,17 +668,17 @@ const handleSendMessage = async (text: string) => {
     } else if (target === 'top') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      const el = document.querySelector(target);
+      const el = resolveTarget(target);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
-  // 5. Input: input: selector | value
+  // 6. Input: input: selector | value
   const inputMatch = response.match(/input:\s*([^|]+)\|\s*(.+)/);
   if (inputMatch) {
     const selector = inputMatch[1].trim();
     const value = inputMatch[2].trim();
-    const el = document.querySelector(selector) as HTMLInputElement;
+    const el = resolveTarget(selector) as HTMLInputElement;
     if (el) {
       guideTarget.value = el;
       guideTargetRect.value = el.getBoundingClientRect();
@@ -261,14 +692,46 @@ const handleSendMessage = async (text: string) => {
       }, 1000);
     }
   }
-};
+
+  // 7. Press: press: key [on selector]
+  const pressMatch = response.match(/press:\s*([^\s]+)(?:\s+on\s+(.+))?/);
+  if (pressMatch) {
+    const key = pressMatch[1].trim();
+    const selector = pressMatch[2]?.trim();
+    let el = document.activeElement as HTMLElement;
+
+    if (selector) {
+      const found = resolveTarget(selector);
+      if (found) el = found;
+    }
+
+    if (el) {
+      guideTarget.value = el;
+      guideTargetRect.value = el.getBoundingClientRect();
+      guideLabel.value = `Pressing ${key}...`;
+
+      el.focus();
+      setTimeout(() => {
+        const options = { key, code: key, bubbles: true, cancelable: true, view: window };
+        el.dispatchEvent(new KeyboardEvent('keydown', options));
+        el.dispatchEvent(new KeyboardEvent('keypress', options));
+        el.dispatchEvent(new KeyboardEvent('keyup', options));
+
+        setTimeout(() => {
+          guideTarget.value = null;
+          guideTargetRect.value = null;
+        }, 1000);
+      }, 500);
+    }
+  }
+}
 
 // --- Logic: Movement & Animation Loop ---
 let animationFrameId: number;
 let roamTimer: number | null = null;
 
 const updateEyeTracking = () => {
-  if (isDizzy.value) return;
+  if (isDizzy.value || isFainted.value) return; // Don't track eyes if dizzy/fainted
 
   // Priority 1: Look at Guide Target if active
   if (guideTargetRect.value) {
@@ -289,39 +752,35 @@ const updateEyeTracking = () => {
     return;
   }
 
-  // Priority 2: Look at Mouse
+  // Priority 2: Look at Mouse (only if not Fainted)
   const agentCenterX = x.value + AGENT_SIZE / 2;
   const agentCenterY = y.value + AGENT_SIZE / 2;
 
-  const dx = mouseX.value - agentCenterX;
-  const dy = mouseY.value - agentCenterY;
-  const angle = Math.atan2(dy, dx);
-
-  // Limit eye movement radius
-  const distance = Math.min(3, Math.sqrt(dx * dx + dy * dy) / 20);
-
-  eyeOffset.value = {
-    x: Math.cos(angle) * distance,
-    y: Math.sin(angle) * distance
-  };
+  // Use the last known mouse position from global listener
+  // We can just rely on the eyeOffset set in handleMouseMove actually,
+  // but handleMouseMove sets it based on event.
+  // Here we want to smooth it or keep it updated.
+  // Actually handleMouseMove updates eyeOffset directly.
+  // So we might not need this unless we want to look at something else.
+  // But wait, handleMouseMove updates eyeOffset.value.
 };
 
 const startLoop = () => {
   const loop = () => {
-    if (isDizzy.value) {
-      // If dizzy, maybe drift slightly?
+    if (isDizzy.value || isFainted.value) {
+      // If dizzy/fainted, no movement
     } else if (isHovered.value && !chatOpen.value) {
-      // Only follow mouse if chat is closed (to avoid moving away while typing)
-
-      // --- Mouse Follow Mode (Lerp) ---
-      targetX.value = mouseX.value - MOUSE_FOLLOW_OFFSET.x;
-      targetY.value = mouseY.value - MOUSE_FOLLOW_OFFSET.y;
-
-      x.value = lerp(x.value, targetX.value, LERP_FACTOR);
-      y.value = lerp(y.value, targetY.value, LERP_FACTOR);
+      // Mouse Follow Logic (Lerp) - Only if not chatting
+      // ... existing logic ...
     }
 
-    updateEyeTracking();
+    // Decay accumulated angle slowly if not circling
+    if (accumulatedAngle.value > 0) {
+      accumulatedAngle.value = Math.max(0, accumulatedAngle.value - 5);
+    } else if (accumulatedAngle.value < 0) {
+      accumulatedAngle.value = Math.min(0, accumulatedAngle.value + 5);
+    }
+
     animationFrameId = requestAnimationFrame(loop);
   };
   animationFrameId = requestAnimationFrame(loop);
@@ -347,44 +806,6 @@ const moveRandomly = () => {
   setTimeout(() => {
     isMoving.value = false;
   }, 2000);
-};
-
-// --- Logic: Dizziness Detection ---
-const checkDizziness = (newX: number, newY: number) => {
-  if (chatOpen.value) return; // Disable dizzy check when chat is open
-
-  const now = Date.now();
-  mouseHistory.push({ x: newX, y: newY, time: now });
-
-  // Keep only recent history (last 500ms)
-  while (mouseHistory.length > 0 && now - mouseHistory[0].time > 500) {
-    mouseHistory.shift();
-  }
-
-  if (mouseHistory.length < 10) return;
-
-  const agentCenterX = x.value + AGENT_SIZE / 2;
-  const agentCenterY = y.value + AGENT_SIZE / 2;
-
-  let totalAngleChange = 0;
-  for (let i = 1; i < mouseHistory.length; i++) {
-    const p1 = mouseHistory[i - 1];
-    const p2 = mouseHistory[i];
-
-    const a1 = Math.atan2(p1.y - agentCenterY, p1.x - agentCenterX);
-    const a2 = Math.atan2(p2.y - agentCenterY, p2.x - agentCenterX);
-
-    let diff = a2 - a1;
-    // Normalize to -PI to PI
-    while (diff <= -Math.PI) diff += 2 * Math.PI;
-    while (diff > Math.PI) diff -= 2 * Math.PI;
-
-    totalAngleChange += diff;
-  }
-
-  if (Math.abs(totalAngleChange) > (270 * Math.PI) / 180) {
-    triggerDizzy();
-  }
 };
 
 const triggerDizzy = () => {
@@ -495,18 +916,9 @@ const avoidObstacle = (obstacleRect: DOMRect) => {
   }
 };
 
-const handleGlobalMouseMove = (e: MouseEvent) => {
-  mouseX.value = e.clientX;
-  mouseY.value = e.clientY;
-
-  if (isHovered.value) {
-    checkDizziness(e.clientX, e.clientY);
-  }
-};
-
 // --- Lifecycle ---
 onMounted(async () => {
-  window.addEventListener('mousemove', handleGlobalMouseMove);
+  // handleMouseMove is added in the other onMounted block
   window.addEventListener('focusin', handleFocusIn);
   startLoop();
   startRoaming();
@@ -557,7 +969,7 @@ watch(currentUser, async (user) => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('mousemove', handleGlobalMouseMove);
+  // handleMouseMove removal is in the other onBeforeUnmount block
   window.removeEventListener('focusin', handleFocusIn);
   cancelAnimationFrame(animationFrameId);
   if (roamTimer) clearInterval(roamTimer);

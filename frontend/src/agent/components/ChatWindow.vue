@@ -14,6 +14,13 @@
       </div>
       <div class="header-right">
         <button
+          class="icon-btn mute-btn"
+          @click="$emit('toggle-mute')"
+          :title="isMuted ? 'Unmute' : 'Mute'"
+        >
+          {{ isMuted ? '🔇' : '🔊' }}
+        </button>
+        <button
           class="icon-btn user-btn"
           @click="toggleView"
           :title="isAuthenticated ? 'Profile' : 'Login'"
@@ -30,7 +37,7 @@
         <div class="chat-messages" ref="messagesContainer">
           <transition-group name="message">
             <div
-              v-for="(msg, index) in messages"
+              v-for="(msg, index) in visibleMessages"
               :key="index"
               class="chat-message"
               :class="msg.role"
@@ -51,6 +58,14 @@
             placeholder="Type a message..."
             :disabled="isLoading"
           />
+          <button
+            class="voice-btn"
+            :class="{ listening: isListening }"
+            @click="toggleVoice"
+            :title="isListening ? 'Stop Listening' : 'Speak'"
+          >
+            🎤
+          </button>
           <button
             class="send-btn"
             @click="handleSend"
@@ -107,12 +122,14 @@ const props = defineProps<{
   messages: ChatMessage[];
   isLoading: boolean;
   placement?: 'top' | 'bottom';
+  isMuted: boolean;
   agentRect?: Partial<DOMRect>; // Changed to Partial to avoid strict type issues
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'send', text: string): void;
+  (e: 'toggle-mute'): void;
 }>();
 
 const { isAuthenticated, currentUser, logout } = useAuth();
@@ -122,6 +139,54 @@ const inputMessage = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 const lastActivityTime = ref(Date.now());
 let activityTimer: number | null = null;
+
+// Voice Input State
+const isListening = ref(false);
+let recognition: any = null;
+
+const toggleVoice = () => {
+  if (isListening.value) {
+    recognition?.stop();
+    isListening.value = false;
+    return;
+  }
+
+  const SpeechRecognition =
+    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Voice input is not supported in this browser.');
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isListening.value = true;
+  };
+
+  recognition.onresult = (event: any) => {
+    const transcript = Array.from(event.results)
+      .map((result: any) => result[0])
+      .map((result: any) => result.transcript)
+      .join('');
+
+    inputMessage.value = transcript;
+  };
+
+  recognition.onerror = (event: any) => {
+    console.error('Speech recognition error', event.error);
+    isListening.value = false;
+  };
+
+  recognition.onend = () => {
+    isListening.value = false;
+  };
+
+  recognition.start();
+};
 
 // Smart Positioning State
 const windowStyle = computed(() => {
@@ -155,13 +220,39 @@ const windowStyle = computed(() => {
 const currentView = ref<'chat' | 'auth'>('chat');
 const authMode = ref<'login' | 'register'>('login');
 
+const visibleMessages = computed(() => {
+  return props.messages.filter((msg) => !msg.text.startsWith('[System Event]:'));
+});
+
 const renderMessage = (text: string) => {
   try {
-    return marked.parse(text);
+    // Format "Thought:" sections
+    const formattedText = text.replace(
+      /Thought:\s*(.*?)(?=\n|$)/g,
+      '<div class="thought-bubble">🤔 $1</div>'
+    );
+    return marked.parse(formattedText);
   } catch {
     return text;
   }
 };
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
+  });
+};
+
+watch(() => props.messages.length, scrollToBottom);
+watch(() => props.isLoading, scrollToBottom);
+watch(currentView, scrollToBottom);
+
+onMounted(() => {
+  scrollToBottom();
+  activityTimer = window.setInterval(checkInactivity, 1000);
+});
 
 const handleSend = () => {
   if (!inputMessage.value.trim() || props.isLoading) return;
@@ -186,20 +277,23 @@ const checkInactivity = () => {
   }
 };
 
-const toggleView = () => {
-  currentView.value = currentView.value === 'chat' ? 'auth' : 'chat';
-  refreshActivity();
+const handleLogout = async () => {
+  await logout();
+  currentView.value = 'auth';
+  authMode.value = 'login';
 };
 
 const handleAuthSuccess = () => {
   currentView.value = 'chat';
-  refreshActivity();
 };
 
-const handleLogout = () => {
-  logout();
-  // Keep in profile view to show login form
-  authMode.value = 'login';
+const toggleView = () => {
+  if (currentView.value === 'chat') {
+    currentView.value = 'auth';
+  } else {
+    currentView.value = 'chat';
+  }
+  refreshActivity();
 };
 
 onMounted(() => {
@@ -404,6 +498,45 @@ watch(
   transform: none;
 }
 
+.voice-btn {
+  background: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s;
+  color: #606266;
+}
+
+.voice-btn:hover {
+  background: #e6e8eb;
+  color: #409eff;
+}
+
+.voice-btn.listening {
+  background: #f56c6c;
+  color: white;
+  border-color: #f56c6c;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 108, 108, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 108, 108, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 108, 108, 0);
+  }
+}
+
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
@@ -539,5 +672,17 @@ watch(
 .back-btn:hover {
   color: #606266;
   text-decoration: underline;
+}
+
+/* Thought Bubble Styling */
+.thought-bubble {
+  background: #f0f9ff;
+  border-left: 3px solid #409eff;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #555;
+  font-style: italic;
 }
 </style>
