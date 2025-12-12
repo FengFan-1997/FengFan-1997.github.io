@@ -2,17 +2,23 @@
   <div class="auth-container">
     <div class="auth-card">
       <h2>{{ isLogin ? 'Welcome Back' : 'Join the Future' }}</h2>
-      <p class="subtitle">{{ isLogin ? 'Sign in to continue your journey' : 'Create an account to unlock full potential' }}</p>
-      
+      <p class="subtitle">
+        {{
+          isLogin
+            ? 'Sign in to continue your journey'
+            : 'Create an account to unlock full potential'
+        }}
+      </p>
+
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
           <label>Email / Username</label>
           <input v-model="form.username" type="text" placeholder="Enter your username" required />
         </div>
-        
+
         <div class="form-group" v-if="!isLogin">
-           <label>Display Name</label>
-           <input v-model="form.name" type="text" placeholder="What should we call you?" />
+          <label>Display Name</label>
+          <input v-model="form.name" type="text" placeholder="What should we call you?" />
         </div>
 
         <div class="form-group">
@@ -21,16 +27,16 @@
         </div>
 
         <button type="submit" class="auth-btn" :disabled="loading">
-          {{ loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up') }}
+          {{ loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up' }}
         </button>
       </form>
 
       <div class="toggle-mode">
         <span @click="toggleMode">
-          {{ isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in" }}
+          {{ isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in' }}
         </span>
       </div>
-      
+
       <div v-if="error" class="error-msg">{{ error }}</div>
     </div>
   </div>
@@ -60,19 +66,19 @@ const toggleMode = () => {
 const handleSubmit = async () => {
   loading.value = true;
   error.value = '';
-  
+
   try {
     if (isLogin.value) {
       await loginUser(form.username, form.password);
     } else {
       await registerUser(form.username, form.password, form.name || form.username);
     }
-    
+
     // Redirect to home or previous page
     router.push('/');
-    
+
     // Force reload to refresh Agent state (simple way)
-    // window.location.href = '/'; 
+    // window.location.href = '/';
   } catch (e: any) {
     error.value = e.message || 'Authentication failed';
   } finally {
@@ -97,7 +103,7 @@ const handleSubmit = async () => {
   border-radius: 16px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   border: 1px solid #334155;
 }
 

@@ -26,7 +26,7 @@ const handleMouseMove = (event: MouseEvent) => {
 
 const handleClick = () => {
   if (!core) return;
-  
+
   // Burst effect
   gsap.to(core.scale, {
     x: 1.5,
@@ -35,14 +35,14 @@ const handleClick = () => {
     duration: 0.1,
     yoyo: true,
     repeat: 1,
-    ease: "power2.out"
+    ease: 'power2.out'
   });
 
   // Rapid spin
   gsap.to(core.rotation, {
     y: core.rotation.y + Math.PI * 2,
     duration: 1,
-    ease: "elastic.out(1, 0.3)"
+    ease: 'elastic.out(1, 0.3)'
   });
 
   // Color flash (requires accessing material)
@@ -54,7 +54,7 @@ const init = () => {
 
   // Scene setup
   scene = new THREE.Scene();
-  
+
   // Camera
   camera = new THREE.PerspectiveCamera(75, 1, 0.1, 100); // Aspect ratio will be set on resize
   camera.position.z = 4;
@@ -83,10 +83,10 @@ const init = () => {
   const particlesGeometry = new THREE.BufferGeometry();
   const particleCount = 200;
   const positions = new Float32Array(particleCount * 3);
-  
+
   for (let i = 0; i < particleCount; i++) {
     const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos((Math.random() * 2) - 1);
+    const phi = Math.acos(Math.random() * 2 - 1);
     const r = 1.5 + Math.random() * 0.5;
 
     positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
@@ -95,7 +95,7 @@ const init = () => {
   }
 
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  
+
   const particlesMaterial = new THREE.PointsMaterial({
     color: 0x38bdf8,
     size: 0.05,
@@ -121,7 +121,7 @@ const init = () => {
     context.fillStyle = gradient;
     context.fillRect(0, 0, 32, 32);
   }
-  
+
   const spriteMaterial = new THREE.SpriteMaterial({
     map: new THREE.CanvasTexture(canvas),
     color: 0x38bdf8,
@@ -136,7 +136,7 @@ const init = () => {
   // Light
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
-  
+
   const pointLight = new THREE.PointLight(0x38bdf8, 2);
   pointLight.position.set(2, 2, 2);
   scene.add(pointLight);
@@ -146,7 +146,7 @@ const init = () => {
 
 const animate = () => {
   time += 0.01;
-  
+
   if (core) {
     // Rotation
     core.rotation.x += 0.005;
@@ -155,7 +155,7 @@ const animate = () => {
     // Mouse interaction
     targetRotation.x = mouse.y * 0.5;
     targetRotation.y = mouse.x * 0.5;
-    
+
     core.rotation.x += (targetRotation.x - core.rotation.x) * 0.05;
     core.rotation.y += (targetRotation.y - core.rotation.y) * 0.05;
 
@@ -211,7 +211,11 @@ onBeforeUnmount(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

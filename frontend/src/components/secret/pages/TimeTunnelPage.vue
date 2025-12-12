@@ -1,7 +1,7 @@
 <template>
   <div class="tunnel-page">
     <div id="tunnel-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Time Tunnel</h1>
       <p>Journey to our future</p>
@@ -90,7 +90,7 @@ function initThree() {
   scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  
+
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
@@ -98,7 +98,7 @@ function initThree() {
   // Tunnel Geometry
   const path = new CustomSinCurve(10);
   const geometry = new THREE.TubeGeometry(path, 100, 4, 16, false);
-  
+
   // Shader Material for Warp Effect
   const material = new THREE.ShaderMaterial({
     side: THREE.BackSide,
@@ -149,13 +149,13 @@ function initThree() {
   const posArray = new Float32Array(particlesCount * 3);
   const randomArray = new Float32Array(particlesCount);
 
-  for(let i=0; i<particlesCount; i++) {
-    posArray[i*3] = (Math.random() - 0.5) * 50;
-    posArray[i*3+1] = (Math.random() - 0.5) * 50;
-    posArray[i*3+2] = Math.random() * 400; // Along the length
+  for (let i = 0; i < particlesCount; i++) {
+    posArray[i * 3] = (Math.random() - 0.5) * 50;
+    posArray[i * 3 + 1] = (Math.random() - 0.5) * 50;
+    posArray[i * 3 + 2] = Math.random() * 400; // Along the length
     randomArray[i] = Math.random();
   }
-  
+
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   particlesGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randomArray, 1));
 
@@ -196,7 +196,7 @@ function initThree() {
     depthWrite: false,
     blending: THREE.AdditiveBlending
   });
-  
+
   particles = new THREE.Points(particlesGeometry, particlesMaterial);
   scene.add(particles);
 }
@@ -210,15 +210,15 @@ const animate = () => {
     (tunnel.material as THREE.ShaderMaterial).uniforms.uTime.value += speed;
     tunnel.rotation.z += 0.005; // Spin tunnel
   }
-  
+
   if (particles) {
     (particles.material as THREE.ShaderMaterial).uniforms.uTime.value = time;
   }
-  
+
   // Camera shake/movement based on mouse
   camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
   camera.position.y += (mouseY * 5 - camera.position.y) * 0.05;
-  
+
   // Move camera through tunnel (simulated by moving tunnel texture and particles)
   // Actually, let's just keep camera mostly static and move world
   camera.position.z = 5;
@@ -300,8 +300,15 @@ const onResize = () => {
 }
 
 @keyframes pulse {
-  0%, 100% { text-shadow: 0 0 20px #ff00cc; opacity: 1; }
-  50% { text-shadow: 0 0 40px #3333ff; opacity: 0.8; }
+  0%,
+  100% {
+    text-shadow: 0 0 20px #ff00cc;
+    opacity: 1;
+  }
+  50% {
+    text-shadow: 0 0 40px #3333ff;
+    opacity: 0.8;
+  }
 }
 
 @media (max-width: 768px) {

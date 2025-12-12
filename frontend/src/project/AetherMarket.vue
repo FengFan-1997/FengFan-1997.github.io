@@ -1,13 +1,25 @@
 <template>
   <div class="aether-market">
     <div class="noise-overlay"></div>
-    
+
     <nav class="market-nav">
       <div class="logo">AETHER <span class="version">v3.0</span></div>
       <div class="links">
-        <a href="#" :class="{ active: activeTab === 'market' }" @click.prevent="activeTab = 'market'">Marketplace</a>
-        <a href="#" :class="{ active: activeTab === 'create' }" @click.prevent="activeTab = 'create'">AI Studio</a>
-        <a href="#" :class="{ active: activeTab === 'drops' }" @click.prevent="activeTab = 'drops'">Live Drops</a>
+        <a
+          href="#"
+          :class="{ active: activeTab === 'market' }"
+          @click.prevent="activeTab = 'market'"
+          >Marketplace</a
+        >
+        <a
+          href="#"
+          :class="{ active: activeTab === 'create' }"
+          @click.prevent="activeTab = 'create'"
+          >AI Studio</a
+        >
+        <a href="#" :class="{ active: activeTab === 'drops' }" @click.prevent="activeTab = 'drops'"
+          >Live Drops</a
+        >
       </div>
       <div class="connect-btn" @click="connectWallet">
         <span v-if="!walletAddress">Connect Wallet</span>
@@ -19,13 +31,15 @@
 
     <!-- Content Area -->
     <div class="content-container">
-      
       <!-- Marketplace View -->
       <div v-if="activeTab === 'market'" class="view-market">
         <div class="hero-section">
           <div class="hero-content">
-            <h1>AI-Generated <br><span class="gradient-text">Digital Artifacts</span></h1>
-            <p>Experience the first decentralized marketplace powered by Neural Style Transfer and Generative Adversarial Networks.</p>
+            <h1>AI-Generated <br /><span class="gradient-text">Digital Artifacts</span></h1>
+            <p>
+              Experience the first decentralized marketplace powered by Neural Style Transfer and
+              Generative Adversarial Networks.
+            </p>
             <div class="stats-row">
               <div class="stat">
                 <span class="value">12.5k</span>
@@ -41,7 +55,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="hero-visual" ref="canvasContainer">
             <!-- Three.js Canvas -->
           </div>
@@ -59,7 +73,14 @@
           </div>
           <div class="card-grid">
             <div class="nft-card" v-for="(item, i) in marketItems" :key="i">
-              <div class="card-image" :style="{ backgroundImage: `url(${item.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
+              <div
+                class="card-image"
+                :style="{
+                  backgroundImage: `url(${item.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }"
+              >
                 <div class="ai-overlay">AI GENERATED</div>
                 <div class="card-actions">
                   <button class="buy-btn" @click="buyItem(i)" :disabled="item.sold">
@@ -74,9 +95,7 @@
                 </div>
                 <div class="card-price-row">
                   <div class="price-label">Current Price</div>
-                  <div class="card-price">
-                    <span class="eth-icon">Ξ</span> {{ item.price }}
-                  </div>
+                  <div class="card-price"><span class="eth-icon">Ξ</span> {{ item.price }}</div>
                 </div>
               </div>
             </div>
@@ -90,21 +109,21 @@
           <div class="create-panel left">
             <h2>Neural Engine</h2>
             <p>Describe your vision and let our GANs hallucinate reality.</p>
-            
+
             <div class="input-group">
               <label>Prompt</label>
-              <textarea 
-                v-model="generationPrompt" 
+              <textarea
+                v-model="generationPrompt"
                 placeholder="E.g., A cyberpunk city floating in a nebula, neon lights, 8k resolution..."
                 rows="4"
               ></textarea>
             </div>
-            
+
             <div class="input-group">
               <label>Style Model</label>
               <div class="style-options">
-                <div 
-                  v-for="style in ['Cybernetic', 'Oil Painting', 'Vaporwave', 'Abstract']" 
+                <div
+                  v-for="style in ['Cybernetic', 'Oil Painting', 'Vaporwave', 'Abstract']"
                   :key="style"
                   class="style-chip"
                   :class="{ active: selectedStyle === style }"
@@ -142,27 +161,26 @@
 
       <!-- Live Drops View -->
       <div v-else-if="activeTab === 'drops'" class="view-drops">
-         <div class="drops-container">
-           <h2>Live Auctions</h2>
-           <div class="auction-list">
-             <div class="auction-item" v-for="n in 3" :key="n">
-               <div class="auction-visual" :style="`background: hsl(${n * 60}, 70%, 20%)`"></div>
-               <div class="auction-info">
-                 <h3>Quantum Glitch #{{ 900 + n }}</h3>
-                 <div class="countdown">
-                   Ending in: <span class="mono">0{{ 4-n }}:2{{ n * 5 }}:12</span>
-                 </div>
-                 <div class="bid-row">
-                    <span>Highest Bid:</span>
-                    <span class="highlight">{{ 2.5 + n * 0.5 }} ETH</span>
-                 </div>
-                 <button class="bid-btn">PLACE BID</button>
-               </div>
-             </div>
-           </div>
-         </div>
+        <div class="drops-container">
+          <h2>Live Auctions</h2>
+          <div class="auction-list">
+            <div class="auction-item" v-for="n in 3" :key="n">
+              <div class="auction-visual" :style="`background: hsl(${n * 60}, 70%, 20%)`"></div>
+              <div class="auction-info">
+                <h3>Quantum Glitch #{{ 900 + n }}</h3>
+                <div class="countdown">
+                  Ending in: <span class="mono">0{{ 4 - n }}:2{{ n * 5 }}:12</span>
+                </div>
+                <div class="bid-row">
+                  <span>Highest Bid:</span>
+                  <span class="highlight">{{ 2.5 + n * 0.5 }} ETH</span>
+                </div>
+                <button class="bid-btn">PLACE BID</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -189,14 +207,15 @@ const marketItems = ref<MarketItem[]>([]);
 
 const fetchMarketData = async () => {
   // Simulate API delay for authenticity
-  await new Promise(resolve => setTimeout(resolve, 600));
-  
+  await new Promise((resolve) => setTimeout(resolve, 600));
+
   marketItems.value = [
     {
       name: 'Cyber Skull #1024',
       price: '0.85',
       likes: 1204,
-      image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: '0x3f...a1b2'
     },
@@ -204,7 +223,8 @@ const fetchMarketData = async () => {
       name: 'Neon Genesis',
       price: '1.20',
       likes: 892,
-      image: 'https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: 'CryptoArt'
     },
@@ -212,7 +232,8 @@ const fetchMarketData = async () => {
       name: 'Abstract Mind',
       price: '0.50',
       likes: 450,
-      image: 'https://images.unsplash.com/photo-1618172193622-ae2d025f4032?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1618172193622-ae2d025f4032?q=80&w=600&auto=format&fit=crop',
       sold: true,
       creator: 'DeepDream'
     },
@@ -220,7 +241,8 @@ const fetchMarketData = async () => {
       name: 'Digital Horizon',
       price: '2.15',
       likes: 2100,
-      image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: 'FutureVis'
     },
@@ -228,7 +250,8 @@ const fetchMarketData = async () => {
       name: 'Glitch Portrait',
       price: '0.99',
       likes: 670,
-      image: 'https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: 'GlitchMaster'
     },
@@ -236,7 +259,8 @@ const fetchMarketData = async () => {
       name: 'Vaporwave City',
       price: '1.50',
       likes: 1500,
-      image: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: 'RetroWave'
     },
@@ -244,7 +268,8 @@ const fetchMarketData = async () => {
       name: 'Crystal Void',
       price: '3.00',
       likes: 3200,
-      image: 'https://images.unsplash.com/photo-1614726365723-49cfa0950ecb?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1614726365723-49cfa0950ecb?q=80&w=600&auto=format&fit=crop',
       sold: false,
       creator: 'GemHunter'
     },
@@ -252,7 +277,8 @@ const fetchMarketData = async () => {
       name: 'Ethereal Being',
       price: '4.50',
       likes: 4100,
-      image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=600&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=600&auto=format&fit=crop',
       sold: true,
       creator: 'SpiritAI'
     }
@@ -298,7 +324,7 @@ const generateArtifact = () => {
   isGenerating.value = true;
   generatedImage.value = '';
   progress.value = 0;
-  
+
   const logs = [
     'Parsing semantics...',
     'Loading VQGAN models...',
@@ -314,7 +340,7 @@ const generateArtifact = () => {
       generationLog.value = logs[step];
       step++;
     }
-    
+
     if (progress.value >= 100) {
       clearInterval(interval);
       isGenerating.value = false;
@@ -338,7 +364,7 @@ const initThree = () => {
   if (!canvasContainer.value) return;
 
   // Clear previous if any
-  while(canvasContainer.value.firstChild) {
+  while (canvasContainer.value.firstChild) {
     canvasContainer.value.removeChild(canvasContainer.value.firstChild);
   }
 
@@ -464,11 +490,13 @@ onBeforeUnmount(() => {
   transition: width 0.3s ease;
 }
 
-.links a:hover, .links a.active {
+.links a:hover,
+.links a.active {
   color: #fff;
 }
 
-.links a:hover::after, .links a.active::after {
+.links a:hover::after,
+.links a.active::after {
   width: 100%;
 }
 
@@ -537,7 +565,7 @@ h1 {
   display: flex;
   gap: 60px;
   margin-top: 60px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 30px;
 }
 
@@ -588,7 +616,7 @@ h1 {
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 50px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 20px;
 }
 
@@ -614,7 +642,8 @@ h2 {
   transition: color 0.3s;
 }
 
-.filter-tabs span.active, .filter-tabs span:hover {
+.filter-tabs span.active,
+.filter-tabs span:hover {
   color: #fff;
 }
 
@@ -663,7 +692,7 @@ h2 {
   font-size: 0.6rem;
   letter-spacing: 0.1em;
   border-radius: 0;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: none;
 }
 
@@ -691,7 +720,7 @@ h2 {
   letter-spacing: 0.1em;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .buy-btn:disabled {
@@ -702,10 +731,11 @@ h2 {
 
 .card-info {
   padding: 20px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.card-header-row, .card-price-row {
+.card-header-row,
+.card-price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -880,7 +910,9 @@ textarea:focus {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .log-text {
@@ -903,7 +935,7 @@ textarea:focus {
   left: 0;
   width: 100%;
   padding: 30px;
-  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
   display: flex;
   justify-content: center;
 }
@@ -931,8 +963,8 @@ textarea:focus {
 .auction-list {
   display: grid;
   gap: 1px; /* Divider look */
-  background: rgba(255,255,255,0.1); /* Divider color */
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1); /* Divider color */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 40px;
 }
 
@@ -1012,17 +1044,19 @@ textarea:focus {
     padding: 60px 40px;
     text-align: center;
   }
-  
+
   .stats-row {
     justify-content: center;
     border-top: none;
     margin-top: 40px;
   }
 
-  .trending-section, .view-create, .view-drops {
+  .trending-section,
+  .view-create,
+  .view-drops {
     padding: 40px;
   }
-  
+
   .create-container {
     flex-direction: column;
   }
@@ -1032,23 +1066,25 @@ textarea:focus {
   .market-nav {
     padding: 15px 20px;
   }
-  
+
   .hero-section {
     padding: 30px 20px;
   }
-  
-  .trending-section, .view-create, .view-drops {
+
+  .trending-section,
+  .view-create,
+  .view-drops {
     padding: 0 20px 50px;
   }
-  
+
   .links {
     display: none; /* Hide nav links on mobile or use a menu */
   }
-  
+
   h1 {
     font-size: 2.5rem;
   }
-  
+
   .hero-visual {
     width: 100%;
     height: 300px;

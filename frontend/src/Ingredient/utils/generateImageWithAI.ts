@@ -13,7 +13,8 @@ const FONT_HEADER_FACTS = 'bold 18px Arial Black, Arial, sans-serif';
 const LINE_H = 17;
 const SIZE_BODY = 13;
 
-const fontStr = (size: number, bold = false) => `${bold ? 'bold ' : ''}${size}px Arial, Helvetica, sans-serif`;
+const fontStr = (size: number, bold = false) =>
+  `${bold ? 'bold ' : ''}${size}px Arial, Helvetica, sans-serif`;
 const lineH = (size: number) => Math.round(size + size * 0.5);
 
 const toTitleCase = (s: string) =>
@@ -118,18 +119,18 @@ const renderDrugFacts = (sections: any[]) => {
   const activeSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('ACTIVE INGREDIENT'),
+      .includes('ACTIVE INGREDIENT')
   );
   const purposeSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('PURPOSE'),
+      .includes('PURPOSE')
   );
   const usesSecForPurpose = sections.find(
     (s) =>
       String(s.title || '')
         .toUpperCase()
-        .includes('USES') && !String(s.content).includes('Use'),
+        .includes('USES') && !String(s.content).includes('Use')
   );
   const finalPurposeSec = purposeSec || usesSecForPurpose;
 
@@ -182,8 +183,10 @@ const renderDrugFacts = (sections: any[]) => {
         activeAllocatedW = Math.max(0, availWidthForText - 30);
       }
 
-      const ACTIVE_WRAP_W = activeAllocatedW > RIGHT_MARGIN ? activeAllocatedW - RIGHT_MARGIN : activeAllocatedW;
-      const PURPOSE_WRAP_W = purposeAllocatedW > RIGHT_MARGIN ? purposeAllocatedW - RIGHT_MARGIN : purposeAllocatedW;
+      const ACTIVE_WRAP_W =
+        activeAllocatedW > RIGHT_MARGIN ? activeAllocatedW - RIGHT_MARGIN : activeAllocatedW;
+      const PURPOSE_WRAP_W =
+        purposeAllocatedW > RIGHT_MARGIN ? purposeAllocatedW - RIGHT_MARGIN : purposeAllocatedW;
 
       const activeLines = wrapText(activeText, ACTIVE_WRAP_W, fontStr(SIZE_BODY));
       const purposeLines = wrapText(purposeText, PURPOSE_WRAP_W, fontStr(SIZE_BODY));
@@ -282,7 +285,7 @@ const renderDrugFacts = (sections: any[]) => {
     if (title.includes('USES') && Array.isArray(content)) {
       const arr = (content as string[]).map((s) => String(s).trim()).filter(Boolean);
       const introIdx = arr.findIndex(
-        (s) => s.split(/\s+/).length > 5 || /temporarily|relieves|due to|symptom/i.test(s),
+        (s) => s.split(/\s+/).length > 5 || /temporarily|relieves|due to|symptom/i.test(s)
       );
       if (introIdx >= 0) {
         const intro = arr[introIdx];
@@ -292,7 +295,9 @@ const renderDrugFacts = (sections: any[]) => {
         });
         const bullets = arr.filter((_, i) => i !== introIdx);
         if (bullets.length) {
-          const joined = bullets.map((s) => '■\u00A0' + s.replace(/^•\s*/, '')).join(' \u00A0\u00A0 ');
+          const joined = bullets
+            .map((s) => '■\u00A0' + s.replace(/^•\s*/, ''))
+            .join(' \u00A0\u00A0 ');
           wrapText(joined, LINE_WIDTH, fontStr(SIZE_BODY)).forEach((line) => {
             svg += `<text x="${START_X}" y="${y + lh}" font-family="Arial" font-size="${SIZE_BODY}">${escapeXml(line)}</text>`;
             y += lh;
@@ -323,7 +328,9 @@ const renderDrugFacts = (sections: any[]) => {
         } else {
           const subTitle = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
           const items = Array.isArray(val) ? val : [val];
-          const contentStr = items.map((v: any) => String(v).replace(/^•\s*/, '').trim()).join(', ');
+          const contentStr = items
+            .map((v: any) => String(v).replace(/^•\s*/, '').trim())
+            .join(', ');
           const prefix = '■\u00A0' + subTitle + ':\u00A0';
           const fullText = prefix + contentStr;
 
@@ -342,7 +349,9 @@ const renderDrugFacts = (sections: any[]) => {
         }
       });
     } else {
-      const items = Array.isArray(content) ? (content as any[]).map(String) : splitItems(String(content));
+      const items = Array.isArray(content)
+        ? (content as any[]).map(String)
+        : splitItems(String(content));
       items.forEach((it) => {
         renderItem(it, useBullets);
       });
@@ -355,27 +364,27 @@ const renderDrugFacts = (sections: any[]) => {
   const manuSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('MANUFACTURER'),
+      .includes('MANUFACTURER')
   );
   const ndcSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('NDC'),
+      .includes('NDC')
   );
   const lotSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('LOT'),
+      .includes('LOT')
   );
   const expSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('EXPIRATION'),
+      .includes('EXPIRATION')
   );
   const netSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('NET CONTENT'),
+      .includes('NET CONTENT')
   );
 
   if (manuSec || ndcSec || lotSec || expSec || netSec) {
@@ -443,7 +452,9 @@ const renderSupplementFacts = (sections: any[]) => {
   svg += `<text x="${CONTENT_X}" y="${y + 20}" font-family="${FONT_HEADER_FACTS}" font-style="italic"  font-weight="900" font-size="26">Supplement Facts</text>`;
   y += 30;
 
-  const serveHeaderSec = sections.find((s) => s.title.toUpperCase() === 'SERVE HEADER' && s.isHeader);
+  const serveHeaderSec = sections.find(
+    (s) => s.title.toUpperCase() === 'SERVE HEADER' && s.isHeader
+  );
   if (serveHeaderSec && typeof serveHeaderSec.content === 'object') {
     const { servingSize, servingsPerContainer } = serveHeaderSec.content;
 
@@ -479,7 +490,9 @@ const renderSupplementFacts = (sections: any[]) => {
   svg += `<line x1="${CONTENT_X}" y1="${y}" x2="${CONTENT_END_X}" y2="${y}" stroke="black" stroke-width="1" />`;
   y += 4;
 
-  const factsSec = sections.find((s) => s.isTable && s.title.toUpperCase().includes('SUPPLEMENT FACTS TABLE'));
+  const factsSec = sections.find(
+    (s) => s.isTable && s.title.toUpperCase().includes('SUPPLEMENT FACTS TABLE')
+  );
   const actives = factsSec?.content || [];
   let hasAsterisk = false;
   let hasDagger = false;
@@ -533,7 +546,7 @@ const renderSupplementFacts = (sections: any[]) => {
     (s) =>
       s.title.toUpperCase() === 'OTHER INGREDIENTS' ||
       s.title.toUpperCase() === 'SUGGESTED USE' ||
-      s.title.toUpperCase().includes('WARNING'),
+      s.title.toUpperCase().includes('WARNING')
   );
 
   declarationSections.forEach((sec) => {
@@ -646,7 +659,7 @@ const renderNutritionFacts = (sections: any[]) => {
       wrapText(
         c.servingsPerContainer ? c.servingsPerContainer + ' servings per container' : '',
         NF_LINE_WIDTH,
-        fontStr(14),
+        fontStr(14)
       ).forEach((line) => {
         svg += `<text x="${PADDING}" y="${y + 14}" font-family="${FONT_STD}" font-size="14">${escapeXml(line)}</text>`;
         y += 18;
@@ -712,7 +725,7 @@ const renderNutritionFacts = (sections: any[]) => {
   y += 10;
 
   const otherSecs = sections.filter(
-    (s) => s.title !== 'NUTRITION FACTS' && !s.title.toUpperCase().includes('NET CONTENT'),
+    (s) => s.title !== 'NUTRITION FACTS' && !s.title.toUpperCase().includes('NET CONTENT')
   );
   otherSecs.forEach((sec) => {
     const title = (sec.title || '').toUpperCase();
@@ -788,7 +801,8 @@ const renderStandard = (sections: any[], productName: string) => {
       const word = words[i];
       const attempt = currentLine + (currentLine ? ' ' : '') + word;
 
-      const currentMaxWidth = contentParts.length === 0 ? STANDARD_LINE_WIDTH - titleW : STANDARD_LINE_WIDTH;
+      const currentMaxWidth =
+        contentParts.length === 0 ? STANDARD_LINE_WIDTH - titleW : STANDARD_LINE_WIDTH;
       const width = getCtx(FONT_BODY)?.measureText(attempt).width || 0;
 
       if (width < currentMaxWidth || !currentLine) {
@@ -818,7 +832,7 @@ const renderStandard = (sections: any[], productName: string) => {
   const netSec = sections.find((s) =>
     String(s.title || '')
       .toUpperCase()
-      .includes('NET CONTENT'),
+      .includes('NET CONTENT')
   );
   if (netSec) {
     y += 12;
@@ -833,7 +847,7 @@ const renderStandard = (sections: any[], productName: string) => {
 export async function generateImageWithAI(
   productName: string,
   ingredientsText: string,
-  productType: string,
+  productType: string
 ): Promise<{ url: string; layoutType: LayoutType }> {
   const { sections, layoutType } = await buildLabelSectionsUnified(ingredientsText, productType);
 

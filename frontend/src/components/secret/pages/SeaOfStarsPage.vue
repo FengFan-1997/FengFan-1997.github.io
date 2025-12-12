@@ -1,7 +1,7 @@
 <template>
   <div class="sea-page">
     <div id="sea-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Sea of Stars</h1>
       <p>Reflecting our infinite dreams</p>
@@ -220,20 +220,26 @@ function initThree() {
   const starRandom = new Float32Array(starCount);
   const starColors = new Float32Array(starCount * 3);
 
-  for(let i=0; i<starCount; i++) {
-    starPos[i*3] = (Math.random() - 0.5) * 100;
-    starPos[i*3+1] = Math.random() * 30 + 1; 
-    starPos[i*3+2] = (Math.random() - 0.5) * 80 - 10;
+  for (let i = 0; i < starCount; i++) {
+    starPos[i * 3] = (Math.random() - 0.5) * 100;
+    starPos[i * 3 + 1] = Math.random() * 30 + 1;
+    starPos[i * 3 + 2] = (Math.random() - 0.5) * 80 - 10;
     starRandom[i] = Math.random();
-    
+
     // Random star colors
     const colorType = Math.random();
-    if(colorType > 0.8) {
-        starColors[i*3] = 0.5; starColors[i*3+1] = 0.8; starColors[i*3+2] = 1.0; // Blueish
+    if (colorType > 0.8) {
+      starColors[i * 3] = 0.5;
+      starColors[i * 3 + 1] = 0.8;
+      starColors[i * 3 + 2] = 1.0; // Blueish
     } else if (colorType > 0.6) {
-        starColors[i*3] = 1.0; starColors[i*3+1] = 0.8; starColors[i*3+2] = 0.8; // Reddish
+      starColors[i * 3] = 1.0;
+      starColors[i * 3 + 1] = 0.8;
+      starColors[i * 3 + 2] = 0.8; // Reddish
     } else {
-        starColors[i*3] = 1.0; starColors[i*3+1] = 1.0; starColors[i*3+2] = 1.0; // White
+      starColors[i * 3] = 1.0;
+      starColors[i * 3 + 1] = 1.0;
+      starColors[i * 3 + 2] = 1.0; // White
     }
   }
 
@@ -282,18 +288,18 @@ function initThree() {
 function animate() {
   animationId = requestAnimationFrame(animate);
   const time = performance.now() * 0.001;
-  
-  if(water) (water.material as THREE.ShaderMaterial).uniforms.uTime.value = time;
-  if(stars) (stars.material as THREE.ShaderMaterial).uniforms.uTime.value = time;
-  
+
+  if (water) (water.material as THREE.ShaderMaterial).uniforms.uTime.value = time;
+  if (stars) (stars.material as THREE.ShaderMaterial).uniforms.uTime.value = time;
+
   // Smooth Camera movement based on mouse
   targetX = mouseX * 5;
   targetY = mouseY * 2;
-  
+
   camera.position.x += (targetX - camera.position.x) * 0.05;
   camera.position.y += (Math.max(2, 5 + targetY) - camera.position.y) * 0.05;
   camera.lookAt(0, 0, -10);
-  
+
   renderer.render(scene, camera);
 }
 
@@ -372,11 +378,11 @@ p {
   h1 {
     font-size: 2.5rem;
   }
-  
+
   p {
     font-size: 1rem;
   }
-  
+
   .overlay {
     top: 25%;
   }

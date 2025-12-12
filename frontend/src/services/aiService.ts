@@ -10,7 +10,7 @@ export const generateContent = async (prompt: string): Promise<AIResponse> => {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt })
     });
 
     if (!response.ok) {

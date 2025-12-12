@@ -8,7 +8,9 @@
           </div>
           <div class="title-group">
             <h1>AI Polyglot & Polisher</h1>
-            <p class="subtitle">Translate, Polish, and Summarize with intelligent context awareness</p>
+            <p class="subtitle">
+              Translate, Polish, and Summarize with intelligent context awareness
+            </p>
           </div>
         </div>
         <router-link to="/portfolio-home" class="back-link">
@@ -20,27 +22,27 @@
         <div class="control-group">
           <label>Action</label>
           <LabelTypeSelect
-            :modelValue="actions.findIndex(a => a.value === actionStr)"
+            :modelValue="actions.findIndex((a) => a.value === actionStr)"
             :options="actions.map((a, i) => ({ label: a.label, value: i, gtm: a.value }))"
-            @update:modelValue="(i) => actionStr = actions[i].value"
+            @update:modelValue="(i) => (actionStr = actions[i].value)"
           />
         </div>
 
         <div class="control-group" v-if="actionStr === 'translate'">
           <label>Target Language</label>
           <LabelTypeSelect
-            :modelValue="languages.findIndex(l => l.value === targetLang)"
+            :modelValue="languages.findIndex((l) => l.value === targetLang)"
             :options="languages.map((l, i) => ({ label: l.label, value: i, gtm: l.value }))"
-            @update:modelValue="(i) => targetLang = languages[i].value"
+            @update:modelValue="(i) => (targetLang = languages[i].value)"
           />
         </div>
 
         <div class="control-group" v-if="actionStr === 'polish'">
           <label>Tone</label>
           <LabelTypeSelect
-            :modelValue="tones.findIndex(t => t.value === tone)"
+            :modelValue="tones.findIndex((t) => t.value === tone)"
             :options="tones.map((t, i) => ({ label: t.label, value: i, gtm: t.value }))"
-            @update:modelValue="(i) => tone = tones[i].value"
+            @update:modelValue="(i) => (tone = tones[i].value)"
           />
         </div>
       </div>
@@ -59,9 +61,9 @@
         </div>
 
         <div class="action-bar">
-          <button 
-            class="process-btn" 
-            @click="processText" 
+          <button
+            class="process-btn"
+            @click="processText"
             :disabled="isLoading || !inputText.trim()"
           >
             <i class="fas fa-spinner fa-spin" v-if="isLoading"></i>
@@ -79,7 +81,7 @@
               {{ copySuccess ? 'Copied!' : 'Copy' }}
             </button>
           </div>
-          <div class="output-display" :class="{ 'placeholder': !outputText }">
+          <div class="output-display" :class="{ placeholder: !outputText }">
             <div v-if="isLoading" class="loading-state">
               <div class="pulse-ring"></div>
               <span>Generating magic...</span>
@@ -145,13 +147,13 @@ const processText = async () => {
   }
 
   const response = await generateContent(prompt);
-  
+
   if (response.error) {
     outputText.value = `Error: ${response.error}`;
   } else {
     outputText.value = response.text;
   }
-  
+
   isLoading.value = false;
 };
 
@@ -177,8 +179,14 @@ const copyToClipboard = async () => {
   justify-content: center;
   background-color: #f8fafc; /* Light background */
   padding: 40px 20px;
-  padding-left: 100px; 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding-left: 100px;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   color: #334155; /* Dark slate text */
   box-sizing: border-box;
 }
@@ -304,7 +312,8 @@ const copyToClipboard = async () => {
   position: relative;
 }
 
-.input-section, .output-section {
+.input-section,
+.output-section {
   padding: 40px 50px;
   display: flex;
   flex-direction: column;
@@ -318,10 +327,10 @@ const copyToClipboard = async () => {
 
 /* Vertical divider line */
 .workspace > div:nth-child(2) {
-    background: rgba(0,0,0,0.06);
-    width: 1px;
-    height: 100%;
-    position: relative;
+  background: rgba(0, 0, 0, 0.06);
+  width: 1px;
+  height: 100%;
+  position: relative;
 }
 
 /* Action button floating on the divider */
@@ -355,13 +364,17 @@ const copyToClipboard = async () => {
   justify-content: center;
   font-size: 20px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 0 4px #f8fafc, 0 10px 30px rgba(15, 23, 42, 0.2);
+  box-shadow:
+    0 0 0 4px #f8fafc,
+    0 10px 30px rgba(15, 23, 42, 0.2);
 }
 
 .process-btn:hover:not(:disabled) {
   transform: scale(1.1);
   border-color: #fff;
-  box-shadow: 0 0 0 4px #f8fafc, 0 15px 35px rgba(15, 23, 42, 0.3);
+  box-shadow:
+    0 0 0 4px #f8fafc,
+    0 15px 35px rgba(15, 23, 42, 0.3);
 }
 
 .process-btn:active:not(:disabled) {
@@ -501,9 +514,21 @@ textarea::placeholder {
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.2); }
-  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 20px 10px rgba(15, 23, 42, 0); }
-  100% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 0 0 rgba(15, 23, 42, 0); }
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+    box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 20px 10px rgba(15, 23, 42, 0);
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+    box-shadow: 0 0 0 0 rgba(15, 23, 42, 0);
+  }
 }
 
 /* Mobile Responsiveness */
@@ -530,7 +555,7 @@ textarea::placeholder {
     text-align: center;
     gap: 16px;
   }
-  
+
   .tool-header {
     flex-direction: column;
     align-items: center;
@@ -550,12 +575,12 @@ textarea::placeholder {
     flex-direction: column;
     background: transparent;
   }
-  
+
   /* Hide vertical divider on mobile */
   .workspace > div:nth-child(2) {
     display: none;
   }
-  
+
   .action-bar {
     position: sticky;
     bottom: 20px;
@@ -581,9 +606,9 @@ textarea::placeholder {
     color: #fff;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
   }
-  
+
   .process-btn span::after {
-    content: " Process Text";
+    content: ' Process Text';
     margin-left: 8px;
     font-weight: 600;
   }
@@ -594,23 +619,23 @@ textarea::placeholder {
     border-radius: 12px;
     margin-bottom: 20px;
   }
-  
+
   .output-section {
     padding: 20px;
     background: #f8fafc;
     border-radius: 12px;
   }
-  
+
   textarea {
     min-height: 200px;
     font-size: 16px;
   }
-  
+
   .output-display {
     min-height: 200px;
     font-size: 16px;
   }
-  
+
   .control-panel {
     padding: 20px;
     gap: 20px;

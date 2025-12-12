@@ -6,7 +6,7 @@
           {{ generateRandomHex() }}
         </div>
       </div>
-      
+
       <div class="title-block">
         <h1>QUANTUM DATA STREAM</h1>
         <p>PROCESSING {{ (particleCount / 1000).toFixed(0) }}K DATA POINTS</p>
@@ -32,7 +32,13 @@ const container = ref<HTMLElement | null>(null);
 
 const particleCount = 100000;
 const generateRandomHex = () => {
-  return '0x' + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padStart(6, '0');
+  return (
+    '0x' +
+    Math.floor(Math.random() * 16777215)
+      .toString(16)
+      .toUpperCase()
+      .padStart(6, '0')
+  );
 };
 
 const goBack = () => {
@@ -75,7 +81,7 @@ const initScene = () => {
     const r = 40 + Math.random() * 10;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    
+
     const x = r * Math.sin(phi) * Math.cos(theta);
     const y = r * Math.sin(phi) * Math.sin(theta);
     const z = r * Math.cos(phi);

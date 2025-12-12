@@ -1,0 +1,22 @@
+{
+  "models": [
+    "BengHuai/Lita",
+    "BengHuai/bronya",
+    "BengHuai/mie",
+    "BengHuai/xier",
+    "ZiYuXin/ots14_1203",
+    "ZiYuXin/ots14_3001",
+    "ZiYuXin/ots14_4501",
+    "ZiYuXin/ots14_5602"
+  ],
+  "messages": [
+    "Lita loaded",
+    "Bronya loaded",
+    "Mie loaded",
+    "Xier loaded",
+    "OTS-14 (1203) loaded",
+    "OTS-14 (3001) loaded",
+    "OTS-14 (4501) loaded",
+    "OTS-14 (5602) loaded"
+  ]
+}

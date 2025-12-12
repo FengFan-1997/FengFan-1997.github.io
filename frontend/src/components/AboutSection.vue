@@ -7,7 +7,7 @@
           <p class="bio">
             {{ t('about.bio') }}
           </p>
-          
+
           <div class="tech-stack">
             <div class="stack-category">
               <h3>{{ t('about.proficient') }}</h3>
@@ -22,7 +22,9 @@
           <div class="education-honors">
             <div class="info-block">
               <h3>{{ t('about.education.title') }}</h3>
-              <p class="school"><strong>{{ t('about.education.school') }}</strong></p>
+              <p class="school">
+                <strong>{{ t('about.education.school') }}</strong>
+              </p>
               <p>{{ t('about.education.degree') }}</p>
               <p class="sub-text">{{ t('about.education.period') }}</p>
               <p class="sub-text course-text">{{ t('about.education.courses') }}</p>
@@ -213,7 +215,11 @@ const { t } = useLanguageStore();
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.04), transparent 40%);
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.04),
+    transparent 40%
+  );
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -253,7 +259,7 @@ const { t } = useLanguageStore();
     grid-template-columns: 1fr;
     gap: 60px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -264,11 +270,11 @@ const { t } = useLanguageStore();
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .section-title {
     font-size: 2.5rem;
   }

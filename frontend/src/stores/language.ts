@@ -12,7 +12,7 @@ export const useLanguageStore = defineStore('language', () => {
         about: 'About',
         skills: 'Skills',
         experience: 'Experience',
-        testimonials: 'Testimonials',
+        testimonials: 'Testimonials'
       },
       hero: {
         greeting: 'Hello, I am',
@@ -23,13 +23,14 @@ export const useLanguageStore = defineStore('language', () => {
         subtitle: 'Creating digital experiences where intelligence meets immersion',
         valueProp: 'AI Driven · Interactive Innovation · Extreme Performance',
         scroll: 'SCROLL TO EXPLORE',
-        cta: 'View My Work',
+        cta: 'View My Work'
       },
       about: {
         title: 'ABOUT ME',
         bio: 'Builder focused on modern frontend engineering and user experience. Solid CS background (GPA 3.15, Shandong Agricultural University). Expert in implementing AI models, data visualization, and complex interactions into high-performance Web apps. During my tenure at Packify, I drove the frontend architecture for the AI packaging design platform. I led the development of core modules including the AI Design Inspiration page, Nutrition Label Generator, Developer API Portal, Price Page Optimization, and SEO Template System. I successfully solved complex challenges in mobile adaptation and internationalization, achieving significant growth in organic traffic and user conversion. Adhering to "Performance First" and "Data Driven" philosophy.',
         proficient: 'Core Tech Stack',
-        stack1: 'Vue 3 Ecosystem (Vite, Pinia), TypeScript, ECharts, Highmaps (LOCA), TensorFlow.js',
+        stack1:
+          'Vue 3 Ecosystem (Vite, Pinia), TypeScript, ECharts, Highmaps (LOCA), TensorFlow.js',
         familiar: 'Engineering & Backend',
         stack2: 'Git Workflow, Webpack/Vite, Java (SpringBoot), Python, LLM Integration',
         education: {
@@ -42,16 +43,17 @@ export const useLanguageStore = defineStore('language', () => {
         honors: {
           title: 'Honors & Awards',
           list: [
-             'Lanqiao Cup National Software Competition: Provincial Award (Java)',
-             'University Software Design Competition: Provincial Second Prize',
-             'National Endeavor Scholarship & First Class School Scholarship'
+            'Lanqiao Cup National Software Competition: Provincial Award (Java)',
+            'University Software Design Competition: Provincial Second Prize',
+            'National Endeavor Scholarship & First Class School Scholarship'
           ]
         },
-        philosophy: 'User experience at the core, code quality as the baseline. Delivering reliable frontend solutions.',
+        philosophy:
+          'User experience at the core, code quality as the baseline. Delivering reliable frontend solutions.',
         stats: {
           years: 'Years Exp.',
           projects: 'Projects',
-          awards: 'Awards',
+          awards: 'Awards'
         }
       },
       skills: {
@@ -61,52 +63,52 @@ export const useLanguageStore = defineStore('language', () => {
         title: 'SELECTED WORKS',
         viewProject: 'View Project',
         filters: {
-          all: 'All',
+          all: 'All'
         },
         items: {
           ingredients: {
             title: 'AI INGREDIENTS',
-            desc: 'Intelligent Label Generation powered by Gemini. Transform simple text into FDA-compliant nutrition facts and ingredient lists with one click.',
+            desc: 'Intelligent Label Generation powered by Gemini. Transform simple text into FDA-compliant nutrition facts and ingredient lists with one click.'
           },
           gemini: {
             title: 'GEMINI CHAT',
-            desc: 'Advanced conversational interface powered by Gemini 2.5 Flash. Features real-time streaming responses and context-aware interactions.',
+            desc: 'Advanced conversational interface powered by Gemini 2.5 Flash. Features real-time streaming responses and context-aware interactions.'
           },
           polyglot: {
             title: 'AI POLYGLOT',
-            desc: 'Smart translation and text polishing tool. Supports multiple languages and tone adjustments (Professional, Casual, Creative).',
+            desc: 'Smart translation and text polishing tool. Supports multiple languages and tone adjustments (Professional, Casual, Creative).'
           },
           storyteller: {
             title: 'STORYTELLER',
-            desc: 'Interactive AI story generator. Create immersive narratives based on genre, theme, and character inputs.',
+            desc: 'Interactive AI story generator. Create immersive narratives based on genre, theme, and character inputs.'
           },
           christmas: {
             title: 'CHRISTMAS MAGIC',
-            desc: 'An immersive 3D experience controlled by hand gestures. Uses MediaPipe for tracking and Three.js for rendering a magical interactive scene.',
+            desc: 'An immersive 3D experience controlled by hand gestures. Uses MediaPipe for tracking and Three.js for rendering a magical interactive scene.'
           },
           nexus: {
             title: 'NEXUS DASHBOARD',
-            desc: 'AI-Powered High-Frequency Trading Dashboard. Features predictive market analytics, real-time anomaly detection, and neural network-driven sentiment analysis.',
+            desc: 'AI-Powered High-Frequency Trading Dashboard. Features predictive market analytics, real-time anomaly detection, and neural network-driven sentiment analysis.'
           },
           market: {
             title: 'AETHER MARKET',
-            desc: 'Generative AI NFT Marketplace. Experience the first decentralized gallery where neural networks curate and generate unique 3D digital artifacts in real-time.',
+            desc: 'Generative AI NFT Marketplace. Experience the first decentralized gallery where neural networks curate and generate unique 3D digital artifacts in real-time.'
           },
           resume: {
             title: 'AI RESUME FORGE',
-            desc: 'Intelligent resume optimization tool. Analyzes your CV against job descriptions to increase ATS pass rates and interview chances.',
+            desc: 'Intelligent resume optimization tool. Analyzes your CV against job descriptions to increase ATS pass rates and interview chances.'
           },
           audit: {
             title: 'CODE GUARDIAN',
-            desc: 'Automated Smart Contract Auditor. Instantly detects vulnerabilities in Solidity code and provides secure fix suggestions.',
+            desc: 'Automated Smart Contract Auditor. Instantly detects vulnerabilities in Solidity code and provides secure fix suggestions.'
           },
           travel: {
             title: 'WANDERLUST AI',
-            desc: 'Personalized travel itinerary planner. Generates day-by-day schedules based on your interests, budget, and travel style.',
+            desc: 'Personalized travel itinerary planner. Generates day-by-day schedules based on your interests, budget, and travel style.'
           },
           aippt: {
             title: 'AI PPT GEN',
-            desc: 'Automated presentation generator. Transform topics into structured slide decks with AI-driven content expansion.',
+            desc: 'Automated presentation generator. Transform topics into structured slide decks with AI-driven content expansion.'
           }
         }
       },
@@ -186,7 +188,7 @@ export const useLanguageStore = defineStore('language', () => {
         }
       },
       common: {
-        loading: 'Loading...',
+        loading: 'Loading...'
       }
     },
     zh: {
@@ -196,7 +198,7 @@ export const useLanguageStore = defineStore('language', () => {
         about: '关于',
         skills: '技能',
         experience: '经历',
-        testimonials: '评价',
+        testimonials: '评价'
       },
       hero: {
         greeting: '你好，我是',
@@ -207,13 +209,14 @@ export const useLanguageStore = defineStore('language', () => {
         subtitle: '打造智能与沉浸并存的数字体验',
         valueProp: 'AI 驱动 · 交互创新 · 极致性能',
         scroll: '向下滚动探索',
-        cta: '查看作品',
+        cta: '查看作品'
       },
       about: {
         title: '关于我',
         bio: '专注于现代前端工程化与用户体验的构建者。具备扎实的计算机科学基础（GPA 3.15, 山东农业大学），擅长将 AI 模型、数据可视化与复杂交互逻辑落地为高性能 Web 应用。在 Packify 任职期间，我主导了 AI 包装设计平台的前端架构演进。独立负责了 AI 灵感库、营养成分表生成器、开发者 API 门户、价格页转化优化及 SEO 模版系统等核心模块的开发。攻克了复杂场景下的移动端适配与国际化难题，显著提升了产品的自然流量与用户转化率。始终坚持“性能优先”与“数据驱动”的开发理念。',
         proficient: '核心技术栈',
-        stack1: 'Vue 3 Ecosystem (Vite, Pinia), TypeScript, ECharts, Highmaps (LOCA), TensorFlow.js',
+        stack1:
+          'Vue 3 Ecosystem (Vite, Pinia), TypeScript, ECharts, Highmaps (LOCA), TensorFlow.js',
         familiar: '工程化与后端',
         stack2: 'Git Workflow, Webpack/Vite, Java (SpringBoot), Python, LLM Integration',
         education: {
@@ -226,16 +229,16 @@ export const useLanguageStore = defineStore('language', () => {
         honors: {
           title: '荣誉奖项',
           list: [
-             '蓝桥杯全国软件专业人才设计大赛：省级奖项 (Java 软件开发方向)',
-             '大学生软件设计大赛：省级二等奖',
-             '国家励志奖学金 & 校级一等奖学金'
+            '蓝桥杯全国软件专业人才设计大赛：省级奖项 (Java 软件开发方向)',
+            '大学生软件设计大赛：省级二等奖',
+            '国家励志奖学金 & 校级一等奖学金'
           ]
         },
         philosophy: '以用户体验为核心，以代码质量为底线，交付可靠的前端解决方案。',
         stats: {
           years: '从业年限',
           projects: '项目数',
-          awards: '奖项',
+          awards: '奖项'
         }
       },
       skills: {
@@ -245,52 +248,52 @@ export const useLanguageStore = defineStore('language', () => {
         title: '精选作品',
         viewProject: '查看项目',
         filters: {
-          all: '全部',
+          all: '全部'
         },
         items: {
           ingredients: {
             title: 'AI 配料表',
-            desc: '基于 Gemini 的智能标签生成。一键将简单文本转换为符合 FDA 标准的营养成分表和配料表。',
+            desc: '基于 Gemini 的智能标签生成。一键将简单文本转换为符合 FDA 标准的营养成分表和配料表。'
           },
           gemini: {
             title: 'Gemini 对话',
-            desc: '基于 Gemini 2.5 Flash 的高级对话界面。支持实时流式响应和上下文感知交互。',
+            desc: '基于 Gemini 2.5 Flash 的高级对话界面。支持实时流式响应和上下文感知交互。'
           },
           polyglot: {
             title: 'AI 多语言助手',
-            desc: '智能翻译和文本润色工具。支持多种语言和语气调整（专业、休闲、创意）。',
+            desc: '智能翻译和文本润色工具。支持多种语言和语气调整（专业、休闲、创意）。'
           },
           storyteller: {
             title: '故事讲述者',
-            desc: '交互式 AI 故事生成器。根据流派、主题和角色输入创建沉浸式叙事。',
+            desc: '交互式 AI 故事生成器。根据流派、主题和角色输入创建沉浸式叙事。'
           },
           christmas: {
             title: '圣诞魔法',
-            desc: '通过手势控制的沉浸式 3D 体验。使用 MediaPipe 进行追踪，Three.js 进行渲染。',
+            desc: '通过手势控制的沉浸式 3D 体验。使用 MediaPipe 进行追踪，Three.js 进行渲染。'
           },
           nexus: {
             title: 'Nexus 仪表盘',
-            desc: '面向高频交易的下一代分析平台。具有实时 WebGL 图表、亚毫秒级数据更新和可定制工作区。',
+            desc: '面向高频交易的下一代分析平台。具有实时 WebGL 图表、亚毫秒级数据更新和可定制工作区。'
           },
           market: {
             title: 'Aether 市场',
-            desc: '具有 3D 沉浸式画廊模式的去中心化 NFT 市场。基于以太坊构建，集成 IPFS 和自定义智能合约。',
+            desc: '具有 3D 沉浸式画廊模式的去中心化 NFT 市场。基于以太坊构建，集成 IPFS 和自定义智能合约。'
           },
           resume: {
             title: 'AI 简历锻造师',
-            desc: '智能简历优化工具。针对职位描述分析您的简历，提高 ATS 通过率和面试机会。',
+            desc: '智能简历优化工具。针对职位描述分析您的简历，提高 ATS 通过率和面试机会。'
           },
           audit: {
             title: '代码卫士',
-            desc: '自动化智能合约审计员。即时检测 Solidity 代码中的漏洞并提供安全修复建议。',
+            desc: '自动化智能合约审计员。即时检测 Solidity 代码中的漏洞并提供安全修复建议。'
           },
           travel: {
             title: '漫游 AI',
-            desc: '个性化旅行行程规划师。根据您的兴趣、预算和旅行风格生成每日详细行程。',
+            desc: '个性化旅行行程规划师。根据您的兴趣、预算和旅行风格生成每日详细行程。'
           },
           aippt: {
             title: 'AI PPT 生成器',
-            desc: '自动化演示文稿生成器。通过 AI 内容扩展将主题转换为结构化的幻灯片。',
+            desc: '自动化演示文稿生成器。通过 AI 内容扩展将主题转换为结构化的幻灯片。'
           }
         }
       },
@@ -370,7 +373,7 @@ export const useLanguageStore = defineStore('language', () => {
         }
       },
       common: {
-        loading: '加载中...',
+        loading: '加载中...'
       }
     }
   };

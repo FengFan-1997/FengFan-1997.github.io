@@ -95,7 +95,11 @@ const testimonials = computed(() => [
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.04), transparent 40%);
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.04),
+    transparent 40%
+  );
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -163,11 +167,11 @@ const testimonials = computed(() => [
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  
+
   .section-title {
     font-size: 2.5rem;
   }
-  
+
   .testimonial-card {
     padding: 30px;
   }

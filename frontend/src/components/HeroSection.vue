@@ -1,7 +1,9 @@
 <template>
   <section class="section hero-section">
     <div class="hero-content">
-      <h1 class="logo-text" ref="logoRef">{{ t('hero.welcome') }}<span class="highlight">{{ t('hero.workshop') }}</span></h1>
+      <h1 class="logo-text" ref="logoRef">
+        {{ t('hero.welcome') }}<span class="highlight">{{ t('hero.workshop') }}</span>
+      </h1>
       <p class="subtitle" ref="subtitleRef">{{ t('hero.subtitle') }}</p>
       <p class="value-prop">{{ t('hero.valueProp') }}</p>
       <div class="hero-tags">
@@ -9,7 +11,7 @@
         <span class="tag">AI Native</span>
         <span class="tag">Interactive</span>
       </div>
-      
+
       <!-- Interactive 3D Core -->
       <HeroInteractive />
     </div>
@@ -34,25 +36,25 @@ const subtitleRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   // Hero Animations
-  gsap.fromTo(logoRef.value, 
+  gsap.fromTo(
+    logoRef.value,
     { y: 50, opacity: 0 },
     { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out', delay: 0.5 }
   );
-  
-  gsap.fromTo(subtitleRef.value, 
+
+  gsap.fromTo(
+    subtitleRef.value,
     { y: 30, opacity: 0 },
     { y: 0, opacity: 1, duration: 1.5, ease: 'power3.out', delay: 0.8 }
   );
 
-  gsap.fromTo('.hero-tags .tag',
+  gsap.fromTo(
+    '.hero-tags .tag',
     { y: 20, opacity: 0 },
     { y: 0, opacity: 1, duration: 0.8, stagger: 0.2, ease: 'power2.out', delay: 1.2 }
   );
-  
-  gsap.fromTo('.scroll-hint',
-    { opacity: 0 },
-    { opacity: 1, duration: 1, delay: 2 }
-  );
+
+  gsap.fromTo('.scroll-hint', { opacity: 0 }, { opacity: 1, duration: 1, delay: 2 });
 });
 </script>
 
@@ -149,11 +151,11 @@ onMounted(() => {
   .logo-text {
     font-size: 3rem;
   }
-  
+
   .subtitle {
     font-size: 1.2rem;
   }
-  
+
   .value-prop {
     font-size: 1rem;
   }

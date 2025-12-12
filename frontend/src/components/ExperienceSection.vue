@@ -119,13 +119,25 @@ const experience = computed(() => [
   animation: slideIn 0.5s ease-out forwards;
 }
 
-.timeline-item:nth-child(1) { animation-delay: 0.1s; }
-.timeline-item:nth-child(2) { animation-delay: 0.3s; }
-.timeline-item:nth-child(3) { animation-delay: 0.5s; }
+.timeline-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.timeline-item:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.timeline-item:nth-child(3) {
+  animation-delay: 0.5s;
+}
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .timeline-item:last-child {
@@ -163,8 +175,14 @@ const experience = computed(() => [
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(2.5); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
 }
 
 .glass-card {
@@ -186,7 +204,11 @@ const experience = computed(() => [
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.04), transparent 40%);
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.04),
+    transparent 40%
+  );
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -252,25 +274,25 @@ const experience = computed(() => [
   .section {
     padding: 80px 20px 40px;
   }
-  
+
   .timeline::before {
     left: 19px;
   }
-  
+
   .timeline-dot-wrapper {
     left: 10px;
     top: 24px;
   }
-  
+
   .timeline-item {
     padding-left: 50px;
     margin-bottom: 40px;
   }
-  
+
   .role {
     font-size: 1.4rem;
   }
-  
+
   .glass-card {
     padding: 24px;
   }

@@ -1,5 +1,6 @@
 const API_KEY = 'AIzaSyATu5tyd5lMp-3FPzCgBmdSWgIuyUSAx2M';
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const API_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 type SupplementTableItem = {
   name: string;
@@ -47,16 +48,16 @@ const callAI = async (prompt: string) => {
       {
         parts: [
           {
-            text: prompt,
-          },
-        ],
-      },
-    ],
+            text: prompt
+          }
+        ]
+      }
+    ]
   };
   const response = await fetch(`${API_URL}?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(promptBody),
+    body: JSON.stringify(promptBody)
   });
   if (!response.ok) {
     const errorText = await response.text();
@@ -69,7 +70,7 @@ const callAI = async (prompt: string) => {
     const parsed = JSON.parse(jsonMatch[0]);
     return {
       sections: Array.isArray(parsed.sections) ? parsed.sections : [],
-      layoutType: parsed.layoutType || 'standard',
+      layoutType: parsed.layoutType || 'standard'
     };
   }
   throw new Error('Invalid JSON format');
@@ -77,7 +78,7 @@ const callAI = async (prompt: string) => {
 
 export const buildLabelSectionsUnified = async (
   userText: string,
-  productType: string,
+  productType: string
 ): Promise<{
   sections: Section[];
   layoutType: 'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts';
@@ -110,7 +111,7 @@ export const buildLabelSectionsUnified = async (
         { title: 'WARNINGS', content: { do_not_use: ['...'] } },
         {
           title: 'DIRECTIONS',
-          content: { groups: [{ age: 'Adults', dose: '2 tablets', frequency: 'every 6 hours' }] },
+          content: { groups: [{ age: 'Adults', dose: '2 tablets', frequency: 'every 6 hours' }] }
         },
         { title: 'OTHER INFORMATION', content: ['...'] },
         { title: 'INACTIVE INGREDIENTS', content: '...' },
@@ -118,8 +119,8 @@ export const buildLabelSectionsUnified = async (
         { title: 'NET CONTENT', content: '...' },
         { title: 'NDC', content: '...' },
         { title: 'LOT NUMBER', content: '...' },
-        { title: 'EXPIRATION DATE', content: '...' },
-      ],
+        { title: 'EXPIRATION DATE', content: '...' }
+      ]
     };
     jsonStructure = JSON.stringify(js);
   } else if (productTypeUpper === 'DIETARY SUPPLEMENT') {
@@ -136,16 +137,23 @@ export const buildLabelSectionsUnified = async (
     jsonStructure = JSON.stringify({
       layoutType: 'supplement_facts',
       sections: [
-        { title: 'SERVE HEADER', content: { servingSize: '...', servingsPerContainer: '...' }, isHeader: true },
-        { title: 'SUPPLEMENT FACTS TABLE', content: [{ name: '...', amount: '...', dv: '*' }], isTable: true },
+        {
+          title: 'SERVE HEADER',
+          content: { servingSize: '...', servingsPerContainer: '...' },
+          isHeader: true
+        },
+        {
+          title: 'SUPPLEMENT FACTS TABLE',
+          content: [{ name: '...', amount: '...', dv: '*' }],
+          isTable: true
+        },
         { title: 'OTHER INGREDIENTS', content: '...' },
         { title: 'SUGGESTED USE', content: '...' },
         { title: 'WARNINGS', content: '...' },
         { title: 'MANUFACTURER', content: '...' },
-        { title: 'NET CONTENT', content: '...' },
-      ],
+        { title: 'NET CONTENT', content: '...' }
+      ]
     });
-    
   } else if (productTypeUpper === 'COSMETIC') {
     systemInstruction = `FDA/INCI Cosmetic Label Expert. Convert the user's text (${userText}) into a strictly compliant Cosmetic Ingredient List JSON.
     
@@ -174,11 +182,9 @@ export const buildLabelSectionsUnified = async (
       sections: [
         { title: 'INGREDIENTS', content: 'Aqua, Glycerin, ...' },
         { title: 'CONTAINS', content: 'Cinnamal, Peanuts, ...' },
-        { title: 'MAY CONTAIN', content: 'Titanium Dioxide (CI 77891), ...' },
-      ],
+        { title: 'MAY CONTAIN', content: 'Titanium Dioxide (CI 77891), ...' }
+      ]
     });
-
-    
   } else if (productTypeUpper === 'FOOD') {
     systemInstruction = `FDA Food Label Expert. Convert the user's text (${userText}) into a strictly compliant Food Ingredient List JSON.
     
@@ -197,10 +203,9 @@ export const buildLabelSectionsUnified = async (
       layoutType: 'standard',
       sections: [
         { title: 'INGREDIENTS', content: '...' },
-        { title: 'CONTAINS', content: '...' },
-      ],
+        { title: 'CONTAINS', content: '...' }
+      ]
     });
-    
   } else {
     systemInstruction = `Convert the user's text (${userText}) into the Standard JSON format.
     
@@ -227,15 +232,14 @@ export const buildLabelSectionsUnified = async (
             totalFat: { amount: '...g', dv: '...%' },
             sodium: { amount: '...mg', dv: '...%' },
             totalCarbohydrate: { amount: '...g', dv: '...%' },
-            protein: '...g',
+            protein: '...g'
           },
-          isTable: true,
+          isTable: true
         },
         { title: 'INGREDIENTS', content: '...' },
-        { title: 'CONTAINS', content: '...' },
-      ],
+        { title: 'CONTAINS', content: '...' }
+      ]
     });
-    
   }
 
   const prompt = `${systemInstruction}\nReturn ONLY the JSON object conforming to this structure: ${jsonStructure}`;
@@ -244,6 +248,8 @@ export const buildLabelSectionsUnified = async (
   const sections = Array.isArray(parsedSections) ? parsedSections : [];
   return {
     sections,
-    layoutType: (layoutType as 'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts') || 'standard',
+    layoutType:
+      (layoutType as 'drug_facts' | 'supplement_facts' | 'standard' | 'nutrition_facts') ||
+      'standard'
   };
 };

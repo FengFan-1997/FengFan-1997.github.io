@@ -1,12 +1,17 @@
 <template>
-  <div class="live2d-widget-container" ref="container" :class="{ 'is-angry': isAngry, 'is-dizzy': isDizzy, 'is-head-hit': isHeadHit }">
-    <!-- The widget script appends elements to body.
-         We will move the #waifu element here after initialization. -->
+  <div
+    class="live2d-widget-container"
+    ref="container"
+    :class="{ 'is-angry': isAngry, 'is-dizzy': isDizzy, 'is-head-hit': isHeadHit }"
+  >
+    <!-- Widget will be injected here -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, toRefs } from 'vue';
+import { initWidget, showMessage } from '../live2d-widget/widget';
+import type { ModelManager } from '../services/Live2DModelManager';
 
 const emit = defineEmits(['toggle-chat']);
 
@@ -27,6 +32,7 @@ const props = defineProps<{
 const { isAngry, isDizzy, isHeadHit } = toRefs(props);
 
 const container = ref<HTMLElement | null>(null);
+const modelMgr = ref<ModelManager | null>(null);
 
 // Expose toggleChat to window so it can be called from Live2D tools
 const toggleChat = () => {
@@ -34,20 +40,81 @@ const toggleChat = () => {
   emit('toggle-chat');
 };
 
-// Make toggleChat available globally for the custom tool
-(window as any).toggleChat = toggleChat;
+// --- Watchers for Agent Integration ---
 
-// Watch for props changes to trigger Live2D expressions
-watch(() => props.isAngry, (val) => {
-  if (val) (window as any).loadRandModel?.(); // Just an example, ideally we load specific expression
-});
-// Note: waifu-tips.js usually handles random interactions.
-// We can extend this to call specific motions if we reverse-engineer the model.js.
-// For now, we trust the agent's message bubble to convey the emotion.
+watch(
+  () => props.message,
+  (newMsg) => {
+    if (newMsg) {
+      showMessage(newMsg, 4000, 10);
+      // Trigger talking motion if available
+      if (modelMgr.value) {
+        modelMgr.value.startMotion('talking');
+        // If 'talking' motion doesn't exist, it might just ignore or we can map to a random motion
+        // modelMgr.value.startMotion('tap_body');
+      }
+    }
+  }
+);
+
+watch(
+  () => props.isAngry,
+  (val) => {
+    if (val && modelMgr.value) {
+      modelMgr.value.setExpression('f03'); // Assuming f03 is angry
+      modelMgr.value.startMotion('shake');
+    } else if (!val && modelMgr.value) {
+      modelMgr.value.setExpression('f01'); // Reset to normal
+    }
+  }
+);
+
+watch(
+  () => props.isHappy,
+  (val) => {
+    if (val && modelMgr.value) {
+      modelMgr.value.setExpression('f02'); // Assuming f02 is happy
+    } else if (!val && modelMgr.value) {
+      modelMgr.value.setExpression('f01');
+    }
+  }
+);
+
+watch(
+  () => props.isPouting,
+  (val) => {
+    if (val && modelMgr.value) {
+      modelMgr.value.setExpression('f05'); // Assuming f05 is pout/sad
+    } else if (!val && modelMgr.value) {
+      modelMgr.value.setExpression('f01');
+    }
+  }
+);
+
+watch(
+  () => props.isConfused,
+  (val) => {
+    if (val && modelMgr.value) {
+      modelMgr.value.setExpression('f06');
+    } else if (!val && modelMgr.value) {
+      modelMgr.value.setExpression('f01');
+    }
+  }
+);
+
+watch(
+  () => props.isDizzy,
+  (val) => {
+    if (val && modelMgr.value) {
+      modelMgr.value.setExpression('f07');
+    } else if (!val && modelMgr.value) {
+      modelMgr.value.setExpression('f01');
+    }
+  }
+);
 
 const loadScript = (src: string) => {
   return new Promise((resolve, reject) => {
-    // Check if script is already loaded to avoid duplicates
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve(true);
       return;
@@ -60,98 +127,46 @@ const loadScript = (src: string) => {
   });
 };
 
-const initWidget = async () => {
+const initLive2D = async () => {
   try {
-    // Load the autoload script from public assets
-    await loadScript('/live2d/dist/autoload.js');
-    
-    if ((window as any).initLive2DWidget) {
-      // Initialize with configuration
-      (window as any).initLive2DWidget({
-        // Set basePath to point to public assets
-        basePath: '/live2d/dist/',
-        // Configuration options
-        // We can customize modelId, tools, etc. here
-        // Added 'chat' tool which we'll implement via CSS/JS injection if needed, 
-        // or hijack an existing tool icon. 
-        // For now, let's use 'info' as the chat trigger or add a custom one if the library supports it.
-        // The library renders tools based on this array.
-        // We will inject a custom button logic after init.
-        tools: ['hitokoto', 'asteroids', 'switch-model', 'switch-texture', 'photo', 'info', 'quit'],
-        // You can enable dragging if desired
-        drag: true 
-      });
-      
-      // Inject custom chat button logic and move widget
-      injectChatButton();
-    } else {
-      console.error('initLive2DWidget is not defined on window');
+    // 1. Load Core SDK
+    await loadScript('/live2d/core/live2d.min.js');
+
+    // 2. Initialize Widget
+    if (container.value) {
+      modelMgr.value = await initWidget(
+        {
+          waifuPath: '/live2d/waifu-tips.json',
+          cdnPath: '/live2d/',
+          cubism2Path: '/live2d/core/live2d.min.js',
+          // Updated tools list: Chat (Agent), Quote (Hitokoto), Model, Texture, Photo
+          tools: ['chat', 'hitokoto', 'switch-model', 'switch-texture', 'photo'],
+          drag: true,
+          logLevel: 'none',
+          onChat: toggleChat
+        },
+        container.value
+      );
     }
   } catch (error) {
     console.error('Error loading Live2D widget:', error);
   }
 };
 
-const injectChatButton = () => {
-  // Wait for the widget to render the tool bar and waifu element
-  const checkTools = setInterval(() => {
-    const toolBar = document.getElementById('waifu-tool');
-    const waifu = document.getElementById('waifu');
-    
-    if (toolBar && waifu) {
-      clearInterval(checkTools);
-      
-      // Move waifu to container if container exists
-      if (container.value) {
-        container.value.appendChild(waifu);
-        // Reset fixed positioning to allow absolute positioning within container
-        waifu.style.position = 'absolute';
-        waifu.style.bottom = '0';
-        waifu.style.left = '0';
-        waifu.style.transform = 'none'; // Remove default transform if needed, or adjust
-      }
-
-      // Create chat button
-      const chatBtn = document.createElement('span');
-      chatBtn.className = 'fa fa-lg fa-comment'; // FontAwesome comment icon
-      chatBtn.style.cursor = 'pointer';
-      chatBtn.title = 'Chat with Agent';
-      chatBtn.onclick = () => {
-        toggleChat();
-      };
-      
-      // Insert as the first item or wherever preferred
-      toolBar.insertBefore(chatBtn, toolBar.firstChild);
-    }
-  }, 500);
-};
-
-// Watch for messages from parent
-watch(() => props.message, (newMsg) => {
-  if (newMsg && (window as any).showMessage) {
-    (window as any).showMessage(newMsg, 4000, 10);
-  }
-});
-
 const cleanup = () => {
-  // Remove the widget elements from DOM
+  // ModelManager handles cleanup if we call destroy, but currently we just remove DOM
+  // Ideally we should add a destroy method to ModelManager
   const waifu = document.getElementById('waifu');
   if (waifu) waifu.remove();
-  
-  const waifuToggle = document.getElementById('waifu-toggle');
-  if (waifuToggle) waifuToggle.remove();
-}
+};
 
 onMounted(() => {
-  // Initialize widget when component mounts
-  // Use a small timeout to ensure DOM is ready
   setTimeout(() => {
-    initWidget();
+    initLive2D();
   }, 100);
 });
 
 onUnmounted(() => {
-  // Clean up when component unmounts (e.g. navigating away)
   cleanup();
 });
 </script>
@@ -163,49 +178,164 @@ onUnmounted(() => {
   height: 100%;
 }
 
-/* Force overrides for waifu widget to ensure it stays inside our container */
+/* Deep styles for the widget elements */
 :deep(#waifu) {
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  z-index: 1 !important;
-  transform: none !important;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  transform: translateY(0);
+  transition:
+    transform 0.3s ease-in-out,
+    bottom 3s ease-in-out;
+}
+
+:deep(#waifu-tips) {
+  animation: waifu-shake 50s ease-in-out 5s infinite;
+  background-color: rgba(236, 217, 188, 0.5);
+  border: 1px solid rgba(224, 186, 140, 0.62);
+  border-radius: 12px;
+  box-shadow: 0 3px 15px 2px rgba(191, 158, 118, 0.2);
+  font-size: 14px;
+  line-height: 24px;
+  margin: -30px 20px;
+  min-height: 70px;
+  opacity: 0;
+  overflow: hidden;
+  padding: 5px 10px;
+  position: absolute;
+  text-overflow: ellipsis;
+  transition: opacity 1s;
+  width: 250px;
+  word-break: break-all;
+  pointer-events: none; /* Let clicks pass through */
+}
+
+:deep(#waifu-tips.waifu-tips-active) {
+  opacity: 1;
+  transition: opacity 0.2s;
 }
 
 :deep(#waifu-tool) {
-  top: 0 !important;
-  right: -20px !important;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  opacity: 0;
+  position: absolute;
+  right: -20px; /* Adjust for better positioning */
+  top: 70px;
+  transition: opacity 1s;
 }
 
-/* Add shake animation for angry state */
-@keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+:deep(#waifu:hover #waifu-tool) {
+  opacity: 1;
 }
 
+:deep(#waifu-tool svg) {
+  cursor: pointer;
+  display: block;
+  fill: #7b8c9d;
+  height: 25px;
+  width: 25px;
+  transition: fill 0.3s;
+}
+
+:deep(#waifu-tool svg:hover) {
+  fill: #0684bd;
+}
+
+:deep(#live2d) {
+  cursor: grab;
+  /* width and height are set by canvas attributes but CSS can override */
+  width: 300px;
+  height: 300px;
+}
+
+:deep(#live2d:active) {
+  cursor: grabbing;
+}
+
+@keyframes waifu-shake {
+  2% {
+    transform: translate(0.5px, -1.5px) rotate(-0.5deg);
+  }
+  4% {
+    transform: translate(0.5px, 1.5px) rotate(1.5deg);
+  }
+  6% {
+    transform: translate(1.5px, 1.5px) rotate(1.5deg);
+  }
+  8% {
+    transform: translate(2.5px, 1.5px) rotate(0.5deg);
+  }
+  10% {
+    transform: translate(0.5px, 2.5px) rotate(0.5deg);
+  }
+  /* ... simplified shake ... */
+  50% {
+    transform: translate(-1.5px, 1.5px) rotate(0.5deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+/* Angry shake override */
 .is-angry :deep(#waifu) {
-  animation: shake 0.5s;
-  animation-iteration-count: infinite; 
+  animation: shake 0.5s infinite;
 }
 
-/* Add squash animation for head hit */
-@keyframes squash {
-  0% { transform: scale(1, 1) translateY(0); }
-  50% { transform: scale(1.1, 0.8) translateY(20px); }
-  100% { transform: scale(1, 1) translateY(0); }
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
 }
 
+/* Head hit squash */
 .is-head-hit :deep(#waifu) {
   animation: squash 0.5s ease-out;
-  animation-iteration-count: 1;
+}
+
+@keyframes squash {
+  0% {
+    transform: scale(1, 1) translateY(0);
+  }
+  50% {
+    transform: scale(1.1, 0.9) translateY(5px);
+  }
+  100% {
+    transform: scale(1, 1) translateY(0);
+  }
 }
 </style>

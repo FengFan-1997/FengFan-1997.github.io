@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="bg-gradient"></div>
     <div class="bg-noise"></div>
-    
+
     <div class="planner-card">
       <header class="header">
         <div class="header-left">
@@ -26,7 +26,7 @@
                 <input v-model="destination" placeholder="e.g. Tokyo, Japan" />
               </div>
             </div>
-            
+
             <div class="form-group">
               <label>Duration (Days)</label>
               <div class="input-wrapper">
@@ -34,15 +34,12 @@
                 <input type="number" v-model="duration" min="1" max="14" />
               </div>
             </div>
-            
+
             <div class="form-group">
               <label>Budget</label>
-              <LabelTypeSelect 
-                v-model="budgetIndex" 
-                :options="budgetOptions" 
-              />
+              <LabelTypeSelect v-model="budgetIndex" :options="budgetOptions" />
             </div>
-            
+
             <div class="form-group full-width">
               <label>Interests</label>
               <div class="input-wrapper">
@@ -51,13 +48,15 @@
               </div>
             </div>
           </div>
-          
+
           <div class="action-area">
-            <button class="generate-btn" @click="generateItinerary" :disabled="isLoading || !destination">
+            <button
+              class="generate-btn"
+              @click="generateItinerary"
+              :disabled="isLoading || !destination"
+            >
               <span v-if="!isLoading">Plan My Trip</span>
-              <span v-else class="loading-text">
-                Planning <span class="dots">...</span>
-              </span>
+              <span v-else class="loading-text"> Planning <span class="dots">...</span> </span>
             </button>
           </div>
         </div>
@@ -72,7 +71,7 @@
               <i class="fas fa-redo"></i> Plan New Trip
             </button>
           </div>
-          
+
           <div class="timeline-container">
             <div class="timeline">
               <div v-for="(day, index) in itinerary.days" :key="index" class="day-card">
@@ -83,7 +82,11 @@
                 <div class="day-content">
                   <h3>{{ day.theme }}</h3>
                   <div class="activities-list">
-                    <div v-for="(activity, aIdx) in day.activities" :key="aIdx" class="activity-item">
+                    <div
+                      v-for="(activity, aIdx) in day.activities"
+                      :key="aIdx"
+                      class="activity-item"
+                    >
                       <div class="time-badge">{{ activity.time }}</div>
                       <div class="activity-desc">{{ activity.desc }}</div>
                     </div>
@@ -146,7 +149,10 @@ const generateItinerary = async () => {
 
   try {
     const response = await generateContent(prompt);
-    let cleanText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    let cleanText = response.text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
     // Sometimes AI adds text before/after JSON
     const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -159,19 +165,19 @@ const generateItinerary = async () => {
     itinerary.value = {
       days: [
         {
-          theme: "City Exploration",
+          theme: 'City Exploration',
           activities: [
-            { time: "Morning", desc: "Visit the central market and try local coffee." },
-            { time: "Afternoon", desc: "Walking tour of the historic district." },
-            { time: "Evening", desc: "Dinner at a rooftop restaurant with city views." }
+            { time: 'Morning', desc: 'Visit the central market and try local coffee.' },
+            { time: 'Afternoon', desc: 'Walking tour of the historic district.' },
+            { time: 'Evening', desc: 'Dinner at a rooftop restaurant with city views.' }
           ]
         },
         {
-          theme: "Nature & Relaxation",
+          theme: 'Nature & Relaxation',
           activities: [
-            { time: "Morning", desc: "Hike to the viewpoint." },
-            { time: "Afternoon", desc: "Picnic in the botanical gardens." },
-            { time: "Evening", desc: "Sunset river cruise." }
+            { time: 'Morning', desc: 'Hike to the viewpoint.' },
+            { time: 'Afternoon', desc: 'Picnic in the botanical gardens.' },
+            { time: 'Evening', desc: 'Sunset river cruise.' }
           ]
         }
       ]
@@ -598,7 +604,7 @@ input:focus {
   .page-container {
     padding: 0;
   }
-  
+
   .planner-card {
     border-radius: 0;
     border: none;
@@ -638,11 +644,11 @@ input:focus {
   .day-marker {
     left: -36px;
   }
-  
+
   .day-card {
     padding-left: 20px;
   }
-  
+
   .activity-item {
     flex-direction: column;
     gap: 8px;

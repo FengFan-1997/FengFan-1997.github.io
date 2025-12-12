@@ -21,7 +21,7 @@ export const logoutUser = () => {
   localStorage.removeItem(STORAGE_KEY_ID);
   localStorage.removeItem(STORAGE_KEY_TOKEN);
   // Reset to guest
-  getUserId(); 
+  getUserId();
   window.location.reload();
 };
 
@@ -31,12 +31,12 @@ export const loginUser = async (username: string, password: string) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
   });
-  
+
   if (!response.ok) {
     const data = await response.json();
     throw new Error(data.error || 'Login failed');
   }
-  
+
   const data = await response.json();
   localStorage.setItem(STORAGE_KEY_ID, data.userId);
   localStorage.setItem(STORAGE_KEY_TOKEN, data.token || 'dummy_token'); // If we had JWT
@@ -49,12 +49,12 @@ export const registerUser = async (username: string, password: string, name: str
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password, name })
   });
-  
+
   if (!response.ok) {
     const data = await response.json();
     throw new Error(data.error || 'Registration failed');
   }
-  
+
   const data = await response.json();
   localStorage.setItem(STORAGE_KEY_ID, data.userId);
   localStorage.setItem(STORAGE_KEY_TOKEN, data.token || 'dummy_token');

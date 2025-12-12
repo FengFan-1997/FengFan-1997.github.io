@@ -29,8 +29,8 @@
             <div class="input-group">
               <label>Theme / Prompt</label>
               <div class="textarea-wrapper">
-                <textarea 
-                  v-model="prompt" 
+                <textarea
+                  v-model="prompt"
                   placeholder="E.g., A robot discovering emotions..."
                   rows="4"
                 ></textarea>
@@ -44,11 +44,13 @@
           </div>
 
           <div class="action-area">
-            <button @click="generateStory" :disabled="isLoading || !prompt.trim()" class="generate-btn">
+            <button
+              @click="generateStory"
+              :disabled="isLoading || !prompt.trim()"
+              class="generate-btn"
+            >
               <span v-if="!isLoading">Generate Story</span>
-              <span v-else class="loading-text">
-                Weaving Tale <span class="dots">...</span>
-              </span>
+              <span v-else class="loading-text"> Weaving Tale <span class="dots">...</span> </span>
             </button>
           </div>
         </div>
@@ -61,11 +63,11 @@
             <p>Your story awaits...</p>
             <span class="sub-placeholder">Enter a prompt to begin the journey</span>
           </div>
-          
+
           <div v-else class="story-content">
             <div v-if="storyTitle" class="story-title">{{ storyTitle }}</div>
             <div class="story-text" v-html="formattedStory"></div>
-            
+
             <div v-if="isLoading" class="loading-indicator">
               <div class="quill-pen">
                 <i class="fas fa-pen-nib"></i>
@@ -96,7 +98,7 @@ const genreOptions = [
   { label: 'Mystery', value: 3, gtm: 'genre_mystery' },
   { label: 'Horror', value: 4, gtm: 'genre_horror' },
   { label: 'Romance', value: 5, gtm: 'genre_romance' },
-  { label: 'Cyberpunk', value: 6, gtm: 'genre_cyberpunk' },
+  { label: 'Cyberpunk', value: 6, gtm: 'genre_cyberpunk' }
 ];
 
 const genre = computed(() => {
@@ -106,7 +108,7 @@ const genre = computed(() => {
     3: 'Mystery',
     4: 'Horror',
     5: 'Romance',
-    6: 'Cyberpunk',
+    6: 'Cyberpunk'
   };
   return map[genreValue.value];
 });
@@ -132,7 +134,7 @@ const generateStory = async () => {
 
   try {
     const response = await generateContent(fullPrompt);
-    
+
     if (response.error) {
       story.value = `Error: ${response.error}`;
     } else {
@@ -146,9 +148,9 @@ const generateStory = async () => {
       }
     }
   } catch {
-    story.value = "An error occurred while generating the story.";
+    story.value = 'An error occurred while generating the story.';
   }
-  
+
   isLoading.value = false;
 };
 </script>
@@ -304,7 +306,8 @@ const generateStory = async () => {
   font-weight: 600;
 }
 
-.textarea-wrapper, input[type="text"] {
+.textarea-wrapper,
+input[type='text'] {
   width: 100%;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -330,7 +333,8 @@ textarea {
   line-height: 1.5;
 }
 
-.textarea-wrapper:focus-within, input[type="text"]:focus {
+.textarea-wrapper:focus-within,
+input[type='text']:focus {
   background: #ffffff;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
@@ -419,8 +423,14 @@ textarea {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .story-title {
@@ -456,11 +466,26 @@ textarea {
 }
 
 @keyframes write {
-  0% { transform: rotate(0deg) translate(0, 0); opacity: 0.5; }
-  25% { transform: rotate(-10deg) translate(-5px, 5px); opacity: 1; }
-  50% { transform: rotate(0deg) translate(0, 0); opacity: 0.5; }
-  75% { transform: rotate(10deg) translate(5px, 5px); opacity: 1; }
-  100% { transform: rotate(0deg) translate(0, 0); opacity: 0.5; }
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+    opacity: 0.5;
+  }
+  25% {
+    transform: rotate(-10deg) translate(-5px, 5px);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(0deg) translate(0, 0);
+    opacity: 0.5;
+  }
+  75% {
+    transform: rotate(10deg) translate(5px, 5px);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(0deg) translate(0, 0);
+    opacity: 0.5;
+  }
 }
 
 /* Deep selector for LabelTypeSelect override */
@@ -504,7 +529,7 @@ textarea {
   .page-container {
     padding: 0;
   }
-  
+
   .story-container {
     width: 100%;
     height: 100vh;
@@ -512,12 +537,12 @@ textarea {
     border: none;
     max-width: none;
   }
-  
+
   .content-wrapper {
     flex-direction: column;
     overflow-y: auto;
   }
-  
+
   .sidebar {
     width: 100%;
     border-right: none;
@@ -529,21 +554,21 @@ textarea {
     padding: 24px;
     gap: 20px;
   }
-  
+
   .action-area {
     padding: 20px;
   }
-  
+
   .story-display {
     padding: 30px 20px;
     height: auto;
     min-height: 400px;
   }
-  
+
   .story-title {
     font-size: 28px;
   }
-  
+
   .story-text {
     font-size: 16px;
   }

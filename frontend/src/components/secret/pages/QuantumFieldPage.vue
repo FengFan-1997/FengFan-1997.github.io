@@ -1,7 +1,7 @@
 <template>
   <div class="quantum-page">
     <canvas ref="canvas" class="quantum-canvas"></canvas>
-    
+
     <div class="overlay">
       <h1>Quantum Connection</h1>
       <p>Entangled forever in space and time</p>
@@ -49,7 +49,7 @@ class Particle {
     this.color = '#00f2ff';
     this.baseX = this.x;
     this.baseY = this.y;
-    this.density = (Math.random() * 30) + 1;
+    this.density = Math.random() * 30 + 1;
   }
 
   update(width: number, height: number) {
@@ -65,18 +65,18 @@ class Particle {
     const dy = mouse.y - this.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     const maxDistance = 150;
-    
+
     if (distance < maxDistance) {
       const forceDirectionX = dx / distance;
       const forceDirectionY = dy / distance;
       const force = (maxDistance - distance) / maxDistance;
       const directionX = forceDirectionX * force * this.density;
       const directionY = forceDirectionY * force * this.density;
-      
+
       this.x -= directionX;
       this.y -= directionY;
     } else {
-      // Gentle return to original velocity vector if too perturbed? 
+      // Gentle return to original velocity vector if too perturbed?
       // Actually standard movement is fine.
     }
   }
@@ -137,7 +137,7 @@ onMounted(() => {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < 100) {
-          const opacityValue = 1 - (distance / 100);
+          const opacityValue = 1 - distance / 100;
           ctx.strokeStyle = 'rgba(0, 242, 255,' + opacityValue + ')';
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -152,7 +152,7 @@ onMounted(() => {
   const animate = () => {
     if (!ctx || !canvas.value) return;
     ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-    
+
     for (let i = 0; i < particles.length; i++) {
       particles[i].update(canvas.value.width, canvas.value.height);
       particles[i].draw(ctx);

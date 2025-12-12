@@ -4,8 +4,8 @@
       <div class="section-header">
         <h2 class="section-title">{{ t('projects.title') }}</h2>
         <div class="project-filter">
-          <button 
-            v-for="filter in filters" 
+          <button
+            v-for="filter in filters"
             :key="filter"
             class="filter-btn"
             :class="{ active: activeFilter === filter }"
@@ -15,30 +15,30 @@
           </button>
         </div>
       </div>
-      
+
       <div class="projects-list">
-        <div 
-          v-for="(item, index) in filteredProjects" 
+        <div
+          v-for="(item, index) in filteredProjects"
           :key="item.id"
           class="project-card"
-          :class="{ 'reversed': index % 2 !== 0 }"
+          :class="{ reversed: index % 2 !== 0 }"
           ref="projectCardsRef"
           @mouseenter="onHover(index)"
           @mouseleave="onLeave(index)"
           @click="onCardClick(item.route)"
         >
           <div class="card-visual-container" :style="getCardStyle(index)">
-            <img 
-              :src="item.image" 
+            <img
+              :src="item.image"
               :srcset="getSrcSet(item.image)"
               sizes="(max-width: 768px) 400px, (max-width: 1200px) 800px, 1200px"
-              class="plain-image" 
-              loading="lazy" 
+              class="plain-image"
+              loading="lazy"
               decoding="async"
-              :alt="item.title" 
+              :alt="item.title"
             />
           </div>
-          
+
           <div class="card-content">
             <div class="card-header">
               <span class="card-number">0{{ index + 1 }}</span>
@@ -80,49 +80,54 @@ const cardProgress = ref<number[]>([]); // Store scroll progress for each card
 const hoveredIndex = ref<number | null>(null);
 
 const navItems = computed(() => [
-  { 
+  {
     id: 'ingredients',
-    title: t('projects.items.ingredients.title'), 
-    desc: t('projects.items.ingredients.desc'), 
+    title: t('projects.items.ingredients.title'),
+    desc: t('projects.items.ingredients.desc'),
     route: '/ingredient',
     icon: '🧬',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop', // Food/Ingredients (replaced)
+    image:
+      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop', // Food/Ingredients (replaced)
     tags: ['Vue 3', 'AI', 'Automation']
   },
-  { 
+  {
     id: 'gemini',
-    title: t('projects.items.gemini.title'), 
-    desc: t('projects.items.gemini.desc'), 
+    title: t('projects.items.gemini.title'),
+    desc: t('projects.items.gemini.desc'),
     route: '/gemini-chat',
     icon: '💬',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop', // AI/Tech
+    image:
+      'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop', // AI/Tech
     tags: ['Vue 3', 'AI', 'NLP']
   },
-  { 
+  {
     id: 'polyglot',
-    title: t('projects.items.polyglot.title'), 
-    desc: t('projects.items.polyglot.desc'), 
+    title: t('projects.items.polyglot.title'),
+    desc: t('projects.items.polyglot.desc'),
     route: '/translator',
     icon: '🌐',
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', // Globe/Network
+    image:
+      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', // Globe/Network
     tags: ['Vue 3', 'AI', 'Tools']
   },
-  { 
+  {
     id: 'storyteller',
-    title: t('projects.items.storyteller.title'), 
-    desc: t('projects.items.storyteller.desc'), 
+    title: t('projects.items.storyteller.title'),
+    desc: t('projects.items.storyteller.desc'),
     route: '/storyteller',
     icon: '📖',
-    image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop', // Book/Fantasy
+    image:
+      'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop', // Book/Fantasy
     tags: ['Vue 3', 'AI', 'Creative']
   },
-  { 
+  {
     id: 'christmas',
-    title: t('projects.items.christmas.title'), 
-    desc: t('projects.items.christmas.desc'), 
+    title: t('projects.items.christmas.title'),
+    desc: t('projects.items.christmas.desc'),
     route: '/christmas-tree',
     icon: '🎄',
-    image: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=800&auto=format&fit=crop', // Better Christmas Tree
+    image:
+      'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=800&auto=format&fit=crop', // Better Christmas Tree
     tags: ['Three.js', 'Computer Vision', 'Interactive']
   },
   {
@@ -131,7 +136,8 @@ const navItems = computed(() => [
     desc: t('projects.items.nexus.desc'),
     route: '/nexus-dashboard',
     icon: '📊',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', // Data Dashboard
+    image:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', // Data Dashboard
     tags: ['Vue 3', 'WebGL', 'FinTech']
   },
   {
@@ -140,7 +146,8 @@ const navItems = computed(() => [
     desc: t('projects.items.market.desc'),
     route: '/aether-market',
     icon: '💎',
-    image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800&auto=format&fit=crop',
     tags: ['Web3', 'Three.js', 'DeFi']
   },
   {
@@ -149,7 +156,8 @@ const navItems = computed(() => [
     desc: t('projects.items.resume.desc'),
     route: '/resume-forge',
     icon: '📄',
-    image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=800&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=800&auto=format&fit=crop',
     tags: ['AI', 'NLP', 'Recruitment']
   },
   {
@@ -158,7 +166,8 @@ const navItems = computed(() => [
     desc: t('projects.items.audit.desc'),
     route: '/code-guardian',
     icon: '🛡️',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=800&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=800&auto=format&fit=crop',
     tags: ['Security', 'Blockchain', 'Automation']
   },
   {
@@ -167,7 +176,8 @@ const navItems = computed(() => [
     desc: t('projects.items.travel.desc'),
     route: '/travel-planner',
     icon: '✈️',
-    image: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
     tags: ['GenAI', 'Personalization', 'Travel']
   },
   {
@@ -176,7 +186,8 @@ const navItems = computed(() => [
     desc: t('projects.items.aippt.desc'),
     route: '/ai-ppt',
     icon: '📽️',
-    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800&auto=format&fit=crop',
     tags: ['AI', 'Vue 3', 'Productivity']
   }
 ]);
@@ -185,7 +196,7 @@ const filteredProjects = computed(() => {
   if (activeFilter.value === 'All') {
     return navItems.value;
   }
-  return navItems.value.filter(item => item.tags.includes(activeFilter.value));
+  return navItems.value.filter((item) => item.tags.includes(activeFilter.value));
 });
 
 const setFilter = (filter: string) => {
@@ -207,15 +218,15 @@ const updateScrollEffect = () => {
       return;
     }
     const rect = card.getBoundingClientRect();
-    
+
     // Calculate progress: 0 at center, 1 at bottom, -1 at top
     const center = rect.top + rect.height / 2;
     const distFromCenter = center - viewportHeight / 2;
     let progress = distFromCenter / (viewportHeight / 2);
-    
+
     // Clamp
     progress = Math.max(-1, Math.min(1, progress));
-    
+
     newProgress.push(progress);
   });
 
@@ -232,9 +243,9 @@ const getSrcSet = (url: string) => {
 const getCardStyle = (index: number) => {
   const progress = cardProgress.value[index] || 0;
   const isHovered = hoveredIndex.value === index;
-  
+
   const enter = Math.max(0, progress);
-  
+
   const rotation = isHovered ? 0 : enter * 25;
   const opacity = 1 - enter * 0.4;
   const scale = (0.9 + (1 - enter) * 0.1) * (isHovered ? 1.05 : 1);
@@ -252,7 +263,8 @@ const getCardStyle = (index: number) => {
 // Watch for filter changes to re-animate
 watch(activeFilter, () => {
   nextTick(() => {
-    gsap.fromTo(projectCardsRef.value, 
+    gsap.fromTo(
+      projectCardsRef.value,
       { y: 50, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out' }
     );
@@ -284,7 +296,7 @@ onMounted(() => {
   };
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-visible');
         observer.unobserve(entry.target);
@@ -292,7 +304,7 @@ onMounted(() => {
     });
   }, observerOptions);
 
-  projectCardsRef.value.forEach(card => {
+  projectCardsRef.value.forEach((card) => {
     observer.observe(card);
   });
 });
@@ -361,7 +373,8 @@ onBeforeUnmount(() => {
   transition: all 0.3s;
 }
 
-.filter-btn:hover, .filter-btn.active {
+.filter-btn:hover,
+.filter-btn.active {
   background: #38bdf8;
   color: #0f172a;
   border-color: #38bdf8;
@@ -380,7 +393,9 @@ onBeforeUnmount(() => {
   align-items: center;
   opacity: 0;
   transform: translateY(50px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s ease-out;
   cursor: pointer;
   background: rgba(30, 41, 59, 0.3);
   /* backdrop-filter: blur(12px); */
@@ -399,7 +414,11 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.06), transparent 40%);
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.06),
+    transparent 40%
+  );
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -438,7 +457,10 @@ onBeforeUnmount(() => {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   will-change: transform;
   backface-visibility: hidden;
-  -webkit-mask-image: -webkit-radial-gradient(white, black); /* Fix for Safari border-radius overflow */
+  -webkit-mask-image: -webkit-radial-gradient(
+    white,
+    black
+  ); /* Fix for Safari border-radius overflow */
 }
 
 .plain-image {
@@ -447,7 +469,9 @@ onBeforeUnmount(() => {
   object-fit: cover;
   transform: scale(var(--card-scale, 1));
   opacity: var(--card-opacity, 1);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.6s ease;
   display: block;
   will-change: transform;
 }
@@ -555,33 +579,36 @@ onBeforeUnmount(() => {
   .projects-list {
     gap: 40px;
   }
-  
+
   .project-card {
     grid-template-columns: 1fr;
     gap: 32px;
     padding: 24px;
     border-radius: 24px;
   }
-  
+
   .project-card.reversed {
     grid-template-columns: 1fr;
   }
 
-  .card-visual-container, .project-card.reversed .card-visual-container {
+  .card-visual-container,
+  .project-card.reversed .card-visual-container {
     order: 1;
     aspect-ratio: 16/9;
   }
-  
-  .card-content, .project-card.reversed .card-content {
+
+  .card-content,
+  .project-card.reversed .card-content {
     order: 2;
     text-align: left;
     align-items: flex-start;
   }
-  
-  .card-header, .project-card.reversed .card-header {
+
+  .card-header,
+  .project-card.reversed .card-header {
     flex-direction: row;
   }
-  
+
   .card-number {
     position: relative;
     top: auto;
@@ -592,13 +619,14 @@ onBeforeUnmount(() => {
     opacity: 0.8;
   }
 
-  .card-action, .project-card.reversed .card-action {
+  .card-action,
+  .project-card.reversed .card-action {
     align-self: flex-start;
     flex-direction: row;
     width: 100%;
     justify-content: center;
   }
-  
+
   .card-title {
     font-size: 1.8rem;
   }
@@ -612,7 +640,7 @@ onBeforeUnmount(() => {
     padding: 6px 14px;
     font-size: 0.8rem;
   }
-  
+
   .section {
     padding: 80px 16px 60px;
   }

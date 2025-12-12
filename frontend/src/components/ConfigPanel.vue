@@ -4,13 +4,13 @@
       <label>Mode:</label>
       <div class="custom-select" ref="selectRef" @click="toggleDropdown">
         <div class="selected-option">
-          {{ options.find(o => o.value === modelValue)?.label || 'Select Mode' }}
+          {{ options.find((o) => o.value === modelValue)?.label || 'Select Mode' }}
           <span class="arrow" :class="{ open: isOpen }">▼</span>
         </div>
         <transition name="dropdown">
           <ul v-if="isOpen" class="options-list">
-            <li 
-              v-for="option in options" 
+            <li
+              v-for="option in options"
               :key="option.value"
               class="option-item"
               :class="{ active: modelValue === option.value }"
@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
     margin-right: 15px;
     backdrop-filter: none;
   }
-  
+
   .config-panel.embedded .config-item label {
     display: none; /* Save space on mobile nav */
   }
@@ -208,7 +208,7 @@ onBeforeUnmount(() => {
   .config-panel.embedded .custom-select {
     width: 110px;
   }
-  
+
   .custom-select {
     width: 100px;
   }

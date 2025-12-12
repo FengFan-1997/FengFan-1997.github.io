@@ -13,8 +13,7 @@
   </section>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .section {
@@ -98,11 +97,11 @@
   .section {
     padding: 80px 20px 40px;
   }
-  
+
   .footer-content h2 {
     font-size: 2rem;
   }
-  
+
   .social-links {
     gap: 20px;
     margin-bottom: 40px;

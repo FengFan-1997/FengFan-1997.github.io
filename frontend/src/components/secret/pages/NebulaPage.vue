@@ -1,7 +1,7 @@
 <template>
   <div class="nebula-page">
     <div id="nebula-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Ethereal Nebula</h1>
       <p>Where stars are born</p>
@@ -92,11 +92,11 @@ function initThree() {
   const starsGeometry = new THREE.BufferGeometry();
   const starsCount = 2000;
   const posArray = new Float32Array(starsCount * 3);
-  
-  for(let i = 0; i < starsCount * 3; i++) {
+
+  for (let i = 0; i < starsCount * 3; i++) {
     posArray[i] = (Math.random() - 0.5) * 2000; // Spread out stars
   }
-  
+
   starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   const starsMaterial = new THREE.PointsMaterial({
     size: 2,
@@ -104,7 +104,7 @@ function initThree() {
     transparent: true,
     opacity: 0.8
   });
-  
+
   starField = new THREE.Points(starsGeometry, starsMaterial);
   scene.add(starField);
 
@@ -121,23 +121,19 @@ function initThree() {
     context.fillStyle = gradient;
     context.fillRect(0, 0, 32, 32);
   }
-  
+
   const texture = new THREE.CanvasTexture(canvas);
   const cloudGeo = new THREE.PlaneGeometry(500, 500);
   const cloudMaterial = new THREE.MeshLambertMaterial({
     map: texture,
     transparent: true,
     opacity: 0.5,
-    depthWrite: false,
+    depthWrite: false
   });
 
   for (let p = 0; p < 50; p++) {
     const cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
-    cloud.position.set(
-      Math.random() * 800 - 400,
-      500,
-      Math.random() * 500 - 500
-    );
+    cloud.position.set(Math.random() * 800 - 400, 500, Math.random() * 500 - 500);
     cloud.rotation.x = 1.16;
     cloud.rotation.y = -0.12;
     cloud.rotation.z = Math.random() * 2 * Math.PI;
@@ -149,18 +145,18 @@ function initThree() {
 
 const animate = () => {
   animationId = requestAnimationFrame(animate);
-  
+
   // Interactive Rotation with damping
   targetRotationX = mouseY * 0.2;
   targetRotationY = mouseX * 0.2;
-  
+
   nebulaGroup.rotation.x += (targetRotationX - nebulaGroup.rotation.x) * 0.02;
   nebulaGroup.rotation.y += (targetRotationY - nebulaGroup.rotation.y) * 0.02;
 
-  cloudParticles.forEach(p => {
+  cloudParticles.forEach((p) => {
     p.rotation.z -= 0.001;
   });
-  
+
   if (starField) {
     starField.rotation.y += 0.0005;
   }
@@ -234,7 +230,7 @@ onBeforeUnmount(() => {
   margin-bottom: 2rem;
   opacity: 0.9;
   letter-spacing: 3px;
-  text-shadow: 0 0 10px rgba(255,255,255,0.3);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .back-btn {
@@ -253,7 +249,7 @@ onBeforeUnmount(() => {
 .back-btn:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255,255,255,0.3);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 768px) {

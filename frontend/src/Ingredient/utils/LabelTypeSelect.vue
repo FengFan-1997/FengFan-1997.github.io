@@ -1,6 +1,6 @@
 <script lang="ts">
 export default {
-  name: 'LabelTypeSelect',
+  name: 'LabelTypeSelect'
 };
 </script>
 
@@ -107,7 +107,7 @@ const selectedLabel = () => props.options.find((o) => o.value === props.modelVal
   backdrop-filter: blur(8px);
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .select-trigger:hover {
@@ -154,7 +154,7 @@ const selectedLabel = () => props.options.find((o) => o.value === props.modelVal
   border: 1px solid rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   animation: slideDown 0.2s ease-out;
   max-height: 250px; /* Limit height */
@@ -169,13 +169,19 @@ const selectedLabel = () => props.options.find((o) => o.value === props.modelVal
   background: transparent;
 }
 .dropdown-menu::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-option {
@@ -206,7 +212,7 @@ const selectedLabel = () => props.options.find((o) => o.value === props.modelVal
     width: 100%;
     min-width: 0;
   }
-  
+
   .select-trigger {
     padding: 10px;
   }

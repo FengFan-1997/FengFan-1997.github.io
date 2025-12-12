@@ -10,10 +10,9 @@
 
     <!-- Scrollable Content Layer -->
     <div class="content-layer" @scroll="onScroll">
-      
       <!-- Section 1: Hero (Title) -->
       <section class="section hero-section">
-        <div class="hero-content" ref="heroContentRef" style="opacity: 0; transform: scale(0.8);">
+        <div class="hero-content" ref="heroContentRef" style="opacity: 0; transform: scale(0.8)">
           <h1 class="main-title">FKF <span class="amp">&</span> XY</h1>
           <h2 class="sub-title">520 · 1314</h2>
           <p class="scroll-hint">Scroll to explore our love</p>
@@ -26,12 +25,13 @@
         <div class="glass-card">
           <h2>Our Story</h2>
           <p>
-            It started with a simple "Hello World", but it became the most beautiful algorithm of my life.
-            Like a rose that blooms in the wild, our love grew naturally, fiercely, and beautifully.
+            It started with a simple "Hello World", but it became the most beautiful algorithm of my
+            life. Like a rose that blooms in the wild, our love grew naturally, fiercely, and
+            beautifully.
           </p>
           <p>
-            Every day with you is a new commit to our repository of memories.
-            No bugs, just features.
+            Every day with you is a new commit to our repository of memories. No bugs, just
+            features.
           </p>
         </div>
       </section>
@@ -64,11 +64,11 @@
 
       <!-- Interactive Modules Component -->
       <div class="modules-wrapper">
-        <LoveModules 
-          :show="true" 
+        <LoveModules
+          :show="true"
           :is-playing="isMusicPlaying"
           @toggle-music="toggleMusic"
-          theme="bright" 
+          theme="bright"
         />
       </div>
 
@@ -124,10 +124,10 @@ const bloomUniforms = {
 
 // Config
 const isMobile = window.innerWidth < 768;
-const GRASS_COUNT = isMobile ? 5000 : 15000; 
-const ROSE_COUNT = isMobile ? 800 : 2000;   // Massive sea of roses
-const PETAL_COUNT = isMobile ? 800 : 2000; 
-const FIREFLY_COUNT = isMobile ? 100 : 300; 
+const GRASS_COUNT = isMobile ? 5000 : 15000;
+const ROSE_COUNT = isMobile ? 800 : 2000; // Massive sea of roses
+const PETAL_COUNT = isMobile ? 800 : 2000;
+const FIREFLY_COUNT = isMobile ? 100 : 300;
 const HEART_COUNT = isMobile ? 50 : 150;
 
 onMounted(async () => {
@@ -138,7 +138,7 @@ onMounted(async () => {
   createPetalRain();
   createFireflies();
   createHearts();
-  
+
   animate();
 
   setTimeout(() => {
@@ -170,7 +170,7 @@ function initThree() {
 
   scene = new THREE.Scene();
   // More realistic sky gradient using Fog and background color
-  scene.background = new THREE.Color(0x87CEEB); 
+  scene.background = new THREE.Color(0x87ceeb);
   scene.fog = new THREE.FogExp2(0xe0f7fa, 0.02); // Soft fog
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -249,27 +249,27 @@ function createGrass() {
   });
 
   grassMesh = new THREE.InstancedMesh(geometry, material, GRASS_COUNT);
-  
+
   const dummy = new THREE.Object3D();
   for (let i = 0; i < GRASS_COUNT; i++) {
     const x = (Math.random() - 0.5) * 60;
     const z = (Math.random() - 0.5) * 40 - 5;
-    
+
     dummy.position.set(x, 0, z);
     dummy.scale.setScalar(0.7 + Math.random() * 0.6);
     dummy.rotation.y = Math.random() * Math.PI;
     dummy.updateMatrix();
     grassMesh.setMatrixAt(i, dummy.matrix);
   }
-  
+
   grassMesh.receiveShadow = true;
   scene.add(grassMesh);
 }
 
 // --- ROSE SYSTEM (Enhanced) ---
 function createRoses() {
-  const geometry = new THREE.SphereGeometry(0.3, 16, 16); 
-  
+  const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       varying vec2 vUv;
@@ -334,32 +334,32 @@ function createRoses() {
   });
 
   roseMesh = new THREE.InstancedMesh(geometry, material, ROSE_COUNT);
-  
+
   const dummy = new THREE.Object3D();
 
   for (let i = 0; i < ROSE_COUNT; i++) {
     // Spiral Distribution for "Sea of Flowers"
     const angle = i * 0.1 + Math.random() * 0.5;
     const radius = 2 + Math.sqrt(i) * 1.2; // Expanding spiral
-    
+
     // Random offset
     const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 2;
     const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 2;
-    
+
     // Height variation (terrain)
     const y = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 1.0 + 0.5;
-    
+
     dummy.position.set(x, y, z);
-    
+
     // Random scale and rotation
     const scale = 0.8 + Math.random() * 0.6;
     dummy.scale.setScalar(scale);
     dummy.rotation.set(Math.random() * 0.5, Math.random() * Math.PI * 2, Math.random() * 0.5);
-    
+
     dummy.updateMatrix();
     roseMesh.setMatrixAt(i, dummy.matrix);
   }
-  
+
   roseMesh.instanceMatrix.needsUpdate = true;
   roseMesh.castShadow = true;
   roseMesh.receiveShadow = true;
@@ -374,22 +374,22 @@ function createBigParticleRose() {
   const colors = new Float32Array(count * 3);
   const randoms = new Float32Array(count * 3);
 
-  for(let i=0; i<count; i++) {
-    positions[i*3] = (Math.random() - 0.5) * 10;
-    positions[i*3+1] = (Math.random() - 0.5) * 10;
-    positions[i*3+2] = (Math.random() - 0.5) * 10;
-    
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 10;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+
     const color = new THREE.Color();
     color.setHSL(0.9 + Math.random() * 0.1, 0.9, 0.5 + Math.random() * 0.3);
-    colors[i*3] = color.r;
-    colors[i*3+1] = color.g;
-    colors[i*3+2] = color.b;
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
 
-    randoms[i*3] = Math.random();
-    randoms[i*3+1] = Math.random();
-    randoms[i*3+2] = Math.random();
+    randoms[i * 3] = Math.random();
+    randoms[i * 3 + 1] = Math.random();
+    randoms[i * 3 + 2] = Math.random();
   }
-  
+
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
@@ -457,29 +457,35 @@ function createBigParticleRose() {
   });
 
   bigRoseParticles = new THREE.Points(geometry, material);
-  bigRoseParticles.position.y = 2; 
+  bigRoseParticles.position.y = 2;
   scene.add(bigRoseParticles);
 }
 
 // --- HEART PARTICLES ---
 function createHearts() {
   const shape = new THREE.Shape();
-  const x = 0, y = 0;
+  const x = 0,
+    y = 0;
   shape.moveTo(x + 0.25, y + 0.25);
-  shape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.20, y, x, y);
-  shape.bezierCurveTo(x - 0.30, y, x - 0.30, y + 0.35, x - 0.30, y + 0.35);
-  shape.bezierCurveTo(x - 0.30, y + 0.55, x - 0.10, y + 0.77, x + 0.25, y + 0.95);
-  shape.bezierCurveTo(x + 0.60, y + 0.77, x + 0.80, y + 0.55, x + 0.80, y + 0.35);
-  shape.bezierCurveTo(x + 0.80, y + 0.35, x + 0.80, y, x + 0.50, y);
+  shape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
+  shape.bezierCurveTo(x - 0.3, y, x - 0.3, y + 0.35, x - 0.3, y + 0.35);
+  shape.bezierCurveTo(x - 0.3, y + 0.55, x - 0.1, y + 0.77, x + 0.25, y + 0.95);
+  shape.bezierCurveTo(x + 0.6, y + 0.77, x + 0.8, y + 0.55, x + 0.8, y + 0.35);
+  shape.bezierCurveTo(x + 0.8, y + 0.35, x + 0.8, y, x + 0.5, y);
   shape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
 
   const geometry = new THREE.ShapeGeometry(shape);
-  const material = new THREE.MeshBasicMaterial({ color: 0xff69b4, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
-  
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xff69b4,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.6
+  });
+
   hearts = new THREE.InstancedMesh(geometry, material, HEART_COUNT);
-  
+
   const dummy = new THREE.Object3D();
-  for(let i=0; i<HEART_COUNT; i++) {
+  for (let i = 0; i < HEART_COUNT; i++) {
     dummy.position.set(
       (Math.random() - 0.5) * 40,
       Math.random() * 10 + 2,
@@ -491,7 +497,7 @@ function createHearts() {
     dummy.updateMatrix();
     hearts.setMatrixAt(i, dummy.matrix);
   }
-  
+
   scene.add(hearts);
 }
 
@@ -500,20 +506,20 @@ function createPetalRain() {
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(PETAL_COUNT * 3);
   const randoms = new Float32Array(PETAL_COUNT * 3);
-  
-  for(let i=0; i<PETAL_COUNT; i++) {
-    positions[i*3] = (Math.random() - 0.5) * 60;
-    positions[i*3+1] = Math.random() * 30 + 5;
-    positions[i*3+2] = (Math.random() - 0.5) * 40;
-    
-    randoms[i*3] = Math.random();
-    randoms[i*3+1] = Math.random();
-    randoms[i*3+2] = Math.random();
+
+  for (let i = 0; i < PETAL_COUNT; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 60;
+    positions[i * 3 + 1] = Math.random() * 30 + 5;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 40;
+
+    randoms[i * 3] = Math.random();
+    randoms[i * 3 + 1] = Math.random();
+    randoms[i * 3 + 2] = Math.random();
   }
-  
+
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
-  
+
   const material = new THREE.ShaderMaterial({
     vertexShader: `
       attribute vec3 aRandom;
@@ -550,7 +556,7 @@ function createPetalRain() {
     transparent: true,
     depthWrite: false
   });
-  
+
   petals = new THREE.Points(geometry, material);
   scene.add(petals);
 }
@@ -561,10 +567,10 @@ function createFireflies() {
   const positions = new Float32Array(FIREFLY_COUNT * 3);
   const randoms = new Float32Array(FIREFLY_COUNT);
 
-  for(let i=0; i<FIREFLY_COUNT; i++) {
-    positions[i*3] = (Math.random() - 0.5) * 50;
-    positions[i*3+1] = Math.random() * 5 + 0.5;
-    positions[i*3+2] = (Math.random() - 0.5) * 30;
+  for (let i = 0; i < FIREFLY_COUNT; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 50;
+    positions[i * 3 + 1] = Math.random() * 5 + 0.5;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
     randoms[i] = Math.random();
   }
 
@@ -616,9 +622,9 @@ function startBloomSequence() {
   gsap.to(bloomUniforms.uBloomProgress, {
     value: 1,
     duration: 4,
-    ease: "power2.out"
+    ease: 'power2.out'
   });
-  
+
   // 2. Reveal Text (delayed slightly)
   if (heroContentRef.value) {
     gsap.to(heroContentRef.value, {
@@ -626,7 +632,7 @@ function startBloomSequence() {
       scale: 1,
       duration: 3,
       delay: 1.5,
-      ease: "elastic.out(1, 0.5)"
+      ease: 'elastic.out(1, 0.5)'
     });
   }
 }
@@ -634,26 +640,26 @@ function startBloomSequence() {
 function animate() {
   animationId = requestAnimationFrame(animate);
   const elapsedTime = clock.getElapsedTime();
-  
+
   windUniforms.uTime.value = elapsedTime;
   bloomUniforms.uTime.value = elapsedTime;
-  if(petals) (petals.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
-  if(fireflies) (fireflies.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
+  if (petals) (petals.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
+  if (fireflies) (fireflies.material as THREE.ShaderMaterial).uniforms.uTime.value = elapsedTime;
 
   // Animate Hearts (Float Up)
   if (hearts) {
     const dummy = new THREE.Object3D();
     for (let i = 0; i < HEART_COUNT; i++) {
-       hearts.getMatrixAt(i, dummy.matrix);
-       dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
-       
-       dummy.position.y += 0.02; // Float up
-       if (dummy.position.y > 20) dummy.position.y = 0;
-       
-       dummy.rotation.y += 0.01;
-       
-       dummy.updateMatrix();
-       hearts.setMatrixAt(i, dummy.matrix);
+      hearts.getMatrixAt(i, dummy.matrix);
+      dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+
+      dummy.position.y += 0.02; // Float up
+      if (dummy.position.y > 20) dummy.position.y = 0;
+
+      dummy.rotation.y += 0.01;
+
+      dummy.updateMatrix();
+      hearts.setMatrixAt(i, dummy.matrix);
     }
     hearts.instanceMatrix.needsUpdate = true;
   }
@@ -668,7 +674,7 @@ function onScroll(e: Event) {
 
   // Camera moves up/down or zooms out based on scroll
   // Initial position (0, 3, 12)
-  
+
   // As we scroll down, camera lifts up to see the garden from above
   camera.position.y = 3 + scrollY * 0.01;
   camera.position.z = 12 - scrollY * 0.005;
@@ -688,12 +694,15 @@ function toggleMusic() {
 function playMusic() {
   if (audioRef.value) {
     audioRef.value.volume = 0.5;
-    audioRef.value.play().then(() => {
-      isMusicPlaying.value = true;
-    }).catch((e) => {
-      console.log("Autoplay blocked, user interaction needed", e);
-      isMusicPlaying.value = false;
-    });
+    audioRef.value
+      .play()
+      .then(() => {
+        isMusicPlaying.value = true;
+      })
+      .catch((e) => {
+        console.log('Autoplay blocked, user interaction needed', e);
+        isMusicPlaying.value = false;
+      });
   }
 }
 
@@ -743,7 +752,7 @@ function onResize() {
   width: 100%;
   height: 100%;
   z-index: -1; /* Behind content */
-  background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%);
+  background: linear-gradient(to bottom, #87ceeb 0%, #e0f7fa 100%);
 }
 
 .content-layer {
@@ -769,7 +778,7 @@ function onResize() {
 
 .hero-content {
   color: #fff;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: fadeIn 2s ease-out;
 }
 
@@ -781,7 +790,7 @@ function onResize() {
   background: linear-gradient(to right, #fff, #ffebee);
   -webkit-background-clip: text;
 
-  filter: drop-shadow(0 0 10px rgba(255,105,180,0.5));
+  filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.5));
 }
 
 .amp {
@@ -829,7 +838,7 @@ function onResize() {
   font-size: 4rem;
   color: #d81b60;
   margin-bottom: 40px;
-  text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.8);
 }
 
 .glass-card {
@@ -840,8 +849,8 @@ function onResize() {
   max-width: 800px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   margin: 20px;
 }
 
@@ -874,7 +883,7 @@ function onResize() {
   background: rgba(255, 255, 255, 0.8);
   border-radius: 20px;
   padding: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
 }
 
@@ -927,7 +936,7 @@ function onResize() {
   padding: 50px;
   text-align: center;
   color: #555;
-  background: linear-gradient(to top, rgba(255,255,255,0.9), transparent);
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.9), transparent);
 }
 
 .footer .date {
@@ -966,19 +975,42 @@ function onResize() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.5; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Hide scrollbar for clean look but allow scroll */
@@ -998,39 +1030,39 @@ function onResize() {
   .main-title {
     font-size: 4rem;
   }
-  
+
   .amp {
     font-size: 2.5rem;
   }
-  
+
   .sub-title {
     font-size: 1.5rem;
     letter-spacing: 2px;
   }
-  
+
   .section-title {
     font-size: 2.5rem;
   }
-  
+
   .glass-card {
     padding: 30px;
     margin: 10px;
   }
-  
+
   .glass-card h2 {
     font-size: 2.5rem;
   }
-  
+
   .glass-card p {
     font-size: 1rem;
     line-height: 1.5;
   }
-  
+
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
-  
+
   .loading-text {
     font-size: 2rem;
   }

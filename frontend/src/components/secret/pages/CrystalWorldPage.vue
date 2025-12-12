@@ -1,7 +1,7 @@
 <template>
   <div class="crystal-page">
     <div id="crystal-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Prismatic Dreams</h1>
       <p>Love is clarity</p>
@@ -148,12 +148,12 @@ function initThree() {
   });
 
   crystals = new THREE.InstancedMesh(geometry, material, count);
-  
+
   // Initialize positions
-  for(let i=0; i<count; i++) {
+  for (let i = 0; i < count; i++) {
     updateCrystal(i, 0);
   }
-  
+
   scene.add(crystals);
 }
 
@@ -161,21 +161,21 @@ function updateCrystal(i: number, time: number) {
   const theta = Math.random() * Math.PI * 2;
   const phi = Math.acos(2 * Math.random() - 1);
   const r = 5 + Math.random() * 5;
-  
+
   const x = r * Math.sin(phi) * Math.cos(theta);
   const y = r * Math.sin(phi) * Math.sin(theta);
   const z = r * Math.cos(phi);
-  
+
   dummy.position.set(x, y, z);
   dummy.rotation.set(
     Math.random() * Math.PI + time * 0.1,
     Math.random() * Math.PI + time * 0.1,
     Math.random() * Math.PI
   );
-  
+
   const scale = Math.random() * 0.8 + 0.2;
   dummy.scale.setScalar(scale);
-  
+
   dummy.updateMatrix();
   crystals.setMatrixAt(i, dummy.matrix);
 }
@@ -207,23 +207,23 @@ function animate() {
   // Interactive Rotation
   targetRotationX = mouseY * 0.5;
   targetRotationY = mouseX * 0.5;
-  
+
   crystals.rotation.x += (targetRotationX - crystals.rotation.x) * 0.05;
   crystals.rotation.y += (targetRotationY - crystals.rotation.y) * 0.05;
 
   // Animate individual crystals
-  for(let i=0; i<count; i++) {
+  for (let i = 0; i < count; i++) {
     const data = crystalData[i];
-    
+
     dummy.position.copy(data.position);
     dummy.position.y += Math.sin(time * data.speed + i) * 0.5; // Float effect
-    
+
     dummy.rotation.copy(data.rotation);
     dummy.rotation.x += time * data.speed * 0.5;
     dummy.rotation.y += time * data.speed * 0.3;
-    
+
     dummy.scale.setScalar(data.scale);
-    
+
     dummy.updateMatrix();
     crystals.setMatrixAt(i, dummy.matrix);
   }
@@ -309,11 +309,11 @@ p {
   h1 {
     font-size: 2.5rem;
   }
-  
+
   p {
     font-size: 1rem;
   }
-  
+
   .overlay {
     width: 100%;
     padding: 0 20px;

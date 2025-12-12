@@ -7,7 +7,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import * as THREE from 'three';
 
 const props = defineProps<{
-  mode?: string | number
+  mode?: string | number;
 }>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -258,7 +258,10 @@ const initThree = () => {
 
   try {
     const canvas = document.createElement('canvas');
-    if (!window.WebGLRenderingContext || (!canvas.getContext('webgl') && !canvas.getContext('experimental-webgl'))) {
+    if (
+      !window.WebGLRenderingContext ||
+      (!canvas.getContext('webgl') && !canvas.getContext('experimental-webgl'))
+    ) {
       throw new Error('WebGL not supported');
     }
   } catch (e) {
@@ -293,26 +296,26 @@ const initThree = () => {
     new THREE.Color('#aaddff'),
     new THREE.Color('#ffddaa'),
     new THREE.Color('#ffaaee'),
-    new THREE.Color('#38bdf8'),
+    new THREE.Color('#38bdf8')
   ];
 
   for (let i = 0; i < particlesCount; i++) {
     const i3 = i * 3;
     const radius = Math.random() * 100;
-    const branchAngle = (Math.random() * Math.PI * 2);
-    
+    const branchAngle = Math.random() * Math.PI * 2;
+
     const x = Math.cos(branchAngle) * radius;
     const y = Math.sin(branchAngle) * radius;
     const z = (Math.random() - 0.5) * 50;
 
     if (Math.random() > 0.5) {
-        positions[i3] = (Math.random() - 0.5) * 200;
-        positions[i3 + 1] = (Math.random() - 0.5) * 200;
-        positions[i3 + 2] = (Math.random() - 0.5) * 200;
+      positions[i3] = (Math.random() - 0.5) * 200;
+      positions[i3 + 1] = (Math.random() - 0.5) * 200;
+      positions[i3 + 2] = (Math.random() - 0.5) * 200;
     } else {
-        positions[i3] = x + (Math.random() - 0.5) * 10;
-        positions[i3 + 1] = y + (Math.random() - 0.5) * 10;
-        positions[i3 + 2] = z + (Math.random() - 0.5) * 10;
+      positions[i3] = x + (Math.random() - 0.5) * 10;
+      positions[i3 + 1] = y + (Math.random() - 0.5) * 10;
+      positions[i3 + 2] = z + (Math.random() - 0.5) * 10;
     }
 
     scales[i] = Math.random();
@@ -353,7 +356,7 @@ const initThree = () => {
   scene.add(particles);
 
   clock = new THREE.Clock();
-  
+
   // Set initial mode
   if (material && material.uniforms) {
     material.uniforms.uMode.value = parseFloat(props.mode?.toString() || '0');
@@ -372,7 +375,7 @@ const animate = () => {
 
   if (material && material.uniforms) {
     material.uniforms.uTime.value = elapsedTime;
-    
+
     // Interaction Logic
     const holdDuration = Date.now() - clickStartTime.value;
 
@@ -380,9 +383,9 @@ const animate = () => {
       if (holdDuration > 1000) {
         state = 'GATHERING';
         // Gather: Slowly increase to 0.95 (limit convergence)
-        gatherStrength += 0.00096; 
+        gatherStrength += 0.00096;
         if (gatherStrength > 0.95) gatherStrength = 0.95;
-        
+
         // Reset explode if we start gathering again
         explodeStrength = 0;
         // Reset size scale to normal if gathering
@@ -395,16 +398,16 @@ const animate = () => {
         // Just released -> switch to EXPLODING immediately because we were gathering (implies > 1s)
         state = 'EXPLODING';
       }
-      
+
       if (state === 'EXPLODING') {
         // Increase explodeStrength rapidly but visible
-        explodeStrength += 0.15; 
-        
-        if (explodeStrength > 20.0) { 
+        explodeStrength += 0.15;
+
+        if (explodeStrength > 20.0) {
           state = 'RETURNING';
           explodeStrength = 0;
           gatherStrength = 0;
-          sizeScale = 5.0; 
+          sizeScale = 5.0;
         }
       } else if (state === 'RETURNING') {
         sizeScale -= 0.05;
@@ -417,8 +420,8 @@ const animate = () => {
         state = 'IDLE';
         // Smoothly return to 0 if we were gathering but aborted (shouldn't happen with new logic, but safe to keep)
         if (gatherStrength > 0) {
-            gatherStrength -= 0.05;
-            if (gatherStrength < 0) gatherStrength = 0;
+          gatherStrength -= 0.05;
+          if (gatherStrength < 0) gatherStrength = 0;
         }
         explodeStrength = 0;
         sizeScale = 1.0;
@@ -429,10 +432,10 @@ const animate = () => {
     material.uniforms.uExplode.value = explodeStrength;
     material.uniforms.uSizeScale.value = sizeScale;
   }
-  
+
   mouse.x += (targetMouse.x - mouse.x) * 0.05;
   mouse.y += (targetMouse.y - mouse.y) * 0.05;
-  
+
   if (material && material.uniforms) {
     material.uniforms.uMouse.value.set(mouse.x, mouse.y);
   }
@@ -482,17 +485,20 @@ const onTouchEnd = () => {
 };
 
 const triggerEffect = (_intensity: number = 0.5) => {
-    // Optional external trigger
+  // Optional external trigger
 };
 
 defineExpose({ triggerEffect });
 
 // Watch mode changes
-watch(() => props.mode, (newVal) => {
-  if (material && material.uniforms) {
-    material.uniforms.uMode.value = parseFloat(newVal?.toString() || '0');
+watch(
+  () => props.mode,
+  (newVal) => {
+    if (material && material.uniforms) {
+      material.uniforms.uMode.value = parseFloat(newVal?.toString() || '0');
+    }
   }
-});
+);
 
 onMounted(() => {
   initThree();
@@ -507,7 +513,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('mouseup', onMouseUp);
   window.removeEventListener('touchstart', onTouchStart);
   window.removeEventListener('touchend', onTouchEnd);
-  
+
   if (renderer) renderer.dispose();
   if (geometry) geometry.dispose();
   if (material) material.dispose();

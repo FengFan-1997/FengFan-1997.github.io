@@ -1,7 +1,7 @@
 <template>
   <div class="matrix-page">
     <canvas ref="canvas" class="matrix-canvas"></canvas>
-    
+
     <div class="overlay">
       <h1>Digital Love</h1>
       <p>Decoding our destiny...</p>
@@ -36,7 +36,7 @@ const onMouseMove = (event: MouseEvent) => {
   mouseY = event.clientY;
   isInteracting = true;
   // Reset interaction flag after a short delay
-  setTimeout(() => isInteracting = false, 100);
+  setTimeout(() => (isInteracting = false), 100);
 };
 
 const onTouchMove = (event: TouchEvent) => {
@@ -44,7 +44,7 @@ const onTouchMove = (event: TouchEvent) => {
     mouseX = event.touches[0].clientX;
     mouseY = event.touches[0].clientY;
     isInteracting = true;
-    setTimeout(() => isInteracting = false, 100);
+    setTimeout(() => (isInteracting = false), 100);
   }
 };
 
@@ -52,7 +52,7 @@ const handleResize = () => {
   if (!canvas.value) return;
   canvas.value.width = window.innerWidth;
   canvas.value.height = window.innerHeight;
-  
+
   const columns = Math.ceil(canvas.value.width / fontSize);
   if (drops.length < columns) {
     for (let i = drops.length; i < columns; i++) {
@@ -72,7 +72,7 @@ onMounted(() => {
 
   const draw = () => {
     if (!ctx || !canvas.value) return;
-    
+
     // Translucent black background for trail effect
     ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
     ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
@@ -84,12 +84,12 @@ onMounted(() => {
 
     for (let i = 0; i < drops.length; i++) {
       const text = letters.charAt(Math.floor(Math.random() * letters.length));
-      
+
       // Interaction: if mouse is near, change color or speed
       const x = i * fontSize;
       const y = drops[i] * fontSize;
       const dist = Math.sqrt((x - mouseX) ** 2 + (y - mouseY) ** 2);
-      
+
       if (isInteracting && dist < 100) {
         ctx.fillStyle = '#FFF'; // Highlight near touch
         ctx.shadowColor = '#FFF';
@@ -106,7 +106,7 @@ onMounted(() => {
       }
       drops[i]++;
     }
-    
+
     animationId = requestAnimationFrame(draw);
   };
 
@@ -145,8 +145,8 @@ onBeforeUnmount(() => {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  color: #0F0;
-  text-shadow: 0 0 10px #0F0;
+  color: #0f0;
+  text-shadow: 0 0 10px #0f0;
   pointer-events: none;
   width: 90%;
 }
@@ -167,8 +167,8 @@ onBeforeUnmount(() => {
   pointer-events: auto;
   padding: 12px 24px;
   background: rgba(0, 255, 0, 0.1);
-  border: 2px solid #0F0;
-  color: #0F0;
+  border: 2px solid #0f0;
+  color: #0f0;
   font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.3s;
@@ -178,9 +178,9 @@ onBeforeUnmount(() => {
 }
 
 .back-btn:hover {
-  background: #0F0;
+  background: #0f0;
   color: #000;
-  box-shadow: 0 0 20px #0F0;
+  box-shadow: 0 0 20px #0f0;
 }
 
 @media (max-width: 768px) {

@@ -157,7 +157,7 @@ const handleMouseMove = (event: MouseEvent) => {
   resetInteractionTimer();
 
   // Existing logic for eyes following mouse
-  const rect = (event.currentTarget as HTMLElement)?.getBoundingClientRect();
+  // const rect = (event.currentTarget as HTMLElement)?.getBoundingClientRect();
   // If we are not hovering the agent, we might still be circling it if we use global coordinates relative to agent center
   // But the event listener is on window (see onMounted), so this is fine.
 
@@ -436,7 +436,7 @@ const containerStyle = computed(() => ({
   left: 0,
   pointerEvents: 'auto' as const,
   // Allow Live2D widget to overflow (it's 300x300 usually)
-  overflow: 'visible' 
+  overflow: 'visible'
 }));
 
 // --- Logic: Chat ---
@@ -741,15 +741,15 @@ const checkBoundaries = () => {
 
 const triggerHeadHit = () => {
   if (isHeadHit.value || isFainted.value) return;
-  
+
   isHeadHit.value = true;
-  message.value = "Ouch! My head! >_<";
+  message.value = 'Ouch! My head! >_<';
   isMoving.value = false; // Stop moving
-  
+
   // Reset after 2s
   setTimeout(() => {
     isHeadHit.value = false;
-    if (message.value === "Ouch! My head! >_<") message.value = "";
+    if (message.value === 'Ouch! My head! >_<') message.value = '';
   }, 2000);
 };
 
@@ -819,7 +819,13 @@ const startLoop = () => {
 const startRoaming = () => {
   moveRandomly();
   roamTimer = window.setInterval(() => {
-    if (!isHovered.value && !isDizzy.value && !isFainted.value && !isHeadHit.value && !chatOpen.value) {
+    if (
+      !isHovered.value &&
+      !isDizzy.value &&
+      !isFainted.value &&
+      !isHeadHit.value &&
+      !chatOpen.value
+    ) {
       moveRandomly();
     }
   }, MOVE_INTERVAL);

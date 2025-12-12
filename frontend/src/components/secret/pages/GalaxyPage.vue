@@ -1,7 +1,7 @@
 <template>
   <div class="galaxy-page">
     <div id="galaxy-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Cosmic Love</h1>
       <p>You are my universe</p>
@@ -73,14 +73,26 @@ function initThree() {
     // Position
     const radius = Math.random() * parameters.radius;
     const spinAngle = radius * parameters.spin;
-    const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2;
+    const branchAngle = ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
 
-    const randomX = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
-    const randomY = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
-    const randomZ = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+    const randomX =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
+    const randomY =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
+    const randomZ =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
 
     positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
-    positions[i3 + 1] = randomY; 
+    positions[i3 + 1] = randomY;
     positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
 
     // Color
@@ -90,7 +102,7 @@ function initThree() {
     colors[i3] = mixedColor.r;
     colors[i3 + 1] = mixedColor.g;
     colors[i3 + 2] = mixedColor.b;
-    
+
     // Scale
     scales[i] = Math.random();
   }
@@ -153,18 +165,23 @@ function initThree() {
 
   particles = new THREE.Points(geometry, material);
   scene.add(particles);
-  
+
   // Starfield Background
   const starGeo = new THREE.BufferGeometry();
   const starCount = 2000;
   const starPos = new Float32Array(starCount * 3);
-  for(let i=0; i<starCount; i++) {
-    starPos[i*3] = (Math.random() - 0.5) * 50;
-    starPos[i*3+1] = (Math.random() - 0.5) * 50;
-    starPos[i*3+2] = (Math.random() - 0.5) * 50;
+  for (let i = 0; i < starCount; i++) {
+    starPos[i * 3] = (Math.random() - 0.5) * 50;
+    starPos[i * 3 + 1] = (Math.random() - 0.5) * 50;
+    starPos[i * 3 + 2] = (Math.random() - 0.5) * 50;
   }
   starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({color: 0xffffff, size: 0.05, transparent: true, opacity: 0.8});
+  const starMat = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.05,
+    transparent: true,
+    opacity: 0.8
+  });
   starField = new THREE.Points(starGeo, starMat);
   scene.add(starField);
 }
@@ -190,24 +207,24 @@ const onTouchMove = (event: TouchEvent) => {
 
 const animate = () => {
   animationId = requestAnimationFrame(animate);
-  
+
   if (material) {
     material.uniforms.uTime.value += 0.01;
   }
-  
+
   // Smooth Rotation
   targetRotationX = mouseY * 0.5;
   targetRotationY = mouseX * 0.5;
-  
+
   if (scene) {
     // Auto rotation
     scene.rotation.y += 0.0005;
-    
+
     // Interactive rotation (damping)
     scene.rotation.x += (targetRotationX - scene.rotation.x) * 0.05;
     scene.rotation.z += (targetRotationY - scene.rotation.z) * 0.05;
   }
-  
+
   // Starfield parallax
   if (starField) {
     starField.rotation.y -= 0.0002;
@@ -221,10 +238,10 @@ const onResize = () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  
+
   // Update particle count for resize if needed, but usually not necessary for performance
   if (material) {
-     material.uniforms.uSize.value = 30 * renderer.getPixelRatio();
+    material.uniforms.uSize.value = 30 * renderer.getPixelRatio();
   }
 };
 

@@ -2,7 +2,7 @@
   <div class="code-guardian-container">
     <div class="bg-gradient"></div>
     <div class="bg-noise"></div>
-    
+
     <div class="sidebar glass-panel">
       <div class="logo">
         <div class="icon-wrapper">
@@ -10,7 +10,7 @@
         </div>
         <span>Code Guardian</span>
       </div>
-      
+
       <div class="stats">
         <div class="stat-item">
           <div class="stat-icon"><i class="fas fa-search"></i></div>
@@ -27,7 +27,7 @@
           </div>
         </div>
       </div>
-      
+
       <button class="back-btn" @click="goBack">
         <i class="fas fa-sign-out-alt"></i>
         <span>Exit Dashboard</span>
@@ -48,24 +48,22 @@
             <i class="fab fa-ethereum"></i>
             <h3>Solidity Contract</h3>
           </div>
-          <span class="status-badge ready">
-            <i class="fas fa-circle"></i> Ready
-          </span>
+          <span class="status-badge ready"> <i class="fas fa-circle"></i> Ready </span>
         </div>
-        
+
         <div class="editor-wrapper">
           <div class="line-numbers">
             <span v-for="n in lineCount" :key="n">{{ n }}</span>
           </div>
-          <textarea 
-            v-model="contractCode" 
+          <textarea
+            v-model="contractCode"
             placeholder="// Paste your Solidity Smart Contract here..."
             class="code-editor"
             @input="updateLineCount"
             spellcheck="false"
           ></textarea>
         </div>
-        
+
         <button class="audit-btn" @click="auditContract" :disabled="isAuditing || !contractCode">
           <span v-if="!isAuditing">
             <i class="fas fa-search-shield"></i> Start Security Audit
@@ -87,12 +85,12 @@
             {{ report.severity }} RISK
           </span>
         </div>
-        
+
         <div v-if="!report && !isAuditing" class="empty-state">
           <i class="fas fa-radar"></i>
           <p>System ready. Initiate scan to detect vulnerabilities.</p>
         </div>
-        
+
         <div v-if="isAuditing" class="processing-state">
           <div class="radar-scan">
             <div class="radar-sweep"></div>
@@ -104,12 +102,14 @@
           <div class="security-score-card">
             <div class="score-chart">
               <svg viewBox="0 0 36 36" class="circular-chart">
-                <path class="circle-bg"
+                <path
+                  class="circle-bg"
                   d="M18 2.0845
                     a 15.9155 15.9155 0 0 1 0 31.831
                     a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
-                <path class="circle"
+                <path
+                  class="circle"
                   :stroke-dasharray="`${report.score}, 100`"
                   :class="getScoreClass(report.score)"
                   d="M18 2.0845
@@ -126,11 +126,7 @@
           </div>
 
           <div class="vulnerability-list">
-            <div 
-              v-for="(vuln, idx) in report.vulnerabilities" 
-              :key="idx" 
-              class="vuln-item"
-            >
+            <div v-for="(vuln, idx) in report.vulnerabilities" :key="idx" class="vuln-item">
               <div class="vuln-header">
                 <div class="vuln-title">
                   <i class="fas fa-exclamation-triangle"></i>
@@ -214,7 +210,10 @@ const auditContract = async () => {
 
   try {
     const response = await generateContent(prompt);
-    let cleanText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    let cleanText = response.text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
     // Handle potential non-JSON prefix/suffix
     const jsonStart = cleanText.indexOf('{');
     const jsonEnd = cleanText.lastIndexOf('}');
@@ -227,18 +226,18 @@ const auditContract = async () => {
     // Mock
     report.value = {
       score: 65,
-      severity: "HIGH",
+      severity: 'HIGH',
       vulnerabilities: [
         {
-          type: "Reentrancy Attack",
+          type: 'Reentrancy Attack',
           line: 14,
-          description: "External call is made before state update, allowing re-entrant calls.",
-          fix: "Move balances[msg.sender] -= amount; before the external call."
+          description: 'External call is made before state update, allowing re-entrant calls.',
+          fix: 'Move balances[msg.sender] -= amount; before the external call.'
         },
         {
-          type: "Unchecked Return Value",
+          type: 'Unchecked Return Value',
           line: 22,
-          description: "Low-level call return value is not checked, potentially ignoring failures.",
+          description: 'Low-level call return value is not checked, potentially ignoring failures.',
           fix: "require(success, 'Transfer failed');"
         }
       ]
@@ -300,16 +299,16 @@ const auditContract = async () => {
   border-radius: 0; /* Override default rounded corners if any */
 }
 
-  /* Tablet Adaptation (980px - 1280px) */
-  @media (min-width: 980px) and (max-width: 1280px) {
-    .sidebar {
-      border-radius: 0;
-      border-left: none;
-      margin-left: 0;
-    }
+/* Tablet Adaptation (980px - 1280px) */
+@media (min-width: 980px) and (max-width: 1280px) {
+  .sidebar {
+    border-radius: 0;
+    border-left: none;
+    margin-left: 0;
   }
+}
 
-  .logo {
+.logo {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -453,7 +452,8 @@ const auditContract = async () => {
   font-size: 0.5rem;
 }
 
-.editor-section, .report-section {
+.editor-section,
+.report-section {
   border-radius: 24px;
   padding: 25px;
   display: flex;
@@ -547,9 +547,18 @@ const auditContract = async () => {
 }
 
 @keyframes scanX {
-  0% { transform: scaleX(0.2); opacity: 0.5; }
-  50% { transform: scaleX(1); opacity: 1; }
-  100% { transform: scaleX(0.2); opacity: 0.5; }
+  0% {
+    transform: scaleX(0.2);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(0.2);
+    opacity: 0.5;
+  }
 }
 
 .empty-state {
@@ -599,8 +608,12 @@ const auditContract = async () => {
 }
 
 @keyframes radarSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .report-content {
@@ -643,9 +656,15 @@ const auditContract = async () => {
   animation: progress 1s ease-out forwards;
 }
 
-.score-high { stroke: #4ade80; }
-.score-medium { stroke: #facc15; }
-.score-low { stroke: #f87171; }
+.score-high {
+  stroke: #4ade80;
+}
+.score-medium {
+  stroke: #facc15;
+}
+.score-low {
+  stroke: #f87171;
+}
 
 .percentage {
   fill: #fff;
@@ -656,7 +675,9 @@ const auditContract = async () => {
 }
 
 @keyframes progress {
-  0% { stroke-dasharray: 0 100; }
+  0% {
+    stroke-dasharray: 0 100;
+  }
 }
 
 .score-meta h4 {
@@ -774,10 +795,26 @@ const auditContract = async () => {
   text-transform: uppercase;
 }
 
-.severity-badge.high { background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
-.severity-badge.medium { background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2); }
-.severity-badge.low { background: rgba(96, 165, 250, 0.1); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.2); }
-.severity-badge.safe { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
+.severity-badge.high {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+.severity-badge.medium {
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+.severity-badge.low {
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+.severity-badge.safe {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
 
 .mobile-header {
   display: none;
@@ -789,7 +826,7 @@ const auditContract = async () => {
     height: auto;
     overflow-y: auto;
   }
-  
+
   .sidebar {
     display: none;
   }
@@ -822,7 +859,7 @@ const auditContract = async () => {
     font-size: 1.2rem;
     letter-spacing: -0.02em;
   }
-  
+
   .main-content {
     grid-template-columns: 1fr;
     padding: 20px;
@@ -830,8 +867,9 @@ const auditContract = async () => {
     display: flex;
     flex-direction: column;
   }
-  
-  .editor-section, .report-section {
+
+  .editor-section,
+  .report-section {
     min-height: 400px;
     height: auto;
   }

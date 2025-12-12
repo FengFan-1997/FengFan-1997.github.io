@@ -1,7 +1,7 @@
 <template>
   <div class="fireworks-page">
     <canvas ref="canvas" class="fireworks-canvas"></canvas>
-    
+
     <div class="overlay">
       <h1>Celebration</h1>
       <p>Every moment with you is a festival</p>
@@ -73,7 +73,7 @@ class Firework {
   color: string;
   exploded: boolean;
   particles: Particle[];
-  trail: {x: number, y: number}[];
+  trail: { x: number; y: number }[];
 
   constructor(canvasHeight: number, canvasWidth: number, targetX?: number, targetY?: number) {
     this.x = targetX ? targetX : Math.random() * canvasWidth;
@@ -83,9 +83,9 @@ class Firework {
     if (targetY) {
       this.vy = -Math.sqrt(2 * 0.2 * (canvasHeight - targetY)); // v^2 = 2as approx
     } else {
-      this.vy = - (Math.random() * 5 + 10);
+      this.vy = -(Math.random() * 5 + 10);
     }
-    
+
     this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
     this.exploded = false;
     this.particles = [];
@@ -94,12 +94,12 @@ class Firework {
 
   update() {
     if (!this.exploded) {
-      this.trail.push({x: this.x, y: this.y});
+      this.trail.push({ x: this.x, y: this.y });
       if (this.trail.length > 5) this.trail.shift();
 
       this.y += this.vy;
       this.vy += 0.2; // Gravity acting on rocket
-      
+
       if (this.vy >= 0 || this.y <= this.targetY) {
         this.explode();
       }
@@ -129,18 +129,17 @@ class Firework {
       ctx.beginPath();
       ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Draw Trail
       ctx.beginPath();
       if (this.trail.length > 0) {
         ctx.moveTo(this.trail[0].x, this.trail[0].y);
-        for(const t of this.trail) ctx.lineTo(t.x, t.y);
+        for (const t of this.trail) ctx.lineTo(t.x, t.y);
       }
       ctx.strokeStyle = `rgba(255,255,255,0.3)`;
       ctx.stroke();
-
     } else {
-      this.particles.forEach(p => p.draw(ctx));
+      this.particles.forEach((p) => p.draw(ctx));
     }
   }
 }
@@ -183,7 +182,7 @@ onMounted(() => {
 
   const animate = () => {
     if (!ctx || !canvas.value) return;
-    
+
     // Trail effect
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);

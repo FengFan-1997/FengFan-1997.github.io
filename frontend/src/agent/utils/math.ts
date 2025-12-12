@@ -9,7 +9,7 @@ export const getRandomPosition = (
 ): { x: number; y: number } => {
   const maxX = containerWidth - elementSize;
   const maxY = containerHeight - elementSize;
-  
+
   return {
     x: Math.max(0, Math.random() * maxX),
     y: Math.max(0, Math.random() * maxY)

@@ -1,7 +1,7 @@
 <template>
   <div class="blackhole-page">
     <div id="blackhole-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Event Horizon</h1>
       <p>My love for you is infinite</p>
@@ -73,8 +73,8 @@ const initThree = () => {
 
   // Glow behind black hole (lensing approximation)
   const glowGeo = new THREE.CircleGeometry(3.2, 64);
-  const glowMat = new THREE.MeshBasicMaterial({ 
-    color: 0xffaa00, 
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xffaa00,
     side: THREE.BackSide,
     transparent: true,
     opacity: 0.5
@@ -88,13 +88,13 @@ const initThree = () => {
   const posArray = new Float32Array(particlesCount * 3);
   const colorsArray = new Float32Array(particlesCount * 3);
 
-  for(let i = 0; i < particlesCount; i++) {
+  for (let i = 0; i < particlesCount; i++) {
     const angle = Math.random() * Math.PI * 2;
     // Spiral distribution
     // Inner radius 3.5, outer 15
     const radius = 3.5 + Math.random() * 12;
     const spiralOffset = radius * 0.5; // Twist
-    
+
     // Flattened disk
     const x = Math.cos(angle + spiralOffset) * radius;
     const z = Math.sin(angle + spiralOffset) * radius;
@@ -106,8 +106,10 @@ const initThree = () => {
 
     // Color gradient based on distance
     const color = new THREE.Color();
-    if (radius < 5) color.setHSL(0.08, 1, 0.6); // Bright Orange/Yellow near event horizon
-    else if (radius < 9) color.setHSL(0.05, 0.9, 0.4); // Red/Orange
+    if (radius < 5)
+      color.setHSL(0.08, 1, 0.6); // Bright Orange/Yellow near event horizon
+    else if (radius < 9)
+      color.setHSL(0.05, 0.9, 0.4); // Red/Orange
     else color.setHSL(0.6, 0.8, 0.1); // Dark Blue/Purple outer
 
     colorsArray[i * 3] = color.r;
@@ -138,12 +140,12 @@ const animate = () => {
   if (accretionDisk) {
     accretionDisk.rotation.y += 0.003;
   }
-  
+
   // Interactive Camera Movement
   // Orbit around center based on mouse
   const time = Date.now() * 0.0005;
   const radius = 20;
-  
+
   // Combine auto movement with mouse interaction
   const targetX = Math.sin(time * 0.2 + mouseX * 2) * radius;
   const targetZ = Math.cos(time * 0.2 + mouseX * 2) * radius;
@@ -152,7 +154,7 @@ const animate = () => {
   camera.position.x += (targetX - camera.position.x) * 0.05;
   camera.position.z += (targetZ - camera.position.z) * 0.05;
   camera.position.y += (targetY - camera.position.y) * 0.05;
-  
+
   camera.lookAt(0, 0, 0);
 
   // Update glow to face camera

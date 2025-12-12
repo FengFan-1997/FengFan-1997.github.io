@@ -82,9 +82,9 @@ const initScene = () => {
   // Re-use geometry for performance, scale instances
   // Actually, for simplicity and varied materials, let's use separate meshes or InstancedMesh if optimizing
   // We'll use simple meshes for now but optimized geometry sharing
-  
-  const buildingMat = new THREE.MeshPhongMaterial({ 
-    color: 0x111111, 
+
+  const buildingMat = new THREE.MeshPhongMaterial({
+    color: 0x111111,
     shininess: 100,
     flatShading: true
   });
@@ -95,7 +95,7 @@ const initScene = () => {
     const w = 20 + Math.random() * 30;
     const h = 50 + Math.random() * 250;
     const d = 20 + Math.random() * 30;
-    
+
     const x = (Math.random() - 0.5) * CITY_SIZE * 0.8;
     const z = (Math.random() - 0.5) * CITY_SIZE * 0.8;
 
@@ -106,12 +106,12 @@ const initScene = () => {
     mesh.position.set(x, h / 2, z);
     mesh.scale.set(w, h, d);
     mesh.updateMatrix();
-    
+
     // Add edges for neon look
     const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d));
     const line = new THREE.LineSegments(edges, edgeMat);
     line.position.copy(mesh.position);
-    
+
     buildings.add(mesh);
     buildings.add(line);
   }
@@ -129,7 +129,7 @@ const initScene = () => {
     const x = (Math.random() - 0.5) * CITY_SIZE;
     const y = 10 + Math.random() * 150;
     const z = (Math.random() - 0.5) * CITY_SIZE;
-    
+
     positions[i * 3] = x;
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = z;
@@ -313,7 +313,9 @@ h1 {
   cursor: pointer;
   transition: all 0.3s;
   text-shadow: 0 0 5px #ff00ff;
-  box-shadow: 0 0 5px #ff00ff, inset 0 0 5px #ff00ff;
+  box-shadow:
+    0 0 5px #ff00ff,
+    inset 0 0 5px #ff00ff;
 }
 
 .back-btn:hover {

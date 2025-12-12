@@ -1,7 +1,7 @@
 <template>
   <div class="sakura-page">
     <div id="sakura-canvas" class="canvas-container"></div>
-    
+
     <div class="overlay">
       <h1>Cherry Blossoms</h1>
       <p>Falling for you</p>
@@ -94,7 +94,7 @@ function initThree() {
   const geometry = new THREE.ShapeGeometry(shape);
   // Center geometry
   geometry.center();
-  
+
   const material = new THREE.MeshPhongMaterial({
     color: 0xffb7c5, // Sakura pink
     side: THREE.DoubleSide,
@@ -105,12 +105,12 @@ function initThree() {
   });
 
   petals = new THREE.InstancedMesh(geometry, material, count);
-  
+
   // Initialize positions
-  for(let i=0; i<count; i++) {
+  for (let i = 0; i < count; i++) {
     resetPetal(i, true);
   }
-  
+
   scene.add(petals);
 }
 
@@ -125,29 +125,25 @@ const petalData = Array.from({ length: count }, () => ({
 
 function resetPetal(i: number, initial: boolean = false) {
   const data = petalData[i];
-  
+
   // Random position in a box above
   data.position.set(
     (Math.random() - 0.5) * 40,
     initial ? Math.random() * 30 : 20 + Math.random() * 10,
     (Math.random() - 0.5) * 30 - 5
   );
-  
-  data.rotation.set(
-    Math.random() * Math.PI,
-    Math.random() * Math.PI,
-    Math.random() * Math.PI
-  );
-  
+
+  data.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
   data.scale = Math.random() * 0.1 + 0.05;
-  
+
   // Fall speed
   data.velocity.set(
     (Math.random() - 0.5) * 0.5,
     -(Math.random() * 0.1 + 0.05),
     (Math.random() - 0.5) * 0.5
   );
-  
+
   data.rotationSpeed.set(
     (Math.random() - 0.5) * 0.1,
     (Math.random() - 0.5) * 0.1,
@@ -157,32 +153,32 @@ function resetPetal(i: number, initial: boolean = false) {
 
 function animate() {
   animationId = requestAnimationFrame(animate);
-  
+
   // Interactive Wind
   const targetWind = windStrength * 0.1;
-  
-  for(let i=0; i<count; i++) {
+
+  for (let i = 0; i < count; i++) {
     const data = petalData[i];
-    
+
     // Update Position
     data.position.x += data.velocity.x + targetWind;
     data.position.y += data.velocity.y;
     data.position.z += data.velocity.z;
-    
+
     // Turbulence
     data.position.x += Math.sin(Date.now() * 0.001 + i) * 0.01;
     data.position.z += Math.cos(Date.now() * 0.001 + i) * 0.01;
-    
+
     // Update Rotation
     data.rotation.x += data.rotationSpeed.x;
     data.rotation.y += data.rotationSpeed.y;
     data.rotation.z += data.rotationSpeed.z;
-    
+
     // Reset if below ground
     if (data.position.y < -5) {
       resetPetal(i);
     }
-    
+
     // Update Matrix
     dummy.position.copy(data.position);
     dummy.rotation.copy(data.rotation);
@@ -190,9 +186,9 @@ function animate() {
     dummy.updateMatrix();
     petals.setMatrixAt(i, dummy.matrix);
   }
-  
+
   petals.instanceMatrix.needsUpdate = true;
-  
+
   // Camera gentle movement
   camera.position.x += (mouseX * 2 - camera.position.x) * 0.05;
   camera.lookAt(0, 5, 0);
@@ -278,7 +274,7 @@ p {
   h1 {
     font-size: 3rem;
   }
-  
+
   p {
     font-size: 1.2rem;
   }

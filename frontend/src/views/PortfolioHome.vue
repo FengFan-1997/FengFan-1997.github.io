@@ -2,7 +2,7 @@
   <div class="portfolio-container">
     <!-- Universe Background -->
     <UniverseBackground ref="universeRef" :mode="config.mode" />
-    
+
     <!-- Custom Cursor -->
     <CustomCursor />
 
@@ -34,7 +34,7 @@
       <HeroSection id="hero" />
 
       <!-- Projects Section -->
-      <ProjectsSection 
+      <ProjectsSection
         id="projects"
         @hover-start="onHoverStart"
         @hover-end="onHoverEnd"
@@ -56,7 +56,7 @@
       <!-- Footer Section -->
       <FooterSection />
     </main>
-    
+
     <!-- Live2D Agent Widget -->
     <Agent />
   </div>
@@ -106,16 +106,16 @@ const onHoverEnd = () => {
 
 const handleNavigation = (route: string) => {
   if (route === '#') return;
-  
+
   // Exit animation
   const tl = gsap.timeline({
     onComplete: () => {
       router.push(route);
     }
   });
-  
+
   tl.to('.content-flow', { opacity: 0, y: -50, duration: 0.5 });
-  
+
   // Trigger strong effect on navigation
   universeRef.value?.triggerEffect(5.0);
 };
@@ -198,7 +198,7 @@ const handleNavigation = (route: string) => {
     padding: 6px 10px;
     gap: 6px;
   }
-  
+
   .desktop-config-panel {
     display: none;
   }

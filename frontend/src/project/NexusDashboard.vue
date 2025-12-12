@@ -10,8 +10,8 @@
         <span>NEXUS <span class="ai-badge">AI</span></span>
       </div>
       <nav>
-        <div 
-          class="nav-item" 
+        <div
+          class="nav-item"
           :class="{ active: activeTab === 'dashboard' }"
           @click="activeTab = 'dashboard'"
         >
@@ -19,8 +19,8 @@
           <span class="label">Dashboard</span>
           <div class="active-indicator" v-if="activeTab === 'dashboard'"></div>
         </div>
-        <div 
-          class="nav-item" 
+        <div
+          class="nav-item"
           :class="{ active: activeTab === 'prediction' }"
           @click="activeTab = 'prediction'"
         >
@@ -28,11 +28,7 @@
           <span class="label">AI Prediction</span>
           <div class="active-indicator" v-if="activeTab === 'prediction'"></div>
         </div>
-        <div 
-          class="nav-item" 
-          :class="{ active: activeTab === 'hft' }"
-          @click="activeTab = 'hft'"
-        >
+        <div class="nav-item" :class="{ active: activeTab === 'hft' }" @click="activeTab = 'hft'">
           <span class="icon">⚡</span>
           <span class="label">HFT Status</span>
           <div class="active-indicator" v-if="activeTab === 'hft'"></div>
@@ -42,7 +38,7 @@
           <span class="label">Settings</span>
         </div>
       </nav>
-      
+
       <div class="sidebar-footer">
         <button class="back-home-btn" @click="goBack">
           <span class="icon">←</span> EXIT SYSTEM
@@ -71,12 +67,12 @@
         </div>
         <div class="header-actions">
           <button class="action-btn" @click="runAnalysis" :disabled="isAnalyzing">
-            <span v-if="!isAnalyzing" class="btn-content"><span class="icon">🔍</span> Run AI Scan</span>
+            <span v-if="!isAnalyzing" class="btn-content"
+              ><span class="icon">🔍</span> Run AI Scan</span
+            >
             <span v-else class="btn-content"><span class="loader"></span> Scanning...</span>
           </button>
-          <div class="live-indicator">
-            <span class="dot"></span> LIVE
-          </div>
+          <div class="live-indicator"><span class="dot"></span> LIVE</div>
         </div>
       </header>
 
@@ -90,7 +86,9 @@
                 <h3>BTC/USD Sentiment</h3>
                 <span class="tag">Real-time</span>
               </div>
-              <div class="confidence">AI Confidence: <span class="highlight">{{ confidence }}%</span></div>
+              <div class="confidence">
+                AI Confidence: <span class="highlight">{{ confidence }}%</span>
+              </div>
             </div>
             <div class="chart-visual">
               <!-- Dynamic Candlestick Chart -->
@@ -101,10 +99,10 @@
                     <stop offset="100%" stop-color="rgba(56, 189, 248, 0)" />
                   </linearGradient>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
                     <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
                     </feMerge>
                   </filter>
                 </defs>
@@ -117,45 +115,67 @@
                 <!-- Candlesticks -->
                 <g class="candlesticks">
                   <g v-for="(candle, i) in candlesticks" :key="i" class="candle-group">
-                    <line 
-                      :x1="candle.x" :y1="candle.highY" 
-                      :x2="candle.x" :y2="candle.lowY" 
-                      :stroke="candle.isUp ? '#4ade80' : '#ef4444'" 
+                    <line
+                      :x1="candle.x"
+                      :y1="candle.highY"
+                      :x2="candle.x"
+                      :y2="candle.lowY"
+                      :stroke="candle.isUp ? '#4ade80' : '#ef4444'"
                       stroke-width="1"
                       opacity="0.8"
                     />
-                    <rect 
-                      :x="candle.x - 3" 
-                      :y="Math.min(candle.openY, candle.closeY)" 
-                      :width="6" 
-                      :height="Math.abs(candle.closeY - candle.openY) || 1" 
+                    <rect
+                      :x="candle.x - 3"
+                      :y="Math.min(candle.openY, candle.closeY)"
+                      :width="6"
+                      :height="Math.abs(candle.closeY - candle.openY) || 1"
                       :fill="candle.isUp ? '#4ade80' : '#ef4444'"
                       rx="1"
                     />
                   </g>
                 </g>
-                
+
                 <!-- Moving Average Line -->
-                <path class="line" :d="maPath" fill="none" stroke="#38bdf8" stroke-width="2" filter="url(#glow)" />
-                
+                <path
+                  class="line"
+                  :d="maPath"
+                  fill="none"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                  filter="url(#glow)"
+                />
+
                 <!-- AI Prediction Line -->
-                <path class="line prediction" :d="predictionPath" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,5" />
+                <path
+                  class="line prediction"
+                  :d="predictionPath"
+                  fill="none"
+                  stroke="#a855f7"
+                  stroke-width="2"
+                  stroke-dasharray="5,5"
+                />
               </svg>
-              <div class="prediction-label">AI PREDICTION: <span class="glow-text">{{ predictionLabel }}</span></div>
+              <div class="prediction-label">
+                AI PREDICTION: <span class="glow-text">{{ predictionLabel }}</span>
+              </div>
             </div>
           </div>
 
           <!-- AI Insights -->
           <div class="card insights-card glass-panel">
             <div class="card-header">
-               <h3>AI Insights</h3>
-               <button class="refresh-btn" @click="refreshInsights" title="Refresh Insights">
-                 <span class="icon">↻</span>
-               </button>
+              <h3>AI Insights</h3>
+              <button class="refresh-btn" @click="refreshInsights" title="Refresh Insights">
+                <span class="icon">↻</span>
+              </button>
             </div>
             <div class="insight-list">
               <transition-group name="list">
-                <div class="insight-item" v-for="(insight, index) in insights" :key="insight.title + index">
+                <div
+                  class="insight-item"
+                  v-for="(insight, index) in insights"
+                  :key="insight.title + index"
+                >
                   <div class="insight-icon-wrapper">
                     <div class="insight-icon">{{ insight.icon }}</div>
                   </div>
@@ -180,7 +200,16 @@
                 <span class="label">Confidence Score</span>
                 <div class="confidence-wrapper">
                   <div class="confidence-bar">
-                    <div class="fill" :style="{ width: tradeSignal.confidence + '%', background: tradeSignal.type === 'buy' ? 'linear-gradient(90deg, #4ade80, #22c55e)' : 'linear-gradient(90deg, #ef4444, #dc2626)' }"></div>
+                    <div
+                      class="fill"
+                      :style="{
+                        width: tradeSignal.confidence + '%',
+                        background:
+                          tradeSignal.type === 'buy'
+                            ? 'linear-gradient(90deg, #4ade80, #22c55e)'
+                            : 'linear-gradient(90deg, #ef4444, #dc2626)'
+                      }"
+                    ></div>
                   </div>
                   <span class="value">{{ tradeSignal.confidence }}%</span>
                 </div>
@@ -208,7 +237,9 @@
               <transition-group name="slide-down">
                 <div class="data-row" v-for="(row, i) in dataStream" :key="row.time + i">
                   <span class="mono">{{ row.time }}</span>
-                  <span :class="row.type === 'BUY' ? 'text-green' : 'text-red'" class="type-tag">{{ row.type }}</span>
+                  <span :class="row.type === 'BUY' ? 'text-green' : 'text-red'" class="type-tag">{{
+                    row.type
+                  }}</span>
                   <span class="mono volume">{{ row.volume }} BTC</span>
                   <span class="ai-tag" :class="row.signal.toLowerCase()">{{ row.signal }}</span>
                 </div>
@@ -220,46 +251,51 @@
         <!-- AI Prediction View -->
         <div v-else-if="activeTab === 'prediction'" class="prediction-view">
           <div class="chat-container glass-panel">
-             <div class="chat-header">
-               <div class="ai-avatar">
-                 <div class="avatar-circle">N</div>
-                 <div class="status-dot"></div>
-               </div>
-               <div class="ai-info">
-                 <h3>Nexus Oracle</h3>
-                 <span>Online • v4.2.0</span>
-               </div>
-             </div>
-             <div class="chat-messages" ref="chatContainer">
-               <transition-group name="message">
-                 <div v-for="(msg, idx) in chatMessages" :key="idx" class="message-wrapper" :class="msg.role">
-                   <div class="message-bubble">
-                     <div class="message-content">{{ msg.content }}</div>
-                   </div>
-                   <div class="message-meta">{{ msg.role === 'ai' ? 'NEXUS AI' : 'YOU' }}</div>
-                 </div>
-               </transition-group>
-               <div v-if="isTyping" class="message-wrapper ai typing">
-                 <div class="message-bubble typing-bubble">
-                   <span class="typing-dot"></span>
-                   <span class="typing-dot"></span>
-                   <span class="typing-dot"></span>
-                 </div>
-                 <div class="message-meta">NEXUS AI is thinking...</div>
-               </div>
-             </div>
-             <div class="chat-input-area">
-               <div class="input-wrapper">
-                 <input 
-                   v-model="userQuery" 
-                   @keyup.enter="sendMessage"
-                   placeholder="Ask Nexus about market trends, specific tokens, or risk analysis..." 
-                 />
-                 <button @click="sendMessage" :disabled="!userQuery.trim()">
-                   <span class="icon">➤</span>
-                 </button>
-               </div>
-             </div>
+            <div class="chat-header">
+              <div class="ai-avatar">
+                <div class="avatar-circle">N</div>
+                <div class="status-dot"></div>
+              </div>
+              <div class="ai-info">
+                <h3>Nexus Oracle</h3>
+                <span>Online • v4.2.0</span>
+              </div>
+            </div>
+            <div class="chat-messages" ref="chatContainer">
+              <transition-group name="message">
+                <div
+                  v-for="(msg, idx) in chatMessages"
+                  :key="idx"
+                  class="message-wrapper"
+                  :class="msg.role"
+                >
+                  <div class="message-bubble">
+                    <div class="message-content">{{ msg.content }}</div>
+                  </div>
+                  <div class="message-meta">{{ msg.role === 'ai' ? 'NEXUS AI' : 'YOU' }}</div>
+                </div>
+              </transition-group>
+              <div v-if="isTyping" class="message-wrapper ai typing">
+                <div class="message-bubble typing-bubble">
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                </div>
+                <div class="message-meta">NEXUS AI is thinking...</div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <div class="input-wrapper">
+                <input
+                  v-model="userQuery"
+                  @keyup.enter="sendMessage"
+                  placeholder="Ask Nexus about market trends, specific tokens, or risk analysis..."
+                />
+                <button @click="sendMessage" :disabled="!userQuery.trim()">
+                  <span class="icon">➤</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -291,7 +327,6 @@
           </div>
         </div>
       </transition>
-
     </div>
 
     <!-- Settings Modal -->
@@ -351,7 +386,8 @@ const tradeSignal = ref({
   action: 'STRONG BUY',
   type: 'buy',
   confidence: 94.2,
-  reason: 'RSI divergence detected combined with increased volume on the 4H timeframe. Neural pattern match: "Golden Cross" scenario.'
+  reason:
+    'RSI divergence detected combined with increased volume on the 4H timeframe. Neural pattern match: "Golden Cross" scenario.'
 });
 
 const goBack = () => router.push('/');
@@ -387,8 +423,8 @@ const mapToY = (val: number, min: number, max: number, height: number) => {
 
 const candlesticks = computed(() => {
   const data = rawCandles.value;
-  const minPrice = Math.min(...data.map(c => c.low));
-  const maxPrice = Math.max(...data.map(c => c.high));
+  const minPrice = Math.min(...data.map((c) => c.low));
+  const maxPrice = Math.max(...data.map((c) => c.high));
   const width = 800;
   const height = 300;
   const candleWidth = width / data.length;
@@ -406,17 +442,19 @@ const candlesticks = computed(() => {
 const maPath = computed(() => {
   const data = rawCandles.value;
   // Simple Moving Average
-  const points = data.map((c, i) => {
-    if (i < 5) return null;
-    const sum = data.slice(i - 5, i).reduce((acc, curr) => acc + curr.close, 0);
-    const avg = sum / 5;
-    const minPrice = Math.min(...data.map(c => c.low));
-    const maxPrice = Math.max(...data.map(c => c.high));
-    const x = i * (800 / data.length) + (800 / data.length) / 2;
-    const y = mapToY(avg, minPrice, maxPrice, 300);
-    return `${x},${y}`;
-  }).filter(p => p !== null);
-  
+  const points = data
+    .map((c, i) => {
+      if (i < 5) return null;
+      const sum = data.slice(i - 5, i).reduce((acc, curr) => acc + curr.close, 0);
+      const avg = sum / 5;
+      const minPrice = Math.min(...data.map((c) => c.low));
+      const maxPrice = Math.max(...data.map((c) => c.high));
+      const x = i * (800 / data.length) + 800 / data.length / 2;
+      const y = mapToY(avg, minPrice, maxPrice, 300);
+      return `${x},${y}`;
+    })
+    .filter((p) => p !== null);
+
   return `M${points.join(' L')}`;
 });
 
@@ -456,7 +494,7 @@ const dataStream = ref([
   { time: '15:59:06', type: 'BUY', volume: '7.7418', signal: 'ACCUMULATE' },
   { time: '15:59:05', type: 'SELL', volume: '6.0762', signal: 'DISTRIBUTE' },
   { time: '15:59:04', type: 'BUY', volume: '5.5712', signal: 'ACCUMULATE' },
-  { time: '15:59:03', type: 'SELL', volume: '9.5612', signal: 'DISTRIBUTE' },
+  { time: '15:59:03', type: 'SELL', volume: '9.5612', signal: 'DISTRIBUTE' }
 ]);
 
 const runAnalysis = () => {
@@ -464,7 +502,7 @@ const runAnalysis = () => {
   setTimeout(() => {
     isAnalyzing.value = false;
     confidence.value = +(Math.random() * 5 + 94).toFixed(1);
-    
+
     // Update chart data
     const lastClose = rawCandles.value[rawCandles.value.length - 1].close;
     const newCandle = {
@@ -475,7 +513,7 @@ const runAnalysis = () => {
     };
     rawCandles.value.push(newCandle);
     rawCandles.value.shift();
-    
+
     insights.value.unshift({
       icon: '⚡',
       title: 'New Anomaly',
@@ -484,14 +522,14 @@ const runAnalysis = () => {
       scoreClass: 'warning'
     });
     if (insights.value.length > 4) insights.value.pop();
-    
+
     // Update Signal
     const isBuy = Math.random() > 0.5;
     tradeSignal.value = {
       action: isBuy ? 'STRONG BUY' : 'STRONG SELL',
       type: isBuy ? 'buy' : 'sell',
       confidence: +(Math.random() * 15 + 80).toFixed(1),
-      reason: isBuy 
+      reason: isBuy
         ? 'Golden Cross detected on 4H chart. Whale accumulation observed in key support zones.'
         : 'Bearish divergence on RSI. High sell wall detected at resistance level $68,500.'
     };
@@ -506,37 +544,45 @@ const refreshInsights = () => {
 const userQuery = ref('');
 const isTyping = ref(false);
 const chatMessages = ref([
-  { role: 'ai', content: 'Hello. I am NEXUS, your advanced market analyst. I can predict price movements, analyze sentiment, and audit smart contracts. How can I assist you today?' }
+  {
+    role: 'ai',
+    content:
+      'Hello. I am NEXUS, your advanced market analyst. I can predict price movements, analyze sentiment, and audit smart contracts. How can I assist you today?'
+  }
 ]);
 const chatContainer = ref<HTMLElement | null>(null);
 
 const sendMessage = () => {
   if (!userQuery.value.trim()) return;
-  
+
   chatMessages.value.push({ role: 'user', content: userQuery.value });
   const query = userQuery.value;
   userQuery.value = '';
   isTyping.value = true;
 
   nextTick(() => {
-     if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
   });
 
   setTimeout(() => {
     isTyping.value = false;
     let response = "I've analyzed the current market vectors. ";
     if (query.toLowerCase().includes('btc') || query.toLowerCase().includes('bitcoin')) {
-      response += "Bitcoin shows strong accumulation patterns in the $65k-$68k range. On-chain metrics suggest a supply shock is imminent. RSI is resetting, suggesting a buy zone.";
+      response +=
+        'Bitcoin shows strong accumulation patterns in the $65k-$68k range. On-chain metrics suggest a supply shock is imminent. RSI is resetting, suggesting a buy zone.';
     } else if (query.toLowerCase().includes('eth') || query.toLowerCase().includes('ethereum')) {
-      response += "Ethereum gas fees are stabilizing. Layer 2 volume has increased by 40% in the last 24h, indicating a bullish divergence.";
+      response +=
+        'Ethereum gas fees are stabilizing. Layer 2 volume has increased by 40% in the last 24h, indicating a bullish divergence.';
     } else if (query.toLowerCase().includes('sol') || query.toLowerCase().includes('solana')) {
-      response += "Solana network activity is at an ATH. Developer retention is high. My model predicts a 15% upside in the short term.";
+      response +=
+        'Solana network activity is at an ATH. Developer retention is high. My model predicts a 15% upside in the short term.';
     } else {
-      response += "My neural networks detect high volatility incoming. I recommend adjusting your leverage and monitoring the HFT status tab for real-time liquidity changes.";
+      response +=
+        'My neural networks detect high volatility incoming. I recommend adjusting your leverage and monitoring the HFT status tab for real-time liquidity changes.';
     }
     chatMessages.value.push({ role: 'ai', content: response });
     nextTick(() => {
-       if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
     });
   }, 1500);
 };
@@ -544,8 +590,16 @@ const sendMessage = () => {
 // --- HFT Logic ---
 const hftLogs = ref([
   { time: '16:00:01', level: 'INFO', message: 'Connected to Exchange A WebSocket feed.' },
-  { time: '16:00:02', level: 'SUCCESS', message: 'Arbitrage opportunity found: ETH/USDT (0.4% spread).' },
-  { time: '16:00:02', level: 'WARN', message: 'High network congestion detected. Increasing gas priority.' },
+  {
+    time: '16:00:02',
+    level: 'SUCCESS',
+    message: 'Arbitrage opportunity found: ETH/USDT (0.4% spread).'
+  },
+  {
+    time: '16:00:02',
+    level: 'WARN',
+    message: 'High network congestion detected. Increasing gas priority.'
+  }
 ]);
 
 let timer: number;
@@ -555,7 +609,7 @@ onMounted(() => {
   timer = window.setInterval(() => {
     // Update latency
     latency.value = +(0.3 + Math.random() * 0.4).toFixed(1);
-    
+
     // Update Candles randomly
     if (Math.random() > 0.7) {
       const last = rawCandles.value[rawCandles.value.length - 1];
@@ -565,13 +619,13 @@ onMounted(() => {
       last.low = Math.min(last.low, last.close);
       // Occasionally add new candle
       if (Math.random() > 0.9) {
-         rawCandles.value.push({
-           open: last.close,
-           close: last.close,
-           high: last.close,
-           low: last.close
-         });
-         rawCandles.value.shift();
+        rawCandles.value.push({
+          open: last.close,
+          close: last.close,
+          high: last.close,
+          low: last.close
+        });
+        rawCandles.value.shift();
       }
     }
 
@@ -633,16 +687,16 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-  /* Tablet Adaptation (980px - 1280px) */
-  @media (min-width: 980px) and (max-width: 1280px) {
-    .sidebar {
-      border-radius: 0;
-      border-left: none;
-      margin-left: 0;
-    }
+/* Tablet Adaptation (980px - 1280px) */
+@media (min-width: 980px) and (max-width: 1280px) {
+  .sidebar {
+    border-radius: 0;
+    border-left: none;
+    margin-left: 0;
   }
+}
 
-  .sidebar-footer {
+.sidebar-footer {
   margin-top: auto;
   display: flex;
   flex-direction: column;
@@ -684,21 +738,21 @@ onBeforeUnmount(() => {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 15px;
   }
-  
+
   .sidebar nav {
     display: flex;
     overflow-x: auto;
     gap: 20px;
     padding-bottom: 5px;
   }
-  
+
   .nav-item {
     white-space: nowrap;
     margin-bottom: 0;
   }
-  
+
   .sidebar-footer {
-    display: none; 
+    display: none;
   }
 
   header {
@@ -706,14 +760,14 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     gap: 20px;
   }
-  
+
   .header-left {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 15px;
   }
-  
+
   .signal-card {
     grid-column: span 1;
   }
@@ -726,11 +780,11 @@ onBeforeUnmount(() => {
   .main-content {
     padding: 20px;
   }
-  
+
   .mobile-back-btn {
     display: block !important;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     width: 40px;
     height: 40px;
@@ -781,7 +835,7 @@ onBeforeUnmount(() => {
 
 .nav-item:hover {
   color: #fff;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .nav-item.active {
@@ -801,10 +855,10 @@ onBeforeUnmount(() => {
 }
 
 .system-status {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 20px;
   border-radius: 0;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .status-row {
@@ -912,7 +966,7 @@ h1 {
 }
 
 .chart-card {
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
 }
 
 @media (min-width: 1200px) {
@@ -940,7 +994,9 @@ h1 {
   color: #666;
   transition: color 0.3s;
 }
-.refresh-icon:hover { color: #fff; }
+.refresh-icon:hover {
+  color: #fff;
+}
 
 .highlight {
   color: #fff;
@@ -957,7 +1013,7 @@ h1 {
   height: 350px;
   width: 100%;
   background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 0;
   overflow: hidden;
 }
@@ -985,7 +1041,7 @@ h1 {
   align-items: flex-start;
   gap: 20px;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   margin-bottom: 0;
   background: transparent;
   border-radius: 0;
@@ -1024,9 +1080,15 @@ h1 {
   opacity: 0.8;
 }
 
-.positive { color: #fff; }
-.warning { color: #ccc; }
-.neutral { color: #888; }
+.positive {
+  color: #fff;
+}
+.warning {
+  color: #ccc;
+}
+.neutral {
+  color: #888;
+}
 
 .data-rows {
   font-family: 'JetBrains Mono', monospace;
@@ -1037,7 +1099,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   gap: 10px;
   align-items: center;
 }
@@ -1053,8 +1115,12 @@ h1 {
   letter-spacing: 0.05em;
 }
 
-.text-green { color: #fff; }
-.text-red { color: #666; }
+.text-green {
+  color: #fff;
+}
+.text-red {
+  color: #666;
+}
 
 .ai-tag {
   background: #fff;
@@ -1109,7 +1175,7 @@ h1 {
 .confidence-bar {
   flex: 1;
   height: 2px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 0;
   overflow: hidden;
 }
@@ -1122,7 +1188,7 @@ h1 {
 }
 
 .signal-reason {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 16px;
   border-radius: 0;
   display: flex;
@@ -1130,7 +1196,7 @@ h1 {
   font-size: 0.85rem;
   color: #aaa;
   line-height: 1.5;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Prediction View Styles */
@@ -1138,7 +1204,7 @@ h1 {
   height: 600px;
   background: #0f0f0f;
   border-radius: 0;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1170,7 +1236,7 @@ h1 {
 .message.ai {
   align-self: flex-start;
   background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ccc;
 }
 
@@ -1192,7 +1258,7 @@ h1 {
 
 .chat-input {
   padding: 24px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   gap: 15px;
   background: #0f0f0f;
@@ -1201,7 +1267,7 @@ h1 {
 .chat-input input {
   flex: 1;
   background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 14px;
   border-radius: 0;
   color: #fff;
@@ -1237,13 +1303,13 @@ h1 {
   font-family: 'JetBrains Mono', monospace;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .terminal-header {
   background: #0a0a0a;
   padding: 12px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1276,16 +1342,35 @@ h1 {
   margin-bottom: 6px;
 }
 
-.log-time { color: #444; margin-right: 12px; }
-.log-level { margin-right: 12px; font-weight: 500; }
-.log-level.INFO { color: #888; }
-.log-level.WARN { color: #fff; text-decoration: underline;}
-.log-level.SUCCESS { color: #fff; }
+.log-time {
+  color: #444;
+  margin-right: 12px;
+}
+.log-level {
+  margin-right: 12px;
+  font-weight: 500;
+}
+.log-level.INFO {
+  color: #888;
+}
+.log-level.WARN {
+  color: #fff;
+  text-decoration: underline;
+}
+.log-level.SUCCESS {
+  color: #fff;
+}
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Modal Styles */
@@ -1309,7 +1394,7 @@ h1 {
   border-radius: 0;
   width: 90%;
   max-width: 450px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
@@ -1336,7 +1421,7 @@ h1 {
   width: 100%;
   padding: 12px;
   background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0;
   color: #fff;
   outline: none;
@@ -1351,7 +1436,7 @@ h1 {
   flex: 1;
   padding: 12px;
   background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #666;
   border-radius: 0;
   cursor: pointer;

@@ -2,29 +2,50 @@
   <section class="section skills-section">
     <div class="content-wrapper">
       <h2 class="section-title">{{ t('skills.title') }}</h2>
-      
+
       <div class="glass-card">
         <div class="skills-grid">
-          <div v-for="skill in skills.core" :key="skill.name" class="skill-circle" :style="{ '--percent': skill.percent }">
+          <div
+            v-for="skill in skills.core"
+            :key="skill.name"
+            class="skill-circle"
+            :style="{ '--percent': skill.percent }"
+          >
             <svg viewBox="0 0 36 36" class="circular-chart">
               <defs>
-                <linearGradient :id="'gradient-' + sanitizeId(skill.name)" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                  :id="'gradient-' + sanitizeId(skill.name)"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
                   <stop offset="0%" style="stop-color: #38bdf8" />
                   <stop offset="100%" style="stop-color: #818cf8" />
                 </linearGradient>
-                <filter :id="'glow-' + sanitizeId(skill.name)" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                <filter
+                  :id="'glow-' + sanitizeId(skill.name)"
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
-              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path class="circle" 
-                :stroke="'url(#gradient-' + sanitizeId(skill.name) + ')'" 
+              <path
+                class="circle-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                class="circle"
+                :stroke="'url(#gradient-' + sanitizeId(skill.name) + ')'"
                 :filter="'url(#glow-' + sanitizeId(skill.name) + ')'"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
             </svg>
             <div class="skill-info">
@@ -54,7 +75,19 @@ const skills = {
     { name: 'Three.js / WebGL', percent: 85 },
     { name: 'Node.js', percent: 80 }
   ],
-  stack: ['Vite', 'Pinia', 'GSAP', 'Tailwind', 'Python', 'Docker', 'AWS', 'Figma', 'React', 'Next.js', 'CI/CD']
+  stack: [
+    'Vite',
+    'Pinia',
+    'GSAP',
+    'Tailwind',
+    'Python',
+    'Docker',
+    'AWS',
+    'Figma',
+    'React',
+    'Next.js',
+    'CI/CD'
+  ]
 };
 
 const sanitizeId = (name: string) => {
@@ -148,8 +181,12 @@ const sanitizeId = (name: string) => {
 }
 
 @keyframes progress {
-  0% { stroke-dasharray: 0, 100; }
-  100% { stroke-dasharray: var(--percent), 100; }
+  0% {
+    stroke-dasharray: 0, 100;
+  }
+  100% {
+    stroke-dasharray: var(--percent), 100;
+  }
 }
 
 .skill-info {
@@ -220,16 +257,16 @@ const sanitizeId = (name: string) => {
     grid-template-columns: repeat(2, 1fr);
     gap: 60px 30px;
   }
-  
+
   .glass-card {
     padding: 30px;
   }
-  
+
   .circular-chart {
     width: 120px;
     height: 120px;
   }
-  
+
   .skill-info .percent {
     font-size: 1.5rem;
   }
@@ -240,7 +277,7 @@ const sanitizeId = (name: string) => {
     grid-template-columns: 1fr;
     gap: 50px;
   }
-  
+
   .section-title {
     font-size: 2.5rem;
   }

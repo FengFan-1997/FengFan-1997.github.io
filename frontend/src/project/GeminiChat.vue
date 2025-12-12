@@ -26,16 +26,14 @@
       </div>
 
       <div class="input-area">
-        <textarea 
-          v-model="userInput" 
+        <textarea
+          v-model="userInput"
           @keydown.enter.prevent="sendMessage"
           placeholder="Ask me anything..."
           rows="1"
           ref="textarea"
         ></textarea>
-        <button @click="sendMessage" :disabled="isLoading || !userInput.trim()">
-          Send
-        </button>
+        <button @click="sendMessage" :disabled="isLoading || !userInput.trim()">Send</button>
       </div>
     </div>
   </div>
@@ -75,13 +73,13 @@ const sendMessage = async () => {
   scrollToBottom();
 
   const response = await generateContent(text);
-  
+
   if (response.error) {
     messages.value.push({ role: 'ai', text: `Error: ${response.error}` });
   } else {
     messages.value.push({ role: 'ai', text: response.text });
   }
-  
+
   isLoading.value = false;
   scrollToBottom();
 };
@@ -176,8 +174,14 @@ const sendMessage = async () => {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.user {
@@ -264,14 +268,16 @@ textarea {
   resize: none;
   min-height: 24px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 textarea:focus {
   outline: none;
   border-color: rgba(255, 255, 255, 0.3);
   background: #161616;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(255,255,255,0.05);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 255, 255, 0.05);
 }
 
 button {
@@ -319,12 +325,24 @@ button:disabled {
   animation: pulse-dot 1.4s infinite ease-in-out both;
 }
 
-.dot:nth-child(1) { animation-delay: -0.32s; }
-.dot:nth-child(2) { animation-delay: -0.16s; }
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes pulse-dot {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 979px) {
@@ -352,7 +370,7 @@ button:disabled {
     left: 0;
     right: 0;
   }
-  
+
   .title {
     font-size: 1.5rem;
   }
@@ -364,12 +382,13 @@ button:disabled {
   .message {
     max-width: 90%;
   }
-  
-  .message.user .text, .message.ai .text {
+
+  .message.user .text,
+  .message.ai .text {
     padding: 12px 16px;
     font-size: 1rem;
   }
-  
+
   .input-area {
     padding: 16px;
     background: rgba(10, 10, 10, 0.95);
@@ -380,7 +399,7 @@ button:disabled {
     left: 0;
     right: 0;
   }
-  
+
   button {
     padding: 0 20px;
     font-size: 0.8rem;

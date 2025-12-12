@@ -62,7 +62,10 @@ onBeforeUnmount(() => {
   pointer-events: none;
   z-index: 9998;
   transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s, background-color 0.3s;
+  transition:
+    width 0.3s,
+    height 0.3s,
+    background-color 0.3s;
 }
 @media (max-width: 768px) {
   .custom-cursor,

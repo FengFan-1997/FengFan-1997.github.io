@@ -1,7 +1,7 @@
 <template>
   <div class="neural-container">
     <canvas ref="canvas" class="visualizer"></canvas>
-    
+
     <div class="interface">
       <div class="top-bar">
         <div class="ai-status">
@@ -14,12 +14,12 @@
           <span>LATENCY: 4ms</span>
         </div>
       </div>
-      
+
       <div class="center-text">
         <h2>EMOTION ANALYSIS</h2>
         <div class="scrolling-data">
-          DETECTING PATTERNS...<br/>
-          SYNCING AUDIO WAVES...<br/>
+          DETECTING PATTERNS...<br />
+          SYNCING AUDIO WAVES...<br />
           GENERATING HARMONICS...
         </div>
       </div>
@@ -69,16 +69,24 @@ const initParticles = () => {
   }
 };
 
-const drawWave = (yOffset: number, amplitude: number, frequency: number, color: string, speed: number) => {
+const drawWave = (
+  yOffset: number,
+  amplitude: number,
+  frequency: number,
+  color: string,
+  speed: number
+) => {
   if (!ctx) return;
   ctx.beginPath();
   ctx.moveTo(0, height / 2);
-  
+
   for (let x = 0; x < width; x++) {
-    const y = Math.sin(x * frequency + time * speed) * amplitude * Math.sin(time * 0.5 + x * 0.01) + yOffset;
+    const y =
+      Math.sin(x * frequency + time * speed) * amplitude * Math.sin(time * 0.5 + x * 0.01) +
+      yOffset;
     ctx.lineTo(x, y);
   }
-  
+
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke();
@@ -86,22 +94,22 @@ const drawWave = (yOffset: number, amplitude: number, frequency: number, color: 
 
 const animate = () => {
   if (!ctx || !canvas.value) return;
-  
+
   ctx.fillStyle = 'rgba(10, 10, 15, 0.2)'; // Trail effect
   ctx.fillRect(0, 0, width, height);
-  
+
   time += 0.05;
 
   // Draw Particles
-  particles.forEach(p => {
+  particles.forEach((p) => {
     p.x += p.vx;
     p.y += p.vy;
-    
+
     if (p.x < 0) p.x = width;
     if (p.x > width) p.x = 0;
     if (p.y < 0) p.y = height;
     if (p.y > height) p.y = 0;
-    
+
     ctx!.beginPath();
     ctx!.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx!.fillStyle = `rgba(100, 200, 255, ${p.alpha})`;
@@ -110,12 +118,12 @@ const animate = () => {
 
   // Draw Waves (Neural Activity)
   const centerY = height / 2;
-  
+
   // Base wave
   drawWave(centerY, 50, 0.01, 'rgba(0, 255, 200, 0.5)', 1);
   drawWave(centerY, 70, 0.005, 'rgba(0, 150, 255, 0.3)', 0.5);
   drawWave(centerY, 30, 0.02, 'rgba(255, 0, 200, 0.4)', 2);
-  
+
   // Interference lines
   if (Math.random() > 0.95) {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
@@ -207,9 +215,18 @@ onBeforeUnmount(() => {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .metrics {

@@ -7,7 +7,7 @@
       <span class="bar"></span>
     </div>
     <div class="mobile-title">Menu</div>
-    <div style="margin-left: auto;">
+    <div style="margin-left: auto">
       <slot name="mobile-header-extra"></slot>
     </div>
   </div>
@@ -16,16 +16,16 @@
   <div class="mobile-overlay" :class="{ active: isMobileOpen }" @click="closeMobileMenu"></div>
 
   <!-- Sidebar Navigation -->
-  <nav class="sidebar-wrapper" :class="{ 'collapsed': isCollapsed, 'mobile-open': isMobileOpen }">
+  <nav class="sidebar-wrapper" :class="{ collapsed: isCollapsed, 'mobile-open': isMobileOpen }">
     <div class="glass-panel">
       <div class="toggle-area" @click="toggleSidebar">
         <span class="toggle-line"></span>
         <span class="toggle-line short"></span>
       </div>
-      
+
       <div class="nav-list">
-        <a 
-          v-for="item in navItems" 
+        <a
+          v-for="item in navItems"
           :key="item.id"
           :href="item.target"
           class="nav-item"
@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount} from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useLanguageStore } from '../stores/language';
 
 const languageStore = useLanguageStore();
@@ -62,7 +62,7 @@ const navItems = [
   { id: 'about', target: '#about' },
   { id: 'skills', target: '#skills' },
   { id: 'experience', target: '#experience' },
-  { id: 'testimonials', target: '#testimonials' },
+  { id: 'testimonials', target: '#testimonials' }
 ];
 
 const toggleSidebar = () => {
@@ -96,13 +96,13 @@ const checkScroll = () => {
   let current = '';
   let minDistance = Infinity;
 
-  navItems.forEach(item => {
+  navItems.forEach((item) => {
     const element = document.querySelector(item.target);
     if (element instanceof HTMLElement) {
       const rect = element.getBoundingClientRect();
       // Calculate distance from center of viewport
       const distance = Math.abs(rect.top + rect.height / 2 - viewportHeight / 2);
-      
+
       // Consider an element active if it covers the center of the screen
       // or if it's the closest to the center
       if (distance < minDistance) {
@@ -111,7 +111,7 @@ const checkScroll = () => {
       }
     }
   });
-  
+
   if (current) {
     activeSection.value = current;
   }
@@ -121,7 +121,7 @@ onMounted(() => {
   // Try to find the scroll container
   const container = document.querySelector('.portfolio-container') || window;
   container.addEventListener('scroll', checkScroll, { passive: true });
-  
+
   // Initial check
   checkScroll();
 });
@@ -255,7 +255,8 @@ onBeforeUnmount(() => {
   height: 32px;
 }
 
-.nav-item:hover, .nav-item.active {
+.nav-item:hover,
+.nav-item.active {
   color: #fff;
 }
 
@@ -349,7 +350,7 @@ onBeforeUnmount(() => {
     width: auto;
     margin-left: 1rem;
   }
-  
+
   .collapsed .nav-label {
     /* Reset collapsed state styles for mobile if shared */
     display: block;
@@ -357,7 +358,7 @@ onBeforeUnmount(() => {
     width: auto;
     transform: none;
   }
-  
+
   .mobile-overlay {
     position: fixed;
     top: 0;
@@ -370,7 +371,7 @@ onBeforeUnmount(() => {
     pointer-events: none;
     transition: opacity 0.3s;
   }
-  
+
   .mobile-overlay.active {
     opacity: 1;
     pointer-events: auto;
@@ -382,7 +383,7 @@ onBeforeUnmount(() => {
   .sidebar-wrapper {
     left: 0;
   }
-  
+
   .glass-panel {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;

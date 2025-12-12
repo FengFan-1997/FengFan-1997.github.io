@@ -2,7 +2,7 @@
   <div class="resume-forge-container">
     <div class="bg-gradient"></div>
     <div class="bg-noise"></div>
-    
+
     <div class="content-wrapper">
       <div class="header">
         <button class="back-btn" @click="goBack">
@@ -22,33 +22,31 @@
               <i class="fas fa-file-alt icon"></i>
               <label>Your Resume</label>
             </div>
-            <textarea 
-              v-model="resumeText" 
+            <textarea
+              v-model="resumeText"
               placeholder="Paste your resume content here..."
               class="custom-textarea"
             ></textarea>
           </div>
-          
+
           <div class="input-group">
             <div class="label-row">
               <i class="fas fa-briefcase icon"></i>
               <label>Job Description</label>
             </div>
-            <textarea 
-              v-model="jobDescription" 
+            <textarea
+              v-model="jobDescription"
               placeholder="Paste the job description here..."
               class="custom-textarea"
             ></textarea>
           </div>
-          
-          <button 
-            class="analyze-btn" 
-            :disabled="isLoading || !resumeText || !jobDescription" 
+
+          <button
+            class="analyze-btn"
+            :disabled="isLoading || !resumeText || !jobDescription"
             @click="analyzeResume"
           >
-            <span v-if="!isLoading">
-              <i class="fas fa-magic"></i> Optimize Resume
-            </span>
+            <span v-if="!isLoading"> <i class="fas fa-magic"></i> Optimize Resume </span>
             <div v-else class="loading-indicator">
               <i class="fas fa-circle-notch fa-spin"></i> Analyzing...
             </div>
@@ -60,7 +58,7 @@
             <i class="fas fa-robot"></i>
             <p>Paste your resume and job description to get AI-powered optimization suggestions.</p>
           </div>
-          
+
           <div v-if="isLoading" class="loading-state">
             <div class="loader-icon">
               <i class="fas fa-cog fa-spin"></i>
@@ -73,13 +71,13 @@
               <div class="score-circle-wrapper">
                 <svg class="score-svg" viewBox="0 0 100 100">
                   <circle class="score-bg" cx="50" cy="50" r="45"></circle>
-                  <circle 
-                    class="score-progress" 
-                    cx="50" 
-                    cy="50" 
+                  <circle
+                    class="score-progress"
+                    cx="50"
+                    cy="50"
                     r="45"
                     :stroke-dasharray="283"
-                    :stroke-dashoffset="283 - (283 * result.score / 100)"
+                    :stroke-dashoffset="283 - (283 * result.score) / 100"
                     :style="{ stroke: getScoreColor(result.score) }"
                   ></circle>
                 </svg>
@@ -146,7 +144,7 @@ const copyToClipboard = (text: string) => {
 
 const analyzeResume = async () => {
   if (!resumeText.value || !jobDescription.value) return;
-  
+
   isLoading.value = true;
   result.value = null;
 
@@ -171,7 +169,10 @@ const analyzeResume = async () => {
 
   try {
     const response = await generateContent(prompt);
-    let cleanText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    let cleanText = response.text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
     // Handle potential non-JSON prefix/suffix if API is chatty
     const jsonStart = cleanText.indexOf('{');
     const jsonEnd = cleanText.lastIndexOf('}');
@@ -184,13 +185,14 @@ const analyzeResume = async () => {
     // Mock result on error for demo purposes if API fails
     result.value = {
       score: 75,
-      summary: "Good technical match but lacks specific keywords from the JD.",
+      summary: 'Good technical match but lacks specific keywords from the JD.',
       recommendations: [
         "Include 'Vue 3' explicitly in your skills section.",
         "Quantify your achievements (e.g., 'Improved performance by 20%').",
-        "Highlight your experience with TypeScript."
+        'Highlight your experience with TypeScript.'
       ],
-      optimizedProfile: "Senior Frontend Developer with 5+ years of experience specializing in Vue.js and TypeScript. Proven track record of delivering scalable web applications and optimizing performance."
+      optimizedProfile:
+        'Senior Frontend Developer with 5+ years of experience specializing in Vue.js and TypeScript. Proven track record of delivering scalable web applications and optimizing performance.'
     };
   } finally {
     isLoading.value = false;
@@ -204,7 +206,11 @@ const analyzeResume = async () => {
 .resume-forge-container {
   min-height: 100vh;
   color: #fff;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   position: relative;
   overflow-x: hidden;
 }
@@ -429,8 +435,14 @@ const analyzeResume = async () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .score-card {
@@ -500,7 +512,8 @@ const analyzeResume = async () => {
   line-height: 1.5;
 }
 
-.recommendations h3, .optimized-content h3 {
+.recommendations h3,
+.optimized-content h3 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -586,7 +599,7 @@ const analyzeResume = async () => {
   .custom-textarea {
     height: 200px;
   }
-  
+
   .title-group h1 {
     font-size: 1.8rem;
   }

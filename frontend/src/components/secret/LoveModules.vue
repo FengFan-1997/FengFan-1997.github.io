@@ -6,7 +6,12 @@
       <div class="module-card music-card">
         <div class="card-content">
           <div class="visualizer">
-            <div class="bar" v-for="n in 10" :key="n" :style="{ animationDelay: `${n * 0.1}s` }"></div>
+            <div
+              class="bar"
+              v-for="n in 10"
+              :key="n"
+              :style="{ animationDelay: `${n * 0.1}s` }"
+            ></div>
           </div>
           <div class="track-info">
             <h3>Our Wedding</h3>
@@ -44,12 +49,8 @@
       <!-- Module 4: Daily Whisper -->
       <div class="module-card whisper-card" @click="generateWhisper">
         <div class="card-content">
-          <div class="whisper-text" v-if="currentWhisper">
-            "{{ currentWhisper }}"
-          </div>
-          <div class="click-hint" v-else>
-            Tap for a whisper 💫
-          </div>
+          <div class="whisper-text" v-if="currentWhisper">"{{ currentWhisper }}"</div>
+          <div class="click-hint" v-else>Tap for a whisper 💫</div>
         </div>
       </div>
     </div>
@@ -58,7 +59,6 @@
     <div class="universe-section">
       <h2 class="universe-title">Infinite Dimensions</h2>
       <div class="modules-grid universes-grid">
-        
         <div class="module-card universe-card" @click="router.push('/secret/galaxy')">
           <div class="card-content">
             <div class="icon-wrapper">🌌</div>
@@ -138,7 +138,6 @@
             <p>Falling Blossoms</p>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -146,7 +145,6 @@
     <Teleport to="body">
       <Transition name="fade">
         <div class="modal-overlay" v-if="activeModal" @click.self="closeModal">
-          
           <!-- Letter Modal -->
           <div class="modal-content letter-modal" v-if="activeModal === 'letter'">
             <button class="close-btn" @click="closeModal">×</button>
@@ -154,14 +152,13 @@
               <h2>My Dearest,</h2>
               <p>
                 In this blooming garden, every rose whispers your name.
-                <br><br>
-                Just like the gentle breeze that caresses these flowers,
-                your love brings life to my world.
-                <br><br>
-                FKF & XY, forever entertwined like vines of ivy.
-                520, 1314.
+                <br /><br />
+                Just like the gentle breeze that caresses these flowers, your love brings life to my
+                world.
+                <br /><br />
+                FKF & XY, forever entertwined like vines of ivy. 520, 1314.
               </p>
-              <p class="sign">Yours,<br>FKF</p>
+              <p class="sign">Yours,<br />FKF</p>
             </div>
           </div>
 
@@ -176,7 +173,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </Transition>
     </Teleport>
@@ -202,19 +198,19 @@ const activeModal = ref<string | null>(null);
 const currentWhisper = ref<string>('');
 
 const whispers = [
-  "You are the sun that warms my garden.",
-  "Every flower blooms for you.",
-  "My heart beats in 520 BPM.",
+  'You are the sun that warms my garden.',
+  'Every flower blooms for you.',
+  'My heart beats in 520 BPM.',
   "Let's grow old together.",
-  "You are my favorite view.",
+  'You are my favorite view.',
   "Love is the flower you've got to let grow."
 ];
 
 const timelineEvents = [
-  { date: "2023.05.20", title: "First Met" },
-  { date: "2023.06.01", title: "First Date" },
-  { date: "2023.12.25", title: "First Christmas" },
-  { date: "Now", title: "Creating Future" }
+  { date: '2023.05.20', title: 'First Met' },
+  { date: '2023.06.01', title: 'First Date' },
+  { date: '2023.12.25', title: 'First Christmas' },
+  { date: 'Now', title: 'Creating Future' }
 ];
 
 const togglePlay = () => {
@@ -316,7 +312,7 @@ const generateWhisper = () => {
 .icon-wrapper {
   font-size: 2.8rem;
   margin-bottom: 8px;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 
 /* Music Card */
@@ -359,8 +355,13 @@ const generateWhisper = () => {
 }
 
 @keyframes equalize {
-  0%, 100% { height: 20%; }
-  50% { height: 100%; }
+  0%,
+  100% {
+    height: 20%;
+  }
+  50% {
+    height: 100%;
+  }
 }
 
 /* Notification Dot */
@@ -399,7 +400,7 @@ const generateWhisper = () => {
   font-size: 2.5rem;
   color: #ff1493;
   margin-bottom: 30px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .universes-grid {
@@ -486,7 +487,7 @@ const generateWhisper = () => {
   max-width: 800px;
   width: 90%;
   border-radius: 4px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   font-family: 'Playfair Display', serif;
   color: #4a4a4a;
   line-height: 2;
@@ -554,7 +555,7 @@ const generateWhisper = () => {
   background: #ff69b4;
   border-radius: 50%;
   border: 4px solid #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .timeline-item .date {
@@ -571,77 +572,83 @@ const generateWhisper = () => {
   font-family: 'Playfair Display', serif;
 }
 
-  /* Mobile Adaptation */
-  @media (max-width: 768px) {
-    .modules-grid {
-      grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
-      gap: 15px;
-    }
-
-    .module-card {
-      min-height: 120px;
-      padding: 15px;
-    }
-
-    .icon-wrapper {
-      font-size: 2rem;
-    }
-
-    .module-card h3 {
-      font-size: 0.9rem;
-    }
-
-    .module-card p {
-      font-size: 0.75rem;
-    }
-
-    .letter-modal h2 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-    }
-    
-    .letter-modal p {
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-
-    .timeline-modal h2 {
-      font-size: 2.5rem;
-      margin-bottom: 30px;
-    }
-
-    .timeline-item .content {
-      font-size: 1.1rem;
-    }
-    
-    .close-btn {
-      top: 15px;
-      right: 15px;
-      width: 40px;
-      height: 40px;
-      font-size: 1.5rem;
-      background: rgba(255, 255, 255, 0.8); /* More visible on mobile */
-    }
-    
-    .letter-modal .paper {
-      padding: 25px;
-      width: 90%;
-      margin-top: 60px;
-    }
-
-    .timeline {
-      margin-left: 10px;
-      padding-left: 30px;
-    }
-
-    .timeline-item::before {
-      left: -39px; /* Adjusted for new padding */
-    }
+/* Mobile Adaptation */
+@media (max-width: 768px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    gap: 15px;
   }
 
+  .module-card {
+    min-height: 120px;
+    padding: 15px;
+  }
+
+  .icon-wrapper {
+    font-size: 2rem;
+  }
+
+  .module-card h3 {
+    font-size: 0.9rem;
+  }
+
+  .module-card p {
+    font-size: 0.75rem;
+  }
+
+  .letter-modal h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .letter-modal p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .timeline-modal h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .timeline-item .content {
+    font-size: 1.1rem;
+  }
+
+  .close-btn {
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.8); /* More visible on mobile */
+  }
+
+  .letter-modal .paper {
+    padding: 25px;
+    width: 90%;
+    margin-top: 60px;
+  }
+
+  .timeline {
+    margin-left: 10px;
+    padding-left: 30px;
+  }
+
+  .timeline-item::before {
+    left: -39px; /* Adjusted for new padding */
+  }
+}
+
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .fade-enter-active,
