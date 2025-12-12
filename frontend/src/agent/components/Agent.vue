@@ -6,19 +6,19 @@
     @mouseleave="handleMouseLeave"
     @click="handleAgentClick"
   >
-    <AgentCharacter
+    <Live2DWidget
+      :is-talking="isTalking"
       :is-moving="isMoving"
       :is-hovered="isHovered"
       :is-dizzy="isDizzy"
-      :is-thinking="isLoading || plan?.status === 'running'"
       :is-happy="isHappy"
       :is-confused="isConfused"
-      :is-talking="isTalking"
       :is-angry="isAngry"
       :is-fainted="isFainted"
       :is-pouting="isPouting"
+      :is-head-hit="isHeadHit"
       :message="message"
-      :eye-offset="eyeOffset"
+      @toggle-chat="toggleChat"
     />
 
     <transition name="pop">
@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import AgentCharacter from './AgentCharacter.vue';
+import Live2DWidget from './Live2DWidget.vue';
 import ChatWindow from './ChatWindow.vue';
 import GuideOverlay from './GuideOverlay.vue';
 import TaskDisplay from './TaskDisplay.vue';
@@ -82,6 +82,7 @@ const isTalking = ref(false);
 const isAngry = ref(false);
 const isFainted = ref(false); // New Fainted State
 const isPouting = ref(false); // New Pouting State
+const isHeadHit = ref(false); // New Head Hit State
 const isMuted = ref(false);
 const message = ref('Hello! I am Lumina!');
 
@@ -418,9 +419,9 @@ const mouseHistory: { x: number; y: number; time: number }[] = [];
 let dizzyTimeout: number | null = null;
 
 // --- Config ---
-const AGENT_SIZE = 80; // px
-const MOVE_INTERVAL = 5000; // ms (for idle roaming)
-const LERP_FACTOR = 0.08; // Smoothness factor
+const AGENT_SIZE = 300; // px - Increased for Live2D model size
+const MOVE_INTERVAL = 8000; // ms (for idle roaming) - Slowed down
+const LERP_FACTOR = 0.05; // Smoothness factor - Smoother
 const MOUSE_FOLLOW_OFFSET = { x: 40, y: 40 }; // Offset from cursor to center agent
 
 // --- Computed ---
@@ -428,16 +429,19 @@ const containerStyle = computed(() => ({
   transform: `translate(${x.value}px, ${y.value}px)`,
   width: `${AGENT_SIZE}px`,
   height: `${AGENT_SIZE}px`,
-  transition: isHovered.value ? 'none' : 'transform 2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+  transition: isHovered.value ? 'none' : 'transform 4s cubic-bezier(0.4, 0.0, 0.2, 1)', // Slower movement
   zIndex: 9999,
   position: 'fixed' as const,
   top: 0,
   left: 0,
-  pointerEvents: 'auto' as const
+  pointerEvents: 'auto' as const,
+  // Allow Live2D widget to overflow (it's 300x300 usually)
+  overflow: 'visible' 
 }));
 
 // --- Logic: Chat ---
 const toggleChat = () => {
+  console.log('Agent: toggleChat received, new state:', !chatOpen.value);
   chatOpen.value = !chatOpen.value;
   if (chatOpen.value) {
     message.value = ''; // Clear bubble when chat opens
@@ -726,12 +730,35 @@ async function handleSendMessage(text: string) {
   }
 }
 
+const checkBoundaries = () => {
+  // Top boundary check (Head Hit)
+  if (y.value <= 10) {
+    triggerHeadHit();
+    // Bounce back slightly to avoid getting stuck
+    y.value = 60;
+  }
+};
+
+const triggerHeadHit = () => {
+  if (isHeadHit.value || isFainted.value) return;
+  
+  isHeadHit.value = true;
+  message.value = "Ouch! My head! >_<";
+  isMoving.value = false; // Stop moving
+  
+  // Reset after 2s
+  setTimeout(() => {
+    isHeadHit.value = false;
+    if (message.value === "Ouch! My head! >_<") message.value = "";
+  }, 2000);
+};
+
 // --- Logic: Movement & Animation Loop ---
 let animationFrameId: number;
 let roamTimer: number | null = null;
 
 const updateEyeTracking = () => {
-  if (isDizzy.value || isFainted.value) return; // Don't track eyes if dizzy/fainted
+  if (isDizzy.value || isFainted.value || isHeadHit.value) return; // Don't track eyes if dizzy/fainted/hurt
 
   // Priority 1: Look at Guide Target if active
   if (guideTargetRect.value) {
@@ -767,8 +794,10 @@ const updateEyeTracking = () => {
 
 const startLoop = () => {
   const loop = () => {
-    if (isDizzy.value || isFainted.value) {
-      // If dizzy/fainted, no movement
+    checkBoundaries(); // Check boundaries every frame
+
+    if (isDizzy.value || isFainted.value || isHeadHit.value) {
+      // If dizzy/fainted/hurt, no movement
     } else if (isHovered.value && !chatOpen.value) {
       // Mouse Follow Logic (Lerp) - Only if not chatting
       // ... existing logic ...
@@ -790,7 +819,7 @@ const startLoop = () => {
 const startRoaming = () => {
   moveRandomly();
   roamTimer = window.setInterval(() => {
-    if (!isHovered.value && !isDizzy.value && !chatOpen.value) {
+    if (!isHovered.value && !isDizzy.value && !isFainted.value && !isHeadHit.value && !chatOpen.value) {
       moveRandomly();
     }
   }, MOVE_INTERVAL);

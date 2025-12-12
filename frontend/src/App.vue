@@ -4,7 +4,7 @@ import Agent from './agent/components/Agent.vue';
 
 <template>
   <router-view></router-view>
-  <Agent />
+  <!-- <Agent /> -->
 </template>
 
 <style>

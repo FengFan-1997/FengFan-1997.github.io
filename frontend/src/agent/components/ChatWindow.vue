@@ -82,8 +82,7 @@
         <div class="auth-container">
           <div v-if="isAuthenticated" class="profile-view">
             <div class="avatar-large">
-              <img src="/ai-icon.svg" alt="User" v-if="false" />
-              <span v-else>👤</span>
+              <span>👤</span>
             </div>
             <h3>{{ currentUser?.name || currentUser?.username }}</h3>
             <p class="user-id">ID: {{ currentUser?.userId || currentUser?.id }}</p>

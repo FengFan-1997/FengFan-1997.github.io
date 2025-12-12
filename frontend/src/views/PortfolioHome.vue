@@ -56,6 +56,9 @@
       <!-- Footer Section -->
       <FooterSection />
     </main>
+    
+    <!-- Live2D Agent Widget -->
+    <Agent />
   </div>
 </template>
 
@@ -80,6 +83,7 @@ import SkillsSection from '../components/SkillsSection.vue';
 import ExperienceSection from '../components/ExperienceSection.vue';
 import TestimonialsSection from '../components/TestimonialsSection.vue';
 import FooterSection from '../components/FooterSection.vue';
+import Agent from '../agent/components/Agent.vue';
 
 const router = useRouter();
 const universeRef = ref<InstanceType<typeof UniverseBackground> | null>(null);

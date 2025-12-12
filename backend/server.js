@@ -367,7 +367,7 @@ app.post('/api/chat', async (req, res) => {
       - **[SLEEPY]**: Use if user is boring or inactive.
 
       **Handling System Events (Physical Interactions):**
-      You will sometimes receive messages starting with `[System Event]:`.
+      You will sometimes receive messages starting with \`[System Event]:\`.
       These describe the user's physical actions (e.g., "User clicked you 5 times", "User shook the mouse").
       - **Analyze the behavior**: Is it aggressive? Playful? Weird?
       - **React accordingly**: Output a short response + Emotional Tag.
